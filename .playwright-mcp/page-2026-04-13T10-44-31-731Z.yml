@@ -1,0 +1,24 @@
+- main [ref=e14]:
+  - generic [ref=e15]:
+    - img
+    - generic:
+      - img:
+        - generic: LE TOUQUET
+    - heading "Luci e & Paul" [level=1]:
+      - text: Luci
+      - generic:
+        - generic: e & Paul
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - img "Lucie & Paul left"
+      - generic:
+        - generic:
+          - generic:
+            - img "Lucie & Paul center"
+      - generic:
+        - generic:
+          - generic:
+            - img "Lucie & Paul right"
+    - button "See the gallery" [ref=e16]

@@ -1,0 +1,24 @@
+- main [ref=e14]:
+  - generic [ref=e15]:
+    - img
+    - generic:
+      - img:
+        - generic: Le Touquet
+    - heading "Salsa & Arkan" [level=1]
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - img "Salsa & Arkan left"
+      - generic:
+        - generic:
+          - generic:
+            - img "Salsa & Arkan center"
+      - generic:
+        - generic:
+          - generic:
+            - img "Salsa & Arkan right"
+    - link [ref=e16] [cursor=pointer]:
+      - /url: /gallery
+      - img [ref=e17]:
+        - generic [ref=e19]: See the gallery

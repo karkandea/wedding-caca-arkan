@@ -1,0 +1,1 @@
+chrome-extension://okfkdaglfjjjfefdcppliegebpoegaii/assets/index.ts-loader3.js
