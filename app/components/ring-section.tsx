@@ -8,10 +8,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const easeOutCubic = (v: number) => 1 - Math.pow(1 - clamp(v), 3);
-const easeInOut = (v: number) => {
-  const t = clamp(v);
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-};
 
 export default function RingSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +42,7 @@ export default function RingSection() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.6;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.style.display = "block";
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
@@ -56,21 +52,33 @@ export default function RingSection() {
     pmremGenerator.compileEquirectangularShader();
     const envTexture = pmremGenerator.fromScene(new RoomEnvironment()).texture;
     scene.environment = envTexture;
-    scene.environmentIntensity = 0.4;
+    scene.environmentIntensity = 0.28;
     pmremGenerator.dispose();
 
     // Ambient — very low
-    scene.add(new THREE.AmbientLight("#ffffff", 0.15));
+    scene.add(new THREE.AmbientLight("#ffffff", 0.07));
 
-    // Single strong key light dari kanan atas
-    const keyLight = new THREE.DirectionalLight("#ffffff", 2.5);
-    keyLight.position.set(4, 5, 3);
+    // Single cinematic key light dari kanan atas
+    const keyLight = new THREE.DirectionalLight("#fff4e6", 1.65);
+    keyLight.position.set(4.5, 5.5, 5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 20;
+    keyLight.shadow.camera.left = -6;
+    keyLight.shadow.camera.right = 6;
+    keyLight.shadow.camera.top = 6;
+    keyLight.shadow.camera.bottom = -6;
     scene.add(keyLight);
 
     // Warm subtle fill dari kiri bawah
-    const fillLight = new THREE.PointLight("#ffe8c8", 1.0, 25);
-    fillLight.position.set(-3, -2, 2);
+    const fillLight = new THREE.PointLight("#d9a56f", 0.42, 18);
+    fillLight.position.set(-3.5, -2.2, 3);
     scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight("#8fb7ff", 0.45);
+    rimLight.position.set(-3, 2.5, -2);
+    scene.add(rimLight);
 
     // ── Material — silver chrome, metallic ────────────────────────────────────
     const ring1Mat = new THREE.MeshStandardMaterial({
@@ -191,6 +199,7 @@ export default function RingSection() {
       const h = container.clientHeight || window.innerHeight;
       renderer.setSize(w, h, false);
       camera.aspect = w / Math.max(h, 1);
+      camera.position.z = w < 640 ? 12.5 : 11;
       camera.updateProjectionMatrix();
     };
 

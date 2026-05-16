@@ -24,6 +24,7 @@ type LottiePlayerProps = {
   preserveAspectRatio?: string;
   className?: string;
   style?: CSSProperties;
+  onReady?: () => void;
   onComplete?: () => void;
 };
 
@@ -37,6 +38,7 @@ const LottiePlayer = forwardRef<LottiePlayerHandle, LottiePlayerProps>(function 
     preserveAspectRatio = "xMidYMid meet",
     className,
     style,
+    onReady,
     onComplete,
   },
   ref,
@@ -44,7 +46,12 @@ const LottiePlayer = forwardRef<LottiePlayerHandle, LottiePlayerProps>(function 
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<AnimationItem | null>(null);
   const pendingPlayRef = useRef(false);
+  const onReadyRef = useRef(onReady);
   const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -86,6 +93,8 @@ const LottiePlayer = forwardRef<LottiePlayerHandle, LottiePlayerProps>(function 
 
       animationRef.current = animation;
       animation.addEventListener("complete", () => onCompleteRef.current?.());
+      animation.addEventListener("DOMLoaded", () => onReadyRef.current?.());
+      animation.addEventListener("data_ready", () => onReadyRef.current?.());
 
       if (!autoplay) {
         animation.goToAndStop(0, true);

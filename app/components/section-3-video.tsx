@@ -528,7 +528,7 @@ export default function Section3Video() {
               backfaceVisibility: "hidden",
             }}
           >
-            our story
+            Gallery
           </h2>
         </div>
 

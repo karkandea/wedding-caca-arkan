@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import BalloonTransition from "./balloon-transition";
 
-const CRITICAL_FRAME_COUNT = 31;
-const TOTAL_FRAME_COUNT = 183;
-const HERO_PHOTOS = ["/hero/photo-left.jpeg", "/hero/photo-right.jpeg", "/hero/photo-center.png"];
-
-function frameSrc(index: number) {
-  const frameNumber = String(index + 1).padStart(3, "0");
-  return `/scroll/ezgif-frame-${frameNumber}.jpg`;
-}
+const HERO_ASSETS = ["/hero/photo-left.jpeg", "/hero/photo-right.jpeg", "/hero/photo-center.png"];
+const BALLOON_ASSET = "/hero/balloons/baloon.glb";
 
 async function preloadAsset(src: string) {
   try {
@@ -22,28 +17,49 @@ async function preloadAsset(src: string) {
 export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
   const [isDone, setIsDone] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [canRunBalloonTransition, setCanRunBalloonTransition] = useState(false);
   const hasFinishedRef = useRef(false);
+  const canRunBalloonTransitionRef = useRef(false);
+  const isMobileRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
     let loaded = 0;
     let totalAssets = 1;
+    const startedAt = performance.now();
+
+    const updateTransitionMode = () => {
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      isMobileRef.current = isMobile;
+      canRunBalloonTransitionRef.current = true;
+      setCanRunBalloonTransition(true);
+    };
 
     const finishLoading = () => {
       if (!isMounted || hasFinishedRef.current) return;
       hasFinishedRef.current = true;
-      setIsDone(true);
+      const minimumVisibleMs = isMobileRef.current ? 1200 : 700;
+      const remainingVisibleMs = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
+
       window.setTimeout(() => {
-        if (isMounted) setIsHidden(true);
-      }, 650);
+        if (!isMounted) return;
+        setIsDone(true);
+        window.dispatchEvent(new CustomEvent("wedding-loading-complete"));
+        window.setTimeout(() => {
+          if (isMounted) setIsRevealing(true);
+          if (!canRunBalloonTransitionRef.current) {
+            window.setTimeout(() => {
+              if (isMounted) setIsHidden(true);
+            }, 520);
+          }
+        }, canRunBalloonTransitionRef.current ? 1150 : 180);
+      }, remainingVisibleMs);
     };
 
     const preloadCriticalAssets = async () => {
-      const assets = [
-        ...Array.from({ length: CRITICAL_FRAME_COUNT }, (_, index) => frameSrc(index)),
-        ...HERO_PHOTOS,
-      ];
+      const assets = [...HERO_ASSETS, BALLOON_ASSET];
       totalAssets = assets.length;
 
       await Promise.all(
@@ -57,14 +73,6 @@ export default function LoadingScreen() {
       if (!isMounted) return;
       await new Promise((resolve) => window.requestAnimationFrame(resolve));
       finishLoading();
-
-      // Continue warming the remaining sequence after the site is visible.
-      Array.from({ length: TOTAL_FRAME_COUNT - CRITICAL_FRAME_COUNT }, (_, index) => {
-        window.setTimeout(() => {
-          if (!isMounted) return;
-          preloadAsset(frameSrc(index + CRITICAL_FRAME_COUNT));
-        }, index * 25);
-      });
     };
 
     const safetyTimer = window.setTimeout(() => {
@@ -72,10 +80,13 @@ export default function LoadingScreen() {
       finishLoading();
     }, 5000);
 
+    updateTransitionMode();
+    window.addEventListener("resize", updateTransitionMode);
     preloadCriticalAssets();
 
     return () => {
       isMounted = false;
+      window.removeEventListener("resize", updateTransitionMode);
       window.clearTimeout(safetyTimer);
     };
   }, []);
@@ -88,18 +99,25 @@ export default function LoadingScreen() {
         position: "fixed",
         inset: 0,
         zIndex: 2147483647,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 28,
-        background:
-          "radial-gradient(circle at 50% 42%, rgba(255,255,255,0.42), rgba(245,239,230,0.96) 48%, #F5EFE6 78%)",
-        opacity: isDone ? 0 : 1,
-        transition: "opacity 650ms ease",
         pointerEvents: isDone ? "none" : "auto",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 28,
+          background:
+            "radial-gradient(circle at 50% 42%, rgba(255,255,255,0.42), rgba(245,239,230,0.96) 48%, #F5EFE6 78%)",
+          opacity: isRevealing ? 0 : 1,
+          transition: "opacity 500ms ease",
+        }}
+      >
       <div
         style={{
           fontFamily: "serif",
@@ -149,6 +167,8 @@ export default function LoadingScreen() {
           to { transform: translateY(-4px) scale(1); opacity: 1; }
         }`}
       </style>
+      </div>
+      {isDone && canRunBalloonTransition && <BalloonTransition onComplete={() => setIsHidden(true)} />}
     </div>
   );
 }

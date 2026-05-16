@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const COUPLE = "Salsa & Arkan";
 
 const SIDE_PHOTOS = [
   {
     id: "top-left",
-    src: "/hero/photo-center.png",
+    src: "/hero/photo-left.jpeg",
     edge: "left",
     offset: "-2%",
     top: "4%",
@@ -18,7 +18,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "bottom-left",
-    src: "/hero/photo-center.png",
+    src: "/hero/photo-kedua.png",
     edge: "left",
     offset: "8%",
     top: "55%",
@@ -28,7 +28,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "top-right",
-    src: "/hero/photo-center.png",
+    src: "/hero/photo-right.jpeg",
     edge: "right",
     offset: "-1%",
     top: "32%",
@@ -45,6 +45,65 @@ const SIDE_PHOTOS = [
     width: "23%",
     height: "33%",
     appearAt: 0.6,
+  },
+] as const;
+
+const PARALLAX_BALLOONS = [
+  {
+    id: "above-3",
+    src: "/hero/baloon above 3.png",
+    zIndex: 2,
+    desktop: { left: "56%", top: "22%", width: "5.5%", dirX: 0.32, dirY: -0.95, endScale: 3, drift: 80 },
+    mobile: { left: "58%", top: "27%", width: "10%", dirX: 0.46, dirY: -0.89, endScale: 2.8, drift: 80 },
+  },
+  {
+    id: "above-1",
+    src: "/hero/baloon above 1.png",
+    zIndex: 3,
+    desktop: { left: "36%", top: "17%", width: "5.5%", dirX: -0.32, dirY: -0.95, endScale: 3, drift: 80 },
+    mobile: { left: "33%", top: "22%", width: "10%", dirX: -0.36, dirY: -0.93, endScale: 2.8, drift: 80 },
+  },
+  {
+    id: "above-2",
+    src: "/hero/baloon above 2.png",
+    zIndex: 4,
+    desktop: { left: "47%", top: "15%", width: "5.5%", dirX: -0.08, dirY: -1, endScale: 2.8, drift: 75 },
+    mobile: { left: "47%", top: "19%", width: "10%", dirX: -0.05, dirY: -1, endScale: 2.6, drift: 75 },
+  },
+  {
+    id: "right-behind",
+    src: "/hero/baloon right behind.png",
+    zIndex: 5,
+    desktop: { left: "58%", top: "55%", width: "37%", dirX: 0.95, dirY: 0.05, endScale: 1.14, drift: 4 },
+    mobile: { left: "56%", top: "60%", width: "42%", dirX: 0.95, dirY: 0.05, endScale: 1.14, drift: 5 },
+  },
+  {
+    id: "left-small-1",
+    src: "/hero/baloon left small 1.png",
+    zIndex: 7,
+    desktop: { left: "19%", top: "40%", width: "7%", dirX: -0.86, dirY: -0.5, endScale: 3.8, drift: 92 },
+    mobile: { left: "12%", top: "47%", width: "12%", dirX: -0.93, dirY: -0.37, endScale: 3.6, drift: 90 },
+  },
+  {
+    id: "left-small-2",
+    src: "/hero/baloon left small 2.png",
+    zIndex: 8,
+    desktop: { left: "26%", top: "32%", width: "6%", dirX: -0.68, dirY: -0.74, endScale: 3.6, drift: 88 },
+    mobile: { left: "21%", top: "40%", width: "11%", dirX: -0.62, dirY: -0.78, endScale: 3.4, drift: 85 },
+  },
+  {
+    id: "close-above",
+    src: "/hero/baloon close above.png",
+    zIndex: 9,
+    desktop: { left: "3%", top: "65%", width: "26%", dirX: -0.89, dirY: 0.46, endScale: 4.5, drift: 85 },
+    mobile: { left: "-4%", top: "70%", width: "32%", dirX: -0.93, dirY: 0.38, endScale: 4.2, drift: 80 },
+  },
+  {
+    id: "big-left",
+    src: "/hero/baloon big left.png",
+    zIndex: 10,
+    desktop: { left: "24%", top: "56%", width: "23%", dirX: -0.83, dirY: 0.55, endScale: 5.2, drift: 88 },
+    mobile: { left: "28%", top: "60%", width: "22%", dirX: -0.78, dirY: 0.62, endScale: 4.5, drift: 85 },
   },
 ] as const;
 
@@ -69,42 +128,42 @@ function lerpCss(from: string, to: string, progress: number) {
 
 export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const frameRef = useRef(0);
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const update = () => {
-      const section = sectionRef.current;
-      if (!section) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    let frameId = 0;
 
-      const scrolled = window.scrollY - section.offsetTop;
-      const total = section.offsetHeight - window.innerHeight;
-      const nextProgress = clamp(total > 0 ? scrolled / total : 0);
-
-      setProgress(nextProgress);
+    const updateDeviceMode = () => {
       setIsMobile(window.innerWidth < 720);
     };
 
-    const onScroll = () => {
-      if (frameRef.current) return;
+    const updateProgress = () => {
+      updateDeviceMode();
+      const rect = section.getBoundingClientRect();
+      const total = section.offsetHeight - window.innerHeight;
+      const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
+      setProgress(nextProgress);
+    };
 
-      frameRef.current = window.requestAnimationFrame(() => {
-        frameRef.current = 0;
-        update();
+    const scheduleUpdate = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateProgress();
       });
     };
 
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    updateProgress();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frameRef.current) {
-        window.cancelAnimationFrame(frameRef.current);
-      }
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      if (frameId) window.cancelAnimationFrame(frameId);
     };
   }, []);
 
@@ -132,10 +191,11 @@ export default function NewHeroSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[600vh] w-full bg-[#F5EFE6]"
+      className="relative h-[300vh] w-full bg-[#F7F1E7]"
       id="new-hero-section"
     >
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
+        <HeroNav />
         <div
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
@@ -152,37 +212,11 @@ export default function NewHeroSection() {
               top: isMobile ? "50%" : undefined,
               width: isMobile ? "100vw" : "100%",
               height: isMobile ? "100svh" : "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
               overflow: "hidden",
               transform: isMobile ? "translate3d(-50%, -50%, 0)" : undefined,
             }}
           >
-            <Image
-              src="/hero/photo-center.png"
-              alt={COUPLE}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-              style={{
-                transform: `translate(${isMobile ? "4vw" : "3%"}, ${isMobile ? "14svh" : "13%"}) scale(${isMobile ? 1.12 : 1.08})`,
-                transformOrigin: "center center",
-                zIndex: 0,
-              }}
-            />
-            <HeroImageSequence
-              progress={progress}
-              style={{
-                position: "relative",
-                zIndex: 1,
-                width: "100%",
-                height: "100%",
-                transform: `translate(${isMobile ? "4vw" : "3%"}, ${isMobile ? "14svh" : "13%"}) scale(${isMobile ? 1.12 : 1.08})`,
-                transformOrigin: "center center",
-              }}
-            />
+            <HeroParallaxScene progress={progress} isMobile={isMobile} />
           </div>
 
           <div
@@ -286,218 +320,172 @@ export default function NewHeroSection() {
   );
 }
 
-function HeroImageSequence({
-  progress,
-  style,
-}: {
-  progress: number;
-  style?: CSSProperties;
-}) {
-  const TOTAL_FRAMES = 183;
-  const CRITICAL_FRAMES = 11;
-  const PRELOAD_RADIUS = 10;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const renderLoopRef = useRef(0);
-  const imagesRef = useRef<Array<HTMLImageElement | undefined>>([]);
-  const loadedFramesRef = useRef(new Set<number>());
-  const failedFramesRef = useRef(new Set<number>());
-  const loadingFramesRef = useRef(new Set<number>());
-  const targetFrameRef = useRef(0);
-  const currentFrameRef = useRef(0);
-  const lastDrawnFrameRef = useRef(-1);
-  const isMountedRef = useRef(false);
-  const isMobileRef = useRef(false);
+function HeroNav() {
+  return (
+    <nav className="absolute left-1/2 top-[18px] z-30 flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-[22px] pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px]">
+      <span className="font-serif text-xl italic text-[#2B241D]">S&amp;A</span>
+      <div className="flex items-center gap-5">
+        {["Travel Logistics", "Registry", "FAQ"].map((label) => (
+          <a key={label} className="hidden cursor-pointer text-[13px] text-[#2B241D] no-underline md:inline">
+            {label}
+          </a>
+        ))}
+        <button className="rounded-full border-0 bg-[#2B241D] px-4 py-2 text-[12px] font-medium text-[#F7F1E7] md:text-[13px]">
+          <span className="md:hidden">RSVP</span>
+          <span className="hidden md:inline">Submit RSVP</span>
+        </button>
+      </div>
+    </nav>
+  );
+}
 
-  const normalizeFrameForDevice = (frameIndex: number) => {
-    const clampedFrame = Math.min(Math.max(frameIndex, 0), TOTAL_FRAMES - 1);
-    return isMobileRef.current ? clampedFrame - (clampedFrame % 2) : clampedFrame;
-  };
-
-  const frameSrc = (index: number) => {
-    const frameNumber = String(index + 1).padStart(3, "0");
-    return `/scroll/ezgif-frame-${frameNumber}.jpg`;
-  };
-
-  const loadFrame = (index: number) => {
-    const frameIndex = normalizeFrameForDevice(index);
-    if (
-      imagesRef.current[frameIndex] ||
-      loadedFramesRef.current.has(frameIndex) ||
-      loadingFramesRef.current.has(frameIndex) ||
-      failedFramesRef.current.has(frameIndex)
-    ) {
-      return;
-    }
-
-    loadingFramesRef.current.add(frameIndex);
-
-    const image = new window.Image();
-    imagesRef.current[frameIndex] = image;
-
-    image.onload = () => {
-      void (async () => {
-        try {
-          if (typeof image.decode === "function") {
-            await image.decode();
-          }
-        } catch {
-          // Decode can reject on some browsers even after load; naturalWidth decides usability.
-        }
-
-        loadingFramesRef.current.delete(frameIndex);
-        if (!isMountedRef.current || image.naturalWidth === 0) {
-          failedFramesRef.current.add(frameIndex);
-          return;
-        }
-
-        loadedFramesRef.current.add(frameIndex);
-        if (frameIndex === targetFrameRef.current || lastDrawnFrameRef.current < 0) {
-          drawFrame(currentFrameRef.current);
-        }
-      })();
-    };
-
-    image.onerror = () => {
-      loadingFramesRef.current.delete(frameIndex);
-      failedFramesRef.current.add(frameIndex);
-      if (isMountedRef.current && frameIndex === targetFrameRef.current) {
-        drawFrame(frameIndex);
-      }
-    };
-
-    image.src = frameSrc(frameIndex);
-  };
-
-  const preloadAroundFrame = (frameIndex: number) => {
-    const targetFrame = normalizeFrameForDevice(frameIndex);
-    const start = Math.max(0, targetFrame - PRELOAD_RADIUS);
-    const end = Math.min(TOTAL_FRAMES - 1, targetFrame + PRELOAD_RADIUS);
-
-    loadFrame(targetFrame);
-    for (let index = start; index <= end; index += isMobileRef.current ? 2 : 1) {
-      loadFrame(index);
-    }
-  };
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    isMobileRef.current = window.innerWidth < 768;
-
-    const resize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width || window.innerWidth;
-      const height = rect.height || window.innerHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-
-      const context = canvas.getContext("2d", { willReadFrequently: false });
-      if (!context) return;
-      context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawFrame(lastDrawnFrameRef.current < 0 ? targetFrameRef.current : lastDrawnFrameRef.current);
-    };
-
-    const updateDeviceMode = () => {
-      isMobileRef.current = window.innerWidth < 768;
-    };
-
-    targetFrameRef.current = normalizeFrameForDevice(Math.floor(clamp(progress) * TOTAL_FRAMES));
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(resize);
-    });
-    window.setTimeout(resize, 100);
-    Array.from({ length: CRITICAL_FRAMES }, (_, index) => index).forEach(loadFrame);
-    preloadAroundFrame(targetFrameRef.current);
-
-    const renderLoop = () => {
-      if (!isMountedRef.current) return;
-
-      const currentFrame = currentFrameRef.current;
-      const targetFrame = targetFrameRef.current;
-
-      if (currentFrame !== targetFrame) {
-        const direction = targetFrame > currentFrame ? 1 : -1;
-        const step = isMobileRef.current ? 2 : 1;
-        currentFrameRef.current = normalizeFrameForDevice(currentFrame + direction * step);
-        preloadAroundFrame(currentFrameRef.current);
-        drawFrame(currentFrameRef.current);
-      } else if (lastDrawnFrameRef.current < 0) {
-        drawFrame(currentFrame);
-      }
-
-      renderLoopRef.current = window.requestAnimationFrame(renderLoop);
-    };
-
-    renderLoopRef.current = window.requestAnimationFrame(renderLoop);
-    window.addEventListener("resize", resize);
-    window.addEventListener("resize", updateDeviceMode);
-
-    return () => {
-      isMountedRef.current = false;
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("resize", updateDeviceMode);
-      if (renderLoopRef.current) {
-        window.cancelAnimationFrame(renderLoopRef.current);
-      }
-    };
-  }, []);
-
-  const resolveLoadedFrame = (frameIndex: number) => {
-    if (loadedFramesRef.current.has(frameIndex)) return frameIndex;
-
-    for (let offset = 1; offset < TOTAL_FRAMES; offset += 1) {
-      const previous = frameIndex - offset;
-      const next = frameIndex + offset;
-
-      if (previous >= 0 && loadedFramesRef.current.has(previous)) return previous;
-      if (next < TOTAL_FRAMES && loadedFramesRef.current.has(next)) return next;
-    }
-
-    return -1;
-  };
-
-  const drawFrame = (frameIndex: number) => {
-    const canvas = canvasRef.current;
-    const resolvedFrame = resolveLoadedFrame(frameIndex);
-    const image = resolvedFrame >= 0 ? imagesRef.current[resolvedFrame] : undefined;
-    if (!canvas || !image?.complete || image.naturalWidth === 0) return;
-
-    const context = canvas.getContext("2d", { willReadFrequently: false });
-    if (!context) return;
-
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
-    const drawWidth = image.naturalWidth * scale;
-    const drawHeight = image.naturalHeight * scale;
-    const x = (width - drawWidth) / 2;
-    const y = (height - drawHeight) / 2;
-
-    context.clearRect(0, 0, width, height);
-    context.drawImage(image, x, y, drawWidth, drawHeight);
-    lastDrawnFrameRef.current = resolvedFrame;
-  };
-
-  useEffect(() => {
-    const frameIndex = normalizeFrameForDevice(Math.floor(clamp(progress) * TOTAL_FRAMES));
-    targetFrameRef.current = frameIndex;
-    preloadAroundFrame(frameIndex);
-  }, [progress]);
+function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile: boolean }) {
+  const eased = Math.pow(clamp(progress), 1.4);
+  const coupleScale = 1 + progress * 0.14;
+  const baseScale = 1;
+  const blurScaleFloor = 1.4;
+  const blurPerScale = 4;
+  const isTinyMobile = isMobile && typeof window !== "undefined" && window.innerWidth <= 380;
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div className="absolute inset-0 overflow-hidden bg-[#E8E8E6]">
+      <div
+        className="absolute overflow-visible"
+        style={
+          isMobile
+            ? {
+                left: "50%",
+                top: "50%",
+                width: "100%",
+                maxWidth: "640px",
+                maxHeight: isTinyMobile ? "72vh" : "78vh",
+                aspectRatio: "1 / 1.07",
+                transform: "translate(-50%, -50%)",
+              }
+            : {
+                inset: 0,
+              }
+        }
+      >
+      <div
+        className="absolute inset-0"
+        style={{
+          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
+          transformOrigin: "50% 100%",
+          willChange: "transform",
+        }}
+      >
+        <Image
+          src="/hero/couple with bg.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          style={{
+            objectPosition: isMobile ? "50% 80%" : "center bottom",
+            zIndex: 1,
+          }}
+        />
+      </div>
+
+      {PARALLAX_BALLOONS.slice(0, 4).map((balloon) => (
+        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
+      ))}
+
+      <div
+        className="absolute inset-0"
+        style={{
+          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
+          transformOrigin: "50% 100%",
+          willChange: "transform",
+          zIndex: 6,
+        }}
+      >
+        <Image
+          src="/hero/couple without bg.png"
+          alt={COUPLE}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          style={{
+            objectPosition: isMobile ? "50% 80%" : "center bottom",
+          }}
+        />
+      </div>
+
+      {PARALLAX_BALLOONS.slice(4).map((balloon) => (
+        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
+      ))}
+      </div>
+    </div>
+  );
+}
+
+function ParallaxBalloon({
+  balloon,
+  progress,
+  isMobile,
+  blurScaleFloor,
+  blurPerScale,
+}: {
+  balloon: (typeof PARALLAX_BALLOONS)[number];
+  progress: number;
+  isMobile: boolean;
+  blurScaleFloor: number;
+  blurPerScale: number;
+}) {
+  const cfg: {
+    left: string;
+    top: string;
+    width: string;
+    dirX: number;
+    dirY: number;
+    endScale: number;
+    drift: number;
+  } = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
+  if (isMobile && typeof window !== "undefined" && window.innerWidth <= 380) {
+    if (balloon.id === "big-left") {
+      cfg.left = "30%";
+      cfg.top = "62%";
+      cfg.width = "20%";
+      cfg.endScale = 4;
+    }
+    if (balloon.id === "close-above") {
+      cfg.left = "-2%";
+      cfg.top = "72%";
+      cfg.width = "30%";
+      cfg.endScale = 3.8;
+    }
+    if (balloon.id === "right-behind") {
+      cfg.width = "40%";
+    }
+  }
+  const driftBase = isMobile ? 7.8 : 7.2;
+  const x = cfg.dirX * progress * cfg.drift * driftBase;
+  const y = cfg.dirY * progress * cfg.drift * driftBase;
+  const scale = 1 + progress * (cfg.endScale - 1);
+  const blur = Math.max(0, scale - blurScaleFloor) * blurPerScale;
+
+  return (
+    <Image
+      src={balloon.src}
+      alt=""
+      width={420}
+      height={420}
+      sizes={cfg.width}
+      className="pointer-events-none absolute h-auto select-none"
       style={{
-        display: "block",
-        width: "100%",
-        height: "100%",
-        ...style,
+        left: cfg.left,
+        top: cfg.top,
+        width: cfg.width,
+        zIndex: balloon.zIndex,
+        transform: `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`,
+        transformOrigin: balloon.id === "right-behind" ? "50% 100%" : "50% 50%",
+        filter: blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none",
+        willChange: "transform, filter",
+        backfaceVisibility: "hidden",
       }}
     />
   );

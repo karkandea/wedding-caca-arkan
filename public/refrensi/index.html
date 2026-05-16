@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Salsa &amp; Arkan — 11.08.26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #e8e8e6;       /* studio gray, matches couple-bg */
+    --ink: #161412;
+    --soft: #6c6863;
+    --line: rgba(22,20,18,0.14);
+    --title: #1a1815;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body { overflow-x: hidden; }
+
+  /* ─────────────────────────────────────────────────────────────
+     HERO – sticky stage inside a tall scroll container.
+     The container's height defines how much scroll runtime the
+     parallax animation gets (~180vh of scroll = full balloon flight).
+     ───────────────────────────────────────────────────────────── */
+
+  .hero-scroll {
+    position: relative;
+    height: 280vh;            /* scroll runway */
+  }
+
+  .hero-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    /* We pin the photographic scene to the bottom-center so the couple
+       always sits on the floor regardless of viewport aspect. */
+  }
+
+  .layer {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* Full-bleed photographic layers (couple-bg + couple-no-bg).
+     object-fit cover keeps the couple anchored bottom-center. */
+  .layer.fill {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .layer.fill img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center bottom;
+    display: block;
+  }
+
+  /* Individual balloon layers — positioned in % of stage, sized
+     by width (height auto preserves balloon shape).
+     Per-balloon position is set via class rules below (.b-* ) so
+     the mobile media query can override without !important.
+
+     Each balloon also defines four parallax knobs as CSS custom
+     properties — the JS reads them via getComputedStyle so the
+     mobile media query can retune the entire effect for free:
+
+       --dir-x      direction of escape on X axis (-1 … 1)
+       --dir-y      direction of escape on Y axis (-1 … 1, positive = down)
+       --end-scale  scale value at scroll progress = 1 (1 = no growth)
+       --drift      translation amount at scroll progress = 1, in vh
+
+     Balloons exit radially outward from the couple as if the
+     camera is flying THROUGH the scene. */
+  .balloon {
+    height: auto;
+    transform-origin: 50% 50%;
+  }
+
+  /* ─── Desktop / landscape balloon positions + depth knobs ───
+     Positions are in % of stage; depth knobs drive the
+     hyperspace parallax (see JS comments below).
+
+     Direction vectors point radially outward FROM the couple
+     center (~50%, 58%) toward each balloon's actual position
+     in the photo, so as the camera "zooms in" everything
+     escapes outward through the correct edge. */
+  .b-above-1 {
+    left: 36%; top: 17%; width: 5.5%;
+    --dir-x: -0.32; --dir-y: -0.95; --end-scale: 3.0; --drift: 80;
+  }
+  .b-above-2 {
+    left: 47%; top: 15%; width: 5.5%;
+    --dir-x: -0.08; --dir-y: -1.00; --end-scale: 2.8; --drift: 75;
+  }
+  .b-above-3 {
+    left: 56%; top: 22%; width: 5.5%;
+    --dir-x: 0.32; --dir-y: -0.95; --end-scale: 3.0; --drift: 80;
+  }
+  .b-left-small-2 {
+    left: 26%; top: 32%; width: 6%;
+    --dir-x: -0.68; --dir-y: -0.74; --end-scale: 3.6; --drift: 88;
+  }
+  .b-left-small-1 {
+    left: 19%; top: 40%; width: 7%;
+    --dir-x: -0.86; --dir-y: -0.50; --end-scale: 3.8; --drift: 92;
+  }
+  /* Right-behind balloon cluster: sits BEHIND the couple, so it
+     belongs to the couple's depth plane — zooms along with them
+     (matches COUPLE_END_SCALE in the JS) and drifts a tiny bit
+     right as the camera approaches.
+     Floor-anchored so the balloons stay planted on the ground. */
+  .b-right-behind {
+    left: 58%; top: 55%; width: 37%;
+    --dir-x: 0.95; --dir-y: 0.05; --end-scale: 1.14; --drift: 4;
+    transform-origin: 50% 100%;
+  }
+  .b-big-left {
+    left: 24%; top: 56%; width: 23%;
+    --dir-x: -0.83; --dir-y: 0.55; --end-scale: 5.2; --drift: 88;
+  }
+  .b-close-above {
+    left: 3%; top: 65%; width: 26%;
+    --dir-x: -0.89; --dir-y: 0.46; --end-scale: 4.5; --drift: 85;
+  }
+
+  /* ─── Mobile / portrait reframe ───
+     On phones the hero becomes a centered, roughly-square "frame"
+     containing the full couple photo (no zoom/crop). The frame is
+     vertically centered in the sticky stage; balloon positions are
+     in % of the FRAME, not the viewport, so proportions match the
+     original studio shot. */
+  @media (max-aspect-ratio: 4/5) {
+    /* Reframe: stage becomes a centered box that holds the photo's
+       full composition. The big-left foreground balloon may still
+       extend past the frame edges via negative-left and overflow. */
+    .stage {
+      inset: auto 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 640px;
+      aspect-ratio: 1 / 1.07;       /* ~ matches the reference crop */
+      max-height: 78vh;
+    }
+
+    /* Couple photo: contain inside the frame, no zoom, anchored
+       so feet land on the floor of the frame. */
+    .l-bg img,
+    .l-couple img {
+      object-fit: cover;
+      object-position: 50% 80%;
+      transform: none;
+    }
+
+    /* Far white balloons — fly toward the camera, radiating up
+       and outward so it feels like the lens is approaching. */
+    .b-above-1 {
+      left: 33%; top: 22%; width: 10%;
+      --dir-x: -0.36; --dir-y: -0.93; --end-scale: 2.8; --drift: 80;
+    }
+    .b-above-2 {
+      left: 47%; top: 19%; width: 10%;
+      --dir-x: -0.05; --dir-y: -1.00; --end-scale: 2.6; --drift: 75;
+    }
+    .b-above-3 {
+      left: 58%; top: 27%; width: 10%;
+      --dir-x: 0.46; --dir-y: -0.89; --end-scale: 2.8; --drift: 80;
+    }
+
+    /* Mid layer — small black balloons fly past on the left,
+       scaling up + drifting outward toward the camera. */
+    .b-left-small-2 {
+      left: 21%; top: 40%; width: 11%;
+      --dir-x: -0.62; --dir-y: -0.78; --end-scale: 3.4; --drift: 85;
+    }
+    .b-left-small-1 {
+      left: 12%; top: 47%; width: 12%;
+      --dir-x: -0.93; --dir-y: -0.37; --end-scale: 3.6; --drift: 90;
+    }
+
+    /* Behind-couple cluster: same depth plane as the couple. */
+    .b-right-behind {
+      left: 56%; top: 60%; width: 42%;
+      --dir-x: 0.95; --dir-y: 0.05; --end-scale: 1.14; --drift: 5;
+    }
+
+    /* Big foreground balloon — escapes bottom-left, sits in front
+       of the couple between their knees. */
+    .b-big-left {
+      left: 28%; top: 60%; width: 22%;
+      --dir-x: -0.78; --dir-y: 0.62; --end-scale: 4.5; --drift: 85;
+    }
+
+    /* Close-above (the bottom-left pair on the floor). */
+    .b-close-above {
+      left: -4%; top: 70%; width: 32%;
+      --dir-x: -0.93; --dir-y: 0.38; --end-scale: 4.2; --drift: 80;
+    }
+
+    /* Hero scroll runway: shorter so phones don't feel endless. */
+    .hero-scroll { height: 220vh; }
+
+    /* Title — anchored to the top of the viewport, above the frame. */
+    .title { inset: 5vh 0 auto 0; }
+    .title .names { font-size: clamp(44px, 13vw, 80px); }
+    .title .eyebrow,
+    .title .date {
+      font-size: 10px;
+      letter-spacing: 0.34em;
+    }
+    .title .date { margin-top: 14px; }
+    .title .eyebrow { margin-bottom: 12px; }
+
+    /* Scroll hint sits closer to the bottom edge. */
+    .scroll-hint { bottom: 3vh; font-size: 10px; letter-spacing: 0.28em; }
+    .scroll-hint .line { height: 26px; }
+
+    /* After-hero: single column, tighter padding. */
+    .after { padding: 10vh 7vw 14vh; }
+    .after h2 { font-size: clamp(34px, 9vw, 56px); max-width: 18ch; }
+    .after p  { font-size: 15px; }
+    .after .meta {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      margin-top: 64px;
+    }
+    .after .meta .value { font-size: clamp(22px, 6vw, 28px); }
+  }
+
+  /* Tiny / narrow phones — keep the foreground balloon from
+     overwhelming the frame. */
+  @media (max-width: 380px) {
+    .stage { max-height: 72vh; }
+    .b-big-left     { left: 30%; top: 62%; width: 20%; --end-scale: 4.0; }
+    .b-close-above  { left: -2%; top: 72%; width: 30%; --end-scale: 3.8; }
+    .b-right-behind { width: 40%; }
+  }
+  .balloon img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ─── Layer stacking (back → front) ─── */
+  .l-bg          { z-index: 1; }
+  .l-far-white-3 { z-index: 2; }
+  .l-far-white-1 { z-index: 3; }
+  .l-far-white-2 { z-index: 4; }
+  .l-right-behind{ z-index: 5; }
+  .l-couple      { z-index: 6; }
+  .l-left-small-1{ z-index: 7; }
+  .l-left-small-2{ z-index: 8; }
+  .l-close-above { z-index: 9; }
+  .l-big-left    { z-index: 10; }
+  .l-title       { z-index: 11; }
+
+  /* ─── Title ─── */
+  .title {
+    position: absolute;
+    inset: 14vh 0 auto 0;
+    text-align: center;
+    color: var(--title);
+    pointer-events: none;
+    will-change: opacity, transform;
+    mix-blend-mode: multiply;
+    z-index: 11;
+  }
+  .title .title-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .title .names {
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(56px, 10vw, 180px);
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .title .names .amp {
+    font-weight: 400;
+    font-style: italic;
+    margin: 0 0.06em;
+    opacity: 0.85;
+  }
+  .title .eyebrow {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: clamp(11px, 1vw, 13px);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin: 0 0 22px;
+  }
+  .title .date {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    font-size: clamp(11px, 1vw, 13px);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin: 26px 0 0;
+  }
+
+  /* ─── Scroll hint ─── */
+  .scroll-hint {
+    position: absolute;
+    z-index: 12;
+    bottom: 4vh;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--soft);
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    will-change: opacity;
+  }
+  .scroll-hint .line {
+    width: 1px;
+    height: 36px;
+    background: currentColor;
+    opacity: 0.6;
+    animation: drip 2.4s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes drip {
+    0%   { transform: scaleY(0); opacity: 0; }
+    35%  { transform: scaleY(1); opacity: 0.7; }
+    70%  { transform: scaleY(1); opacity: 0.7; }
+    100% { transform: scaleY(0) translateY(36px); opacity: 0; }
+  }
+
+  /* ─── Content after the hero ─── */
+  .after {
+    position: relative;
+    background: var(--bg);
+    padding: 14vh 8vw 18vh;
+    border-top: 1px solid var(--line);
+  }
+  .after .rule {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--soft);
+    font-size: 11px;
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    margin-bottom: 64px;
+  }
+  .after .rule::before,
+  .after .rule::after {
+    content: "";
+    height: 1px;
+    background: var(--line);
+    flex: 1;
+  }
+  .after h2 {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(40px, 5.5vw, 88px);
+    line-height: 1.05;
+    letter-spacing: -0.005em;
+    margin: 0 0 36px;
+    color: var(--ink);
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .after p {
+    max-width: 56ch;
+    color: var(--soft);
+    line-height: 1.7;
+    font-size: 16px;
+    margin: 0 0 18px;
+  }
+  .after .meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 48px;
+    margin-top: 96px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
+  }
+  .after .meta .label {
+    font-size: 11px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 12px;
+  }
+  .after .meta .value {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(20px, 2.4vw, 32px);
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  /* ─── Debug overlay (toggle with 'd') ─── */
+  .debug .balloon { outline: 1px dashed magenta; outline-offset: -1px; }
+  .debug .balloon::after {
+    content: attr(data-name) " · s" attr(data-speed);
+    position: absolute;
+    top: 0; left: 0;
+    font: 10px/1 ui-monospace, monospace;
+    background: magenta;
+    color: white;
+    padding: 2px 4px;
+  }
+
+  /* Reduced motion: freeze parallax */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scroll { height: 100vh; }
+  }
+</style>
+</head>
+<body>
+
+<!--
+  ============================================================
+  PARALLAX HERO — Salsa & Arkan
+  ============================================================
+  The animation simulates a CAMERA FLYING THROUGH THE SCENE,
+  not a vertical scroll. Each balloon rushes toward the camera
+  (scales up) while drifting radially outward from the couple
+  (translates toward the nearest edge of frame), then fades as
+  it overshoots the viewport.
+
+  The couple stays still and zooms in very subtly, so it feels
+  like the camera is approaching them while the balloons whoosh
+  past on either side.
+
+  Per-balloon knobs live in CSS custom properties on each .b-*
+  rule (see top of file):
+    --dir-x / --dir-y : unit vector of escape
+    --end-scale       : scale value at scroll progress = 1
+    --drift           : translation amount at progress = 1, in vh
+  The mobile media query retunes them all without touching JS.
+
+  PORTING TO NEXT.JS + FRAMER MOTION
+  ----------------------------------
+  Pattern per balloon (Framer Motion v11+):
+
+    const { scrollYProgress } = useScroll({
+      target: heroRef,
+      offset: ['start start', 'end start'],
+    });
+
+    // Accelerate scroll so movement "rushes" at the end.
+    const p  = useTransform(scrollYProgress, v => Math.pow(v, 1.4));
+    const x  = useTransform(p, v => v * DIR_X * DRIFT_VH * window.innerHeight / 100);
+    const y  = useTransform(p, v => v * DIR_Y * DRIFT_VH * window.innerHeight / 100);
+    const s  = useTransform(p, v => 1 + v * (END_SCALE - 1));
+
+    // Depth-of-field blur ramps with scale, NOT opacity.
+    // Balloons stay visible but go soft as they approach the lens.
+    const f  = useTransform(s, v => `blur(${Math.max(0, v - 1.4) * 4}px)`);
+
+    <motion.img style={{ x, y, scale: s, filter: f }} />
+
+  Title:
+    const titleOpacity = useTransform(scrollYProgress, [0, 0.32], [1, 0]);
+    const titleScale   = useTransform(scrollYProgress, [0, 0.32], [1, 1.12]);
+
+  Couple (very subtle zoom-in, anchored to floor):
+    const coupleScale = useTransform(scrollYProgress, [0, 1], [1, 1.06]);
+-->
+
+<main>
+  <div class="hero-scroll" id="heroScroll">
+    <div class="hero-sticky">
+      <div class="stage" id="stage">
+
+        <!-- Studio backdrop + floor shadow. Static. -->
+        <div class="layer fill l-bg">
+          <img src="assets/couple-bg.png" alt="" />
+        </div>
+
+        <!-- Far white balloons floating above. Slowest movers. -->
+        <img class="layer balloon b-above-3 l-far-white-3"
+             data-name="above-3" data-speed="0.42"
+             src="assets/balloon-above-3.png" alt="" />
+
+        <img class="layer balloon b-above-1 l-far-white-1"
+             data-name="above-1" data-speed="0.52"
+             src="assets/balloon-above-1.png" alt="" />
+
+        <img class="layer balloon b-above-2 l-far-white-2"
+             data-name="above-2" data-speed="0.48"
+             src="assets/balloon-above-2.png" alt="" />
+
+        <!-- Black cluster on the floor to the right of the couple.
+             Sits BEHIND the no-bg couple to fake depth. -->
+        <img class="layer balloon b-right-behind l-right-behind"
+             data-name="right-behind" data-speed="0.62"
+             src="assets/balloon-right-behind.png" alt="" />
+
+        <!-- Couple — no background. Same positioning as the bg layer,
+             so they overlap pixel-perfectly. Static. -->
+        <div class="layer fill l-couple">
+          <img src="assets/couple.png" alt="Salsa and Arkan" />
+        </div>
+
+        <!-- Small black balloons left of the man. Mid speed. -->
+        <img class="layer balloon b-left-small-1 l-left-small-1"
+             data-name="left-small-1" data-speed="0.72"
+             src="assets/balloon-left-small-1.png" alt="" />
+
+        <img class="layer balloon b-left-small-2 l-left-small-2"
+             data-name="left-small-2" data-speed="0.80"
+             src="assets/balloon-left-small-2.png" alt="" />
+
+        <!-- Two black balloons close above the couple (the tilted pair). -->
+        <img class="layer balloon b-close-above l-close-above"
+             data-name="close-above" data-speed="0.95"
+             src="assets/balloon-close-above.png" alt="" />
+
+        <!-- Big foreground balloon. Closest = fastest. -->
+        <img class="layer balloon b-big-left l-big-left"
+             data-name="big-left" data-speed="1.55"
+             src="assets/balloon-big-left.png" alt="" />
+
+      </div>
+
+      <!-- Title — sibling of .stage so it's anchored to the
+           hero-sticky viewport, not the (mobile-reframed) stage. -->
+      <div class="l-title title" id="title">
+        <div class="title-inner">
+          <p class="eyebrow">Eleven · Eight · Twenty-Six</p>
+          <h1 class="names">Salsa<span class="amp">&amp;</span>Arkan</h1>
+          <p class="date">Are getting married</p>
+        </div>
+      </div>
+
+      <!-- Scroll hint -->
+      <div class="scroll-hint" id="scrollHint">
+        <span>Scroll</span>
+        <span class="line"></span>
+      </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Content below the hero so scrolling has a destination. -->
+  <section class="after">
+    <div class="rule"><span>Our story</span></div>
+    <h2>A small celebration of a very long yes.</h2>
+    <p>We met on a humid Tuesday in 2022, ducked under the same awning, and ended up sharing a single black umbrella from a stranger. Four years later, we'd like you in the room when we say it out loud.</p>
+    <p>The day will be intimate and unhurried — long lunch, quiet vows, music after sundown.</p>
+
+    <div class="meta">
+      <div>
+        <div class="label">When</div>
+        <div class="value">August 11, 2026<br/>at 16:00</div>
+      </div>
+      <div>
+        <div class="label">Where</div>
+        <div class="value">Sapta Cikidang<br/>West Java</div>
+      </div>
+      <div>
+        <div class="label">Dress</div>
+        <div class="value">Soft monochrome.<br/>White, grey, ivory.</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // ─────────────────────────────────────────────────────────
+  // Scroll-driven parallax
+  // ─────────────────────────────────────────────────────────
+  (function () {
+    const heroScroll  = document.getElementById('heroScroll');
+    const balloons    = Array.from(document.querySelectorAll('.balloon'));
+    const titleEl     = document.getElementById('title');
+    const scrollHint  = document.getElementById('scrollHint');
+    const coupleEls   = Array.from(document.querySelectorAll('.l-couple, .l-bg'));
+    const stickyHeight = () => window.innerHeight;
+
+    // Accelerate scroll progress — hyperspace-style ease-in.
+    // Higher values = more sudden "rush" at the end of scroll.
+    const EASE_POW          = 1.4;
+    const TITLE_FADE_END    = 0.32;  // title fully gone by 32% of scroll
+    const TITLE_SCALE_END   = 1.12;  // and slightly scaled past the camera
+    const BLUR_SCALE_FLOOR  = 1.4;   // scale below which a balloon stays sharp
+    const BLUR_PER_SCALE    = 4.0;   // px of blur per unit of scale past the floor
+    const COUPLE_END_SCALE  = 1.14;  // camera zoom-in toward couple
+
+    // Cache per-balloon depth knobs from CSS custom properties.
+    // Re-read on resize so the mobile media query takes effect.
+    let layers = [];
+    function readLayers() {
+      layers = balloons.map((el) => {
+        const cs = getComputedStyle(el);
+        return {
+          el,
+          dirX:     parseFloat(cs.getPropertyValue('--dir-x'))     || 0,
+          dirY:     parseFloat(cs.getPropertyValue('--dir-y'))     || 0,
+          endScale: parseFloat(cs.getPropertyValue('--end-scale')) || 1,
+          drift:    parseFloat(cs.getPropertyValue('--drift'))     || 0,
+        };
+      });
+    }
+    readLayers();
+
+    let scheduled = false;
+    const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+    function update() {
+      scheduled = false;
+
+      const rect  = heroScroll.getBoundingClientRect();
+      const total = heroScroll.offsetHeight - stickyHeight();
+      const progress = total > 0 ? clamp01(-rect.top / total) : 0;
+
+      const vh = stickyHeight();
+
+      // Eased progress drives the motion — accelerates through
+      // the second half so balloons "whoosh" past at the end.
+      const eased = Math.pow(progress, EASE_POW);
+
+      // Drive each balloon: translate radially outward + scale up.
+      // Depth-of-field BLUR ramps with scale: as a balloon scales
+      // past BLUR_SCALE_FLOOR it gets blurrier (like coming out of
+      // focus while approaching the lens). Balloons that barely
+      // grow (e.g. right-behind, scale ~1.05) stay perfectly sharp.
+      for (const { el, dirX, dirY, endScale, drift } of layers) {
+        const tx = dirX * eased * drift * vh / 100;
+        const ty = dirY * eased * drift * vh / 100;
+        const sc = 1 + eased * (endScale - 1);
+        const blur = Math.max(0, sc - BLUR_SCALE_FLOOR) * BLUR_PER_SCALE;
+        el.style.transform =
+          `translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, 0) scale(${sc.toFixed(3)})`;
+        el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+      }
+
+      // Couple: subtle zoom-in, anchored at the floor so feet stay put.
+      const coupleScale = 1 + progress * (COUPLE_END_SCALE - 1);
+      for (const c of coupleEls) {
+        c.style.transformOrigin = '50% 100%';
+        c.style.transform = `scale(${coupleScale.toFixed(4)})`;
+      }
+
+      // Title: fade out + slight scale-up (camera passes through it).
+      const t = clamp01(progress / TITLE_FADE_END);
+      const titleScale = 1 + t * (TITLE_SCALE_END - 1);
+      titleEl.style.opacity = (1 - t).toFixed(3);
+      titleEl.style.transform = `scale(${titleScale.toFixed(3)})`;
+      titleEl.style.transformOrigin = '50% 40%';
+
+      // Scroll hint vanishes almost immediately.
+      if (scrollHint) {
+        scrollHint.style.opacity = Math.max(0, 1 - progress * 6).toFixed(3);
+      }
+    }
+
+    function onScroll() {
+      if (!scheduled) {
+        scheduled = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function onResize() {
+      readLayers();   // CSS custom props may have changed at the breakpoint
+      onScroll();
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    update();
+
+    // Debug toggle: press "d" to outline balloon hitboxes.
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'd' || e.key === 'D') {
+        document.body.classList.toggle('debug');
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

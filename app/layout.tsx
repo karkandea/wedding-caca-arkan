@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import MusicPlayer from "./components/music-player";
 import PreloaderShell from "./components/preloader-shell";
 import SmoothScroll from "./components/smooth-scroll";
 import "./globals.css";
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <SmoothScroll />
         <PreloaderShell>{children}</PreloaderShell>
+        <MusicPlayer />
       </body>
     </html>
   );
