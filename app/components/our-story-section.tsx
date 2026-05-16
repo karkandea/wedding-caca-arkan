@@ -19,7 +19,7 @@ type StoryCard = {
   image: string;
 };
 
-const TORN_PAPER = "/our%20story%20refrensi/assets/torn-paper.png";
+const TORN_PAPER = "/our-story-torn-paper.png";
 const SKY = "/sky%20our%20story.png";
 
 const STORY_CARDS: StoryCard[] = [
