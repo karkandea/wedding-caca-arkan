@@ -465,7 +465,7 @@ export default function OurStorySection() {
 
       <div className="closer">
         <div className="glyph">&amp;</div>
-        <p>"To love is to recognize yourself in another — and decide, every day, to stay."</p>
+        <p>&ldquo;To love is to recognize yourself in another — and decide, every day, to stay.&rdquo;</p>
         <div className="sign">— Salsa &amp; Arkan</div>
       </div>
 
