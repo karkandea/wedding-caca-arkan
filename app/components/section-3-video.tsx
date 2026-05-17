@@ -41,10 +41,10 @@ const CHAPTERS: Chapter[] = [
 ];
 
 const PHOTOS: StoryPhoto[] = [
-  { src: "/hero/photo-left.jpeg", caption: "the night we met", rotate: -3 },
-  { src: "/hero/photo-right.jpeg", caption: "coffee, always", rotate: 2 },
-  { src: "/hero/photo-center.png", caption: "our city corner", rotate: -1 },
   { src: "/hero/photo-left.jpeg", caption: "the easy yes", rotate: 3 },
+  { src: "/hero/photo-center.png", caption: "our city corner", rotate: -1 },
+  { src: "/hero/photo-right.jpeg", caption: "coffee, always", rotate: 2 },
+  { src: "/hero/photo-left.jpeg", caption: "the night we met", rotate: -3 },
 ];
 
 function clamp(value: number, min = 0, max = 1) {
@@ -234,10 +234,12 @@ function PolaroidStack({
   progress,
   photos,
   width,
+  viewportHeight,
 }: {
   progress: number;
   photos: StoryPhoto[];
   width: number;
+  viewportHeight: number;
 }) {
   const start = 0.18;
   const end = 0.95;
@@ -248,7 +250,7 @@ function PolaroidStack({
       style={{
         position: "relative",
         width: width + 40,
-        height: width * 1.36,
+        height: width * 1.82,
         pointerEvents: "none",
       }}
     >
@@ -257,16 +259,16 @@ function PolaroidStack({
         const slotEnd = lerp(start, end, (index + 0.85) / photos.length);
         const reveal = ease(clamp((progress - slotStart) / (slotEnd - slotStart)));
         const layerBack = clamp((progress - slotEnd) / slotSize, 0, photos.length);
-        const translateY = lerp(88, 0, reveal) - layerBack * 6;
-        const translateX =
-          (index % 2 === 0 ? -1 : 1) * (10 - reveal * 10) +
-          layerBack * (index % 2 ? 4 : -4);
-        const scale = lerp(0.94, 1, reveal) - layerBack * 0.025;
+        const finalY = index * (width * 0.18);
+        const finalX = (index - (photos.length - 1) / 2) * 8;
+        const translateY = lerp(viewportHeight + width, finalY, reveal) + layerBack * 18;
+        const translateX = lerp((index % 2 === 0 ? -1 : 1) * 18, finalX, reveal);
+        const scale = lerp(0.94, 1, reveal) - layerBack * 0.012;
         const rotate =
           lerp(photo.rotate * 1.6, photo.rotate, reveal) -
-          layerBack * 0.6 * (index % 2 ? 1 : -1);
-        const opacity = clamp(reveal - layerBack * 0.08);
-        const blur = layerBack > 0.3 ? Math.min(2.4, layerBack * 1.2) : 0;
+          layerBack * 0.22 * (index % 2 ? 1 : -1);
+        const isActive = reveal > 0.02 && layerBack < 0.85;
+        const blur = layerBack > 1.2 ? Math.min(1.2, (layerBack - 1.2) * 0.5) : 0;
         const shadow =
           reveal > 0
             ? `0 ${10 + reveal * 22}px ${20 + reveal * 30}px rgba(43,36,29,${
@@ -289,8 +291,8 @@ function PolaroidStack({
               borderRadius: 4,
               padding: "14px 14px 0",
               boxShadow: shadow,
-              zIndex: 100 + index,
-              opacity,
+              zIndex: isActive ? 1000 + index : 100 + index,
+              opacity: 1,
               filter: blur ? `blur(${blur}px)` : "none",
               transform: `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale}) rotate(${rotate}deg)`,
               transformOrigin: "50% 60%",
@@ -536,13 +538,18 @@ export default function Section3Video() {
           style={{
             position: "absolute",
             left: "50%",
-            top: isMobile ? "44%" : "55%",
+            top: isMobile ? "38%" : "47%",
             transform: "translate(-50%, -50%)",
             opacity: clamp((introProgress - 0.55) / 0.4),
             zIndex: 20,
           }}
         >
-          <PolaroidStack progress={stickyProgress} photos={photos} width={polaroidWidth} />
+          <PolaroidStack
+            progress={stickyProgress}
+            photos={photos}
+            width={polaroidWidth}
+            viewportHeight={scrollState.viewportHeight}
+          />
         </div>
 
         {CHAPTERS.map((chapter, index) => (

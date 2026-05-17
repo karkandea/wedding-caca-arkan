@@ -7,6 +7,7 @@ const TRACK_SRC = "/Married Life.mp3";
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const hasStartedRef = useRef(false);
+  const retryTimersRef = useRef<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -15,6 +16,8 @@ export default function MusicPlayer() {
 
     audio.volume = 0.58;
     audio.currentTime = 0;
+    audio.autoplay = true;
+    audio.load();
 
     const syncState = () => setIsPlaying(!audio.paused);
     const playFromStart = async () => {
@@ -30,7 +33,17 @@ export default function MusicPlayer() {
       }
     };
 
+    const queuePlayAttempts = () => {
+      retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      retryTimersRef.current = [0, 250, 700, 1400, 2400].map((delay) =>
+        window.setTimeout(() => {
+          void playFromStart();
+        }, delay),
+      );
+    };
+
     void playFromStart();
+    queuePlayAttempts();
 
     const unlockAudio = () => {
       if (!audio.paused) return;
@@ -38,17 +51,30 @@ export default function MusicPlayer() {
     };
 
     const playAfterLoading = () => {
-      void playFromStart();
+      queuePlayAttempts();
     };
 
-    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("touchstart", unlockAudio, { passive: true });
+    window.addEventListener("click", unlockAudio);
+    window.addEventListener("keydown", unlockAudio);
+    window.addEventListener("wheel", unlockAudio, { passive: true });
+    window.addEventListener("scroll", unlockAudio, { passive: true });
     window.addEventListener("wedding-loading-complete", playAfterLoading);
+    audio.addEventListener("canplaythrough", playAfterLoading, { once: true });
     audio.addEventListener("play", syncState);
     audio.addEventListener("pause", syncState);
 
     return () => {
+      retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
       window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("touchstart", unlockAudio);
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+      window.removeEventListener("wheel", unlockAudio);
+      window.removeEventListener("scroll", unlockAudio);
       window.removeEventListener("wedding-loading-complete", playAfterLoading);
+      audio.removeEventListener("canplaythrough", playAfterLoading);
       audio.removeEventListener("play", syncState);
       audio.removeEventListener("pause", syncState);
     };
@@ -74,7 +100,7 @@ export default function MusicPlayer() {
 
   return (
     <>
-      <audio ref={audioRef} src={TRACK_SRC} preload="auto" loop playsInline />
+      <audio ref={audioRef} src={TRACK_SRC} preload="auto" autoPlay loop playsInline />
       <button
         type="button"
         onClick={togglePlayback}
