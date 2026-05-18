@@ -24,6 +24,7 @@ export default function LoadingScreen() {
   const canRunBalloonTransitionRef = useRef(false);
   const isMobileRef = useRef(false);
   const restoreScrollLockRef = useRef<(() => void) | null>(null);
+  const hasUnlockedScrollRef = useRef(false);
 
   useEffect(() => {
     const previousBodyOverflow = document.body.style.overflow;
@@ -38,6 +39,8 @@ export default function LoadingScreen() {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
     const restoreScrollLock = () => {
+      if (hasUnlockedScrollRef.current) return;
+      hasUnlockedScrollRef.current = true;
       history.scrollRestoration = previousScrollRestoration;
       document.documentElement.style.scrollBehavior = previousScrollBehavior;
       document.body.style.overflow = previousBodyOverflow;
@@ -66,6 +69,7 @@ export default function LoadingScreen() {
     const finishLoading = () => {
       if (!isMounted || hasFinishedRef.current) return;
       hasFinishedRef.current = true;
+      restoreScrollLockRef.current?.();
       const minimumVisibleMs = isMobileRef.current ? 1200 : 700;
       const remainingVisibleMs = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
 
@@ -92,7 +96,11 @@ export default function LoadingScreen() {
         assets.map(async (src) => {
           await preloadAsset(src);
           loaded += 1;
-          if (isMounted) setProgress(loaded / assets.length);
+          const nextProgress = loaded / assets.length;
+          if (nextProgress >= 0.9) {
+            restoreScrollLockRef.current?.();
+          }
+          if (isMounted) setProgress(nextProgress);
         }),
       );
 
@@ -125,7 +133,6 @@ export default function LoadingScreen() {
   if (isHidden) return null;
 
   const completeTransition = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     restoreScrollLockRef.current?.();
     setIsHidden(true);
   };
@@ -136,7 +143,7 @@ export default function LoadingScreen() {
         position: "fixed",
         inset: 0,
         zIndex: 2147483647,
-        pointerEvents: isDone ? "none" : "auto",
+        pointerEvents: isDone || progress >= 0.9 ? "none" : "auto",
       }}
     >
       <div

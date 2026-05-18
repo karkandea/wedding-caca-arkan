@@ -4,12 +4,10 @@
   --background: #F5EFE6;
   --foreground: #ff5c28;
   --logo-color: #f9dec6;
-  --wedding-font-scale: 1;
   scroll-behavior: smooth;
 }
 
 html {
-  font-size: calc(16px * var(--wedding-font-scale));
   scroll-behavior: smooth;
   scroll-padding-block: 24px;
   width: 100%;

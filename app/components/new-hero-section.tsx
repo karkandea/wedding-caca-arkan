@@ -132,11 +132,6 @@ export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [fontScale, setFontScale] = useState(() => {
-    if (typeof window === "undefined") return 1;
-    const savedScale = Number(window.localStorage.getItem("wedding-font-scale"));
-    return Number.isFinite(savedScale) && savedScale >= 0.85 && savedScale <= 1.25 ? savedScale : 1;
-  });
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -148,7 +143,6 @@ export default function NewHeroSection() {
     };
 
     const updateProgress = () => {
-      updateDeviceMode();
       const rect = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
       const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
@@ -163,22 +157,22 @@ export default function NewHeroSection() {
       });
     };
 
+    const handleResize = () => {
+      updateDeviceMode();
+      scheduleUpdate();
+    };
+
+    updateDeviceMode();
     updateProgress();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("scroll", scheduleUpdate);
-      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("resize", handleResize);
       if (frameId) window.cancelAnimationFrame(frameId);
     };
   }, []);
-
-  useEffect(() => {
-    document.documentElement.style.setProperty("--wedding-font-scale", String(fontScale));
-    window.localStorage.setItem("wedding-font-scale", String(fontScale));
-    window.dispatchEvent(new Event("wedding-font-scale-change"));
-  }, [fontScale]);
 
   const eased = easeInOut(progress);
   const heroStyle = isMobile
@@ -207,7 +201,7 @@ export default function NewHeroSection() {
       className="relative h-[300vh] w-full bg-[#F7F1E7]"
       id="new-hero-section"
     >
-      <HeroNav fontScale={fontScale} onFontScaleChange={setFontScale} />
+      <HeroNav />
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
         <div
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
@@ -349,17 +343,7 @@ export default function NewHeroSection() {
   );
 }
 
-function HeroNav({
-  fontScale,
-  onFontScaleChange,
-}: {
-  fontScale: number;
-  onFontScaleChange: (scale: number) => void;
-}) {
-  const changeFontScale = (direction: -1 | 1) => {
-    onFontScaleChange(clamp(Number((fontScale + direction * 0.08).toFixed(2)), 0.85, 1.25));
-  };
-
+function HeroNav() {
   const scrollSection = (direction: -1 | 1) => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("main > section"));
     if (!sections.length) return;
@@ -434,26 +418,6 @@ function HeroNav({
     <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
       <MusicPlayer variant="nav" />
       <div className="flex items-center gap-2 sm:gap-5">
-        <div className="flex items-center gap-1 rounded-full bg-[#2B241D]/[0.06] p-1" aria-label="Font size controls">
-          <button
-            type="button"
-            onClick={() => changeFontScale(-1)}
-            className="h-8 rounded-full border-0 bg-transparent px-3 text-[12px] font-bold text-[#2B241D] transition hover:bg-white/70 disabled:opacity-35"
-            disabled={fontScale <= 0.85}
-            aria-label="Kecilkan font"
-          >
-            A-
-          </button>
-          <button
-            type="button"
-            onClick={() => changeFontScale(1)}
-            className="h-8 rounded-full border-0 bg-transparent px-3 text-[12px] font-bold text-[#2B241D] transition hover:bg-white/70 disabled:opacity-35"
-            disabled={fontScale >= 1.25}
-            aria-label="Besarkan font"
-          >
-            A+
-          </button>
-        </div>
         <div className="flex items-center gap-1 rounded-full bg-[#2B241D] p-1" aria-label="Section navigation">
           <button
             type="button"

@@ -537,7 +537,7 @@ export default function OurStorySection() {
                 rgba(247,241,231,0.2) 11%,
                 rgba(12,77,190,0) 20%
               ),
-              linear-gradient(rgba(12,39,82,0.18), rgba(12,39,82,0.24)),
+              linear-gradient(rgba(6,24,58,0.26), rgba(6,24,58,0.32)),
               radial-gradient(ellipse at 50% 110%, rgba(253,250,243,0.28) 0%, rgba(253,250,243,0) 55%),
               radial-gradient(ellipse at 50% 0%, rgba(12,39,82,0.16) 0%, rgba(12,39,82,0) 50%),
               url("${SKY}");
@@ -592,6 +592,7 @@ export default function OurStorySection() {
             letter-spacing: 0.5em;
             text-transform: uppercase;
             font-size: 12px;
+            font-weight: 700;
           }
 
           .story-head .eyebrow::before,
@@ -605,11 +606,11 @@ export default function OurStorySection() {
           .story-head h2 {
             margin: 0;
             font-family: var(--font-cyrene);
-            font-weight: 300;
+            font-weight: 500;
             font-style: italic;
             font-size: clamp(52px, 7.6vw, 116px);
             line-height: 0.95;
-            letter-spacing: -0.02em;
+            letter-spacing: 0.01em;
             color: var(--story-ink);
           }
 
@@ -622,10 +623,12 @@ export default function OurStorySection() {
             max-width: 520px;
             margin: 20px auto 0;
             color: var(--story-ink-dim);
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1.7;
+            letter-spacing: 0.015em;
             font-style: italic;
             font-family: var(--font-cyrene);
+            font-weight: 500;
           }
 
           .rail {
@@ -846,6 +849,7 @@ export default function OurStorySection() {
             color: var(--story-paper);
             font-family: var(--font-din-alternate);
             font-size: 10px;
+            font-weight: 700;
             letter-spacing: 0.32em;
             text-transform: uppercase;
             backdrop-filter: blur(2px);
@@ -860,6 +864,7 @@ export default function OurStorySection() {
             color: rgba(255,255,255,0.7);
             font-family: var(--font-din-alternate);
             font-size: 10px;
+            font-weight: 700;
             letter-spacing: 0.32em;
             text-transform: uppercase;
             white-space: nowrap;
@@ -884,15 +889,16 @@ export default function OurStorySection() {
             letter-spacing: 0.4em;
             text-transform: uppercase;
             font-size: 11px;
+            font-weight: 700;
           }
 
           .slot-text h3 {
             margin: 0 0 14px;
             font-family: var(--font-cyrene);
-            font-weight: 400;
-            font-size: clamp(28px, 3.4vw, 44px);
+            font-weight: 600;
+            font-size: clamp(31px, 3.7vw, 48px);
             line-height: 1.05;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.012em;
             color: var(--story-ink);
           }
 
@@ -906,6 +912,7 @@ export default function OurStorySection() {
             color: var(--story-ink-mute);
             font-family: var(--font-din-alternate);
             font-size: 13px;
+            font-weight: 700;
             letter-spacing: 0.28em;
             text-transform: uppercase;
           }
@@ -915,9 +922,10 @@ export default function OurStorySection() {
             margin: 0;
             color: var(--story-ink-dim);
             font-family: var(--font-cyrene);
-            font-size: 17px;
-            font-weight: 300;
-            line-height: 1.75;
+            font-size: clamp(20px, 1.75vw, 25px);
+            font-weight: 600;
+            line-height: 1.68;
+            letter-spacing: 0.018em;
           }
 
           .place {
@@ -928,6 +936,7 @@ export default function OurStorySection() {
             color: var(--story-ink-mute);
             font-family: var(--font-din-alternate);
             font-size: 12px;
+            font-weight: 700;
             letter-spacing: 0.28em;
             text-transform: uppercase;
           }
@@ -1081,40 +1090,47 @@ export default function OurStorySection() {
             .stamp {
               top: 0;
               padding: 4px 6px 3px;
-              font-size: 8px;
+              font-size: 9px;
+              font-weight: 700;
               letter-spacing: 0.22em;
             }
             .caption {
               bottom: -4px;
-              font-size: 8px;
+              font-size: 9px;
+              font-weight: 700;
               letter-spacing: 0.22em;
             }
             .chapter {
               gap: 6px;
               margin-bottom: 6px;
-              font-size: 9px;
+              font-size: 10px;
+              font-weight: 700;
               letter-spacing: 0.28em;
               flex-wrap: wrap;
             }
             .slot-text h3 {
-              margin-bottom: 8px;
-              font-size: clamp(17px, 5.2vw, 22px);
+              margin-bottom: 10px;
+              font-size: clamp(20px, 6vw, 27px);
+              font-weight: 600;
               line-height: 1.12;
             }
             .date {
               margin-bottom: 8px;
-              font-size: 9px;
+              font-size: 10px;
+              font-weight: 700;
               letter-spacing: 0.22em;
             }
             .slot-text p {
               max-width: none;
-              font-size: 12px;
-              line-height: 1.55;
+              font-size: clamp(15px, 4.2vw, 18px);
+              font-weight: 600;
+              line-height: 1.58;
             }
             .place {
               gap: 6px;
               margin-top: 10px;
-              font-size: 9px;
+              font-size: 10px;
+              font-weight: 700;
               letter-spacing: 0.22em;
             }
             .place::before,
@@ -1129,11 +1145,11 @@ export default function OurStorySection() {
               gap: 6px;
               margin: 9vh 0;
             }
-            .slot-text h3 { font-size: 16px; }
-            .slot-text p { font-size: 11px; line-height: 1.5; }
+            .slot-text h3 { font-size: 18px; font-weight: 600; }
+            .slot-text p { font-size: 14px; font-weight: 600; line-height: 1.54; }
             .chapter,
             .date,
-            .place { font-size: 8.5px; }
+            .place { font-size: 9px; font-weight: 700; }
           }
         `}
       </style>
