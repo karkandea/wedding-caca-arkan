@@ -5,11 +5,13 @@
   --foreground: #ff5c28;
   --logo-color: #f9dec6;
   --wedding-font-scale: 1;
+  scroll-behavior: smooth;
 }
 
 html {
   font-size: calc(16px * var(--wedding-font-scale));
   scroll-behavior: smooth;
+  scroll-padding-block: 24px;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -27,6 +29,7 @@ body {
   background: #F5EFE6;
   color: var(--foreground);
   font-family: var(--font-din-alternate), sans-serif;
+  scroll-behavior: smooth;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -55,5 +58,13 @@ section {
   html,
   body {
     overflow-x: clip;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  html,
+  body {
+    scroll-behavior: auto;
   }
 }

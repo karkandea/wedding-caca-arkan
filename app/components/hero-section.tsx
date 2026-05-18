@@ -1,11 +1,6 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import LottiePlayer from "./lottie-player";
-import whiteClouds from "@/public/cloud-couple/white.json";
-import blueClouds2 from "@/public/cloud-couple/blue-2.json";
-import blueClouds3 from "@/public/cloud-couple/blue-3.json";
-import couple from "@/public/cloud-couple/couple.json";
 
 type HeroPhoto = { src: string; position: "left" | "center" | "right" };
 type HeroSectionProps = {
@@ -82,62 +77,6 @@ export default function HeroSection({ accentColor, coupleNames, heroReady, photo
       }}
     >
       <div style={{ position: "relative", width: "100%", height: "100svh" }}>
-        {/* Layer 1 - Blue clouds 3 (furthest back) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "auto",
-            zIndex: 1,
-          }}
-        >
-          <LottiePlayer animationData={blueClouds3} loop={true} autoplay={true} />
-        </div>
-
-        {/* Layer 2 - Blue clouds 2 (behind couple, in front of blue-3) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "auto",
-            zIndex: 2,
-          }}
-        >
-          <LottiePlayer animationData={blueClouds2} loop={true} autoplay={true} />
-        </div>
-
-        {/* Layer 3 - Couple with balloons (middle) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "8%",
-            left: "5%",
-            width: "clamp(200px, 60vw, 480px)",
-            aspectRatio: "2016/1892",
-            zIndex: 10,
-          }}
-        >
-          <LottiePlayer animationData={couple} loop={true} autoplay={true} />
-        </div>
-
-        {/* Layer 4 - White clouds (front - hides couple's feet) */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "auto",
-            zIndex: 15,
-          }}
-        >
-          <LottiePlayer animationData={whiteClouds} loop={true} autoplay={true} />
-        </div>
-
         {/* Text overlay - upper right */}
         <div
           style={{

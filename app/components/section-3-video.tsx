@@ -64,10 +64,10 @@ const GALLERY_TWEAKS: GalleryTweaks = {
 
 const GALLERY_STICKY_DELAY = 0.35;
 const PHOTOS: StoryPhoto[] = [
-  { src: "/hero/photo-left.jpeg", caption: "the easy yes", rotate: 3 },
-  { src: "/hero/photo-center.png", caption: "our city corner", rotate: -1 },
-  { src: "/hero/photo-right.jpeg", caption: "coffee, always", rotate: 2 },
-  { src: "/hero/photo-left.jpeg", caption: "the night we met", rotate: -3 },
+  { src: "/bg%20gallery/photo%201.png", caption: "the easy yes", rotate: 3 },
+  { src: "/bg%20gallery/photo%202.png", caption: "our city corner", rotate: -1 },
+  { src: "/bg%20gallery/photo%203.png", caption: "coffee, always", rotate: 2 },
+  { src: "/bg%20gallery/photo%204.png", caption: "the night we met", rotate: -3 },
 ];
 
 const MOOD_OBJECTS: MoodObject[] = [
@@ -81,10 +81,10 @@ const MOOD_OBJECTS: MoodObject[] = [
   { id: "petals-lm", x: 4, y: 56, w: 150, h: 110, kind: "petals", rotate: 0, anim: 8, dur: 10, delay: 4, z: 4, hideOnMobile: true },
   { id: "ringbox-lb", x: 5, y: 68, w: 260, h: 205, kind: "ringBoxImage", rotate: 8, anim: 9, dur: 9, delay: 0.4, z: 5 },
   { id: "ring-llm", x: 28, y: 62, w: 96, h: 76, kind: "ringImage", rotate: -15, anim: 10, dur: 8, delay: 2.6, z: 6 },
-  { id: "dry-lemon-2-blc", x: 26, y: 78, w: 190, h: 150, kind: "dryLemon2Image", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
+  { id: "dry-lemon-2-blc", x: 27, y: 79, w: 135, h: 108, kind: "dryLemon2Image", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
   { id: "white-flower-bc", x: 44, y: 82, w: 190, h: 150, kind: "whiteFlowerImage", rotate: 3, anim: 12, dur: 10, delay: 3.5, z: 3 },
   { id: "flower-bcr", x: 62, y: 68, w: 180, h: 180, kind: "flowerImage", rotate: -8, anim: 1, dur: 8, delay: 1.4, z: 5 },
-  { id: "coin-rm", x: 86, y: 20, w: 190, h: 190, kind: "coinImage", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
+  { id: "coin-rm", x: 84, y: 18, w: 260, h: 260, kind: "coinImage", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
   { id: "photo-tr", x: 78, y: 8, w: 148, h: 198, kind: "framedPhoto", src: "/hero/photo-right.jpeg", rotate: 7, anim: 5, dur: 12, delay: 0.8, z: 3 },
   { id: "photo-rm", x: 82, y: 48, w: 150, h: 205, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: 12, anim: 7, dur: 12, delay: 4.5, z: 5 },
   { id: "photo-br", x: 74, y: 72, w: 138, h: 182, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },

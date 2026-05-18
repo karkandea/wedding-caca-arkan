@@ -340,7 +340,7 @@ export default function BookSection() {
       });
     });
 
-    loader.load("/my%20wedding%20book.glb", (gltf) => {
+    loader.load("/my%20wedding%20book%20copy%202.glb", (gltf) => {
       const book = gltf.scene;
       book.traverse((node) => {
         if (!(node instanceof THREE.Mesh)) return;
@@ -614,7 +614,7 @@ export default function BookSection() {
               Bapak/Ibu/Saudara/i
             </div>
             <h2
-              className="m-0 mt-7 text-[clamp(28px,4.8vw,58px)] font-semibold uppercase leading-none tracking-[0.16em] max-sm:mt-5 max-sm:text-[clamp(24px,7.5vw,36px)]"
+              className="m-0 mt-7 text-[clamp(22px,3.8vw,46px)] font-semibold uppercase leading-none tracking-[0.16em] max-sm:mt-5 max-sm:text-[clamp(19px,6vw,28px)]"
               style={{ fontFamily: "var(--font-din-alternate), sans-serif" }}
             >
               Novan &amp; Partner

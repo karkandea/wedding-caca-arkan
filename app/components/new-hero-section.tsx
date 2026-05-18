@@ -434,11 +434,6 @@ function HeroNav({
     <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
       <MusicPlayer variant="nav" />
       <div className="flex items-center gap-2 sm:gap-5">
-        {["Travel Logistics", "Registry", "FAQ"].map((label) => (
-          <a key={label} className="hidden cursor-pointer text-[13px] text-[#2B241D] no-underline md:inline">
-            {label}
-          </a>
-        ))}
         <div className="flex items-center gap-1 rounded-full bg-[#2B241D]/[0.06] p-1" aria-label="Font size controls">
           <button
             type="button"
