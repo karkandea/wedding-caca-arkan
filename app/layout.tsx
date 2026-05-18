@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import MusicPlayer from "./components/music-player";
-import PreloaderShell from "./components/preloader-shell";
-import SmoothScroll from "./components/smooth-scroll";
 import "./globals.css";
 
 const cyrene = localFont({
@@ -33,8 +31,7 @@ export default function RootLayout({
       className={`${cyrene.variable} ${dinAlternate.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SmoothScroll />
-        <PreloaderShell>{children}</PreloaderShell>
+        {children}
         <MusicPlayer />
       </body>
     </html>

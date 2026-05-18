@@ -1,14 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-
-type Chapter = {
-  eyebrow: string;
-  title: string;
-  body: string;
-  side: "left" | "right";
-};
+import { type CSSProperties, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 
 type StoryPhoto = {
   src: string;
@@ -16,35 +9,82 @@ type StoryPhoto = {
   rotate: number;
 };
 
-const CHAPTERS: Chapter[] = [
-  {
-    eyebrow: "chapter one",
-    title: "how we met",
-    body:
-      "We met at a friend's birthday in Bandung, became fast friends, and eventually realized the best parts of every week were the parts we spent together.",
-    side: "left",
-  },
-  {
-    eyebrow: "chapter two",
-    title: "falling in love",
-    body:
-      "Jakarta became our home base for late dinners, weekend walks, shared routines, and all of the small moments that made life feel bigger.",
-    side: "right",
-  },
-  {
-    eyebrow: "chapter three",
-    title: "the next step",
-    body:
-      "A trip, a question, a very easy yes, and suddenly the future we had been imagining became something we could invite everyone into.",
-    side: "left",
-  },
-];
+type MoodObject = {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  kind:
+    | "card"
+    | "polaroid"
+    | "branch"
+    | "vase"
+    | "ringbox"
+    | "ring"
+    | "citrus"
+    | "ribbon"
+    | "bottle"
+    | "petals"
+    | "framedPhoto"
+    | "ringBoxImage"
+    | "ringImage";
+  rotate: number;
+  anim: number;
+  dur: number;
+  delay: number;
+  z: number;
+  tone?: "cream" | "green" | "dark";
+  hideOnMobile?: boolean;
+  src?: string;
+};
+
+type GalleryTweaks = {
+  warmth: number;
+  contrast: number;
+  blur: number;
+  bgLift: number;
+  pngScale: number;
+};
+
+const GALLERY_TWEAKS: GalleryTweaks = {
+  warmth: 32,
+  contrast: 8,
+  blur: 1.2,
+  bgLift: 90,
+  pngScale: 1,
+};
+
+const GALLERY_STICKY_DELAY = 0.35;
+const STORY_SKY = "/sky%20new%20our%20story.png";
 
 const PHOTOS: StoryPhoto[] = [
   { src: "/hero/photo-left.jpeg", caption: "the easy yes", rotate: 3 },
   { src: "/hero/photo-center.png", caption: "our city corner", rotate: -1 },
   { src: "/hero/photo-right.jpeg", caption: "coffee, always", rotate: 2 },
   { src: "/hero/photo-left.jpeg", caption: "the night we met", rotate: -3 },
+];
+
+const MOOD_OBJECTS: MoodObject[] = [
+  { id: "photo-tl", x: 6, y: 7, w: 150, h: 202, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: -8, anim: 1, dur: 10, delay: 0, z: 4 },
+  { id: "card-tcl", x: 24, y: 3, w: 155, h: 106, kind: "card", rotate: 4, anim: 2, dur: 11, delay: 1.2, z: 4, tone: "cream" },
+  { id: "green-tcr", x: 54, y: 2, w: 180, h: 120, kind: "card", rotate: -3, anim: 4, dur: 10, delay: 2, z: 4, tone: "green" },
+  { id: "card-tr", x: 76, y: 4, w: 200, h: 180, kind: "card", rotate: 6, anim: 5, dur: 12, delay: 0.8, z: 3, tone: "cream" },
+  { id: "branch-tc", x: 40, y: 7, w: 130, h: 92, kind: "branch", rotate: 12, anim: 3, dur: 8, delay: 0.5, z: 5, hideOnMobile: true },
+  { id: "photo-lm", x: 10, y: 34, w: 132, h: 178, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -11, anim: 7, dur: 11, delay: 1.8, z: 5 },
+  { id: "euca-lm", x: 16, y: 46, w: 220, h: 110, kind: "branch", rotate: -8, anim: 2, dur: 13, delay: 3, z: 3, hideOnMobile: true },
+  { id: "petals-lm", x: 4, y: 56, w: 150, h: 110, kind: "petals", rotate: 0, anim: 8, dur: 10, delay: 4, z: 4, hideOnMobile: true },
+  { id: "ringbox-lb", x: 5, y: 68, w: 260, h: 205, kind: "ringBoxImage", rotate: 8, anim: 9, dur: 9, delay: 0.4, z: 5 },
+  { id: "ring-llm", x: 28, y: 62, w: 96, h: 76, kind: "ringImage", rotate: -15, anim: 10, dur: 8, delay: 2.6, z: 6 },
+  { id: "blank-blc", x: 26, y: 78, w: 180, h: 150, kind: "card", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
+  { id: "black-bc", x: 44, y: 82, w: 200, h: 140, kind: "card", rotate: 3, anim: 12, dur: 10, delay: 3.5, z: 3, tone: "dark" },
+  { id: "citrus-bcr", x: 64, y: 70, w: 90, h: 90, kind: "citrus", rotate: 0, anim: 1, dur: 8, delay: 1.4, z: 5, hideOnMobile: true },
+  { id: "ribbon-rm", x: 88, y: 22, w: 130, h: 200, kind: "ribbon", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
+  { id: "photo-tr", x: 78, y: 8, w: 148, h: 198, kind: "framedPhoto", src: "/hero/photo-right.jpeg", rotate: 7, anim: 5, dur: 12, delay: 0.8, z: 3 },
+  { id: "photo-rm", x: 82, y: 48, w: 150, h: 205, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: 12, anim: 7, dur: 12, delay: 4.5, z: 5 },
+  { id: "photo-br", x: 74, y: 72, w: 138, h: 182, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
+  { id: "rolls-br", x: 87, y: 74, w: 150, h: 200, kind: "ribbon", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
+  { id: "bottle-br", x: 91, y: 84, w: 110, h: 170, kind: "bottle", rotate: 6, anim: 4, dur: 9, delay: 2.2, z: 5, hideOnMobile: true },
 ];
 
 function clamp(value: number, min = 0, max = 1) {
@@ -65,166 +105,627 @@ function easeInOut(value: number) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
-function getChapterActivity(progress: number, index: number) {
-  const ranges = [
-    [0, 0.45],
-    [0.4, 0.78],
-    [0.72, 1.05],
-  ];
-  const [start, end] = ranges[index];
-  const mid = (start + end) / 2;
-  const half = (end - start) / 2;
-  const distance = Math.abs(progress - mid) / half;
-
-  return clamp(1 - distance * distance * 1.1);
+function rand(seed: number, mul = 1) {
+  const x = Math.sin(seed * mul) * 43758.5453;
+  return x - Math.floor(x);
 }
 
-function ChapterText({ chapter, activity }: { chapter: Chapter; activity: number }) {
-  const opacity = lerp(0.16, 1, activity);
-  const blur = lerp(2, 0, activity);
-  const translateY = lerp(chapter.side === "left" ? -8 : 8, 0, activity);
+function scrollProfile(object: MoodObject, index: number) {
+  const seed = index * 17 + object.anim * 7 + object.z * 11 + object.dur;
+  const depth = (object.z - 2) / 4;
+  const baseY = -(50 + depth * 70);
+  const flip = rand(seed, 1.3) > 0.85 ? -1 : 1;
+  const variance = (rand(seed, 2.7) - 0.5) * 50;
+  const sy = (baseY + variance) * flip;
+  const sx = (rand(seed, 3.1) - 0.5) * (16 + depth * 22);
+  const sr = (rand(seed, 4.3) - 0.5) * 4;
+
+  return {
+    sx: Number(sx.toFixed(2)),
+    sy: Number(sy.toFixed(2)),
+    sr: Number(sr.toFixed(2)),
+  };
+}
+
+function MoodObjectGraphic({ object }: { object: MoodObject }) {
+  if (object.kind === "framedPhoto") {
+    return (
+      <div className="gallery-mood-framed-photo">
+        <div className="gallery-mood-framed-photo__image">
+          <Image src={object.src ?? "/hero/photo-right.jpeg"} alt="" fill sizes="180px" className="object-cover" />
+        </div>
+        <span />
+      </div>
+    );
+  }
+
+  if (object.kind === "ringBoxImage") {
+    return (
+      <div className="gallery-mood-ringbox-image">
+        <Image src="/bg%20gallery/box%20ring.png" alt="" fill sizes="220px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "ringImage") {
+    return (
+      <div className="gallery-mood-ring-image">
+        <Image src="/bg%20gallery/ring.png" alt="" fill sizes="140px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "polaroid") {
+    return (
+      <div className="gallery-mood-polaroid">
+        <span />
+      </div>
+    );
+  }
+
+  if (object.kind === "branch") {
+    return (
+      <div className="gallery-mood-branch">
+        <i />
+        <i />
+        <i />
+        <i />
+      </div>
+    );
+  }
+
+  if (object.kind === "vase") {
+    return (
+      <div className="gallery-mood-vase">
+        <span />
+        <span />
+        <i />
+      </div>
+    );
+  }
+
+  if (object.kind === "ringbox") {
+    return (
+      <div className="gallery-mood-ringbox">
+        <span />
+        <i />
+      </div>
+    );
+  }
+
+  if (object.kind === "ring") {
+    return <div className="gallery-mood-ring" />;
+  }
+
+  if (object.kind === "citrus") {
+    return <div className="gallery-mood-citrus" />;
+  }
+
+  if (object.kind === "ribbon") {
+    return (
+      <div className="gallery-mood-ribbon">
+        <span />
+      </div>
+    );
+  }
+
+  if (object.kind === "bottle") {
+    return (
+      <div className="gallery-mood-bottle">
+        <span />
+      </div>
+    );
+  }
+
+  if (object.kind === "petals") {
+    return (
+      <div className="gallery-mood-petals">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+    );
+  }
+
+  return <div className={`gallery-mood-card gallery-mood-card--${object.tone ?? "paper"}`} />;
+}
+
+function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivElement | null> }) {
+  const bgLightness = 0.94 - (GALLERY_TWEAKS.contrast / 100) * 0.25;
+  const bgChroma = 0.005 + (GALLERY_TWEAKS.warmth / 100) * 0.008;
+  const bgHue = 70 + (GALLERY_TWEAKS.warmth / 100) * 20;
 
   return (
     <div
-      className="hidden lg:block"
-      style={{
-        position: "absolute",
-        top: "50%",
-        [chapter.side]: "5vw",
-        width: "min(360px, 28vw)",
-        textAlign: chapter.side === "left" ? "right" : "left",
-        transform: `translate3d(0, calc(-50% + ${translateY}px), 0)`,
-        filter: `blur(${blur}px)`,
-        opacity,
-        pointerEvents: "none",
-        willChange: "transform, opacity, filter",
-        backfaceVisibility: "hidden",
-      }}
+      className="gallery-mood-bg"
+      aria-hidden="true"
+      style={
+        {
+          "--gallery-bg": `oklch(${bgLightness} ${bgChroma} ${bgHue})`,
+          "--gallery-overlay": `rgba(120, 110, 90, ${GALLERY_TWEAKS.contrast / 200})`,
+          "--gallery-blur": `${GALLERY_TWEAKS.blur}px`,
+          "--gallery-png-scale": GALLERY_TWEAKS.pngScale,
+        } as CSSProperties
+      }
     >
-      <div
-        style={{
-          fontFamily: "var(--font-din-alternate)",
-          fontSize: 12,
-          letterSpacing: "0.22em",
-          textTransform: "uppercase",
-          color: "rgba(255,255,255,0.72)",
-          marginBottom: 14,
-        }}
-      >
-        - {chapter.eyebrow}
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-cyrene)",
-          fontWeight: 500,
-          fontSize: 36,
-          lineHeight: 1.05,
-          color: "#ffffff",
-          marginBottom: 18,
-          fontStyle: "italic",
-          textShadow: "0 8px 24px rgba(0,0,0,0.22)",
-        }}
-      >
-        {chapter.title}.
-      </div>
-      <div
-        style={{
-          fontFamily: "var(--font-din-alternate)",
-          fontSize: 15,
-          lineHeight: 1.65,
-          color: "rgba(255,255,255,0.78)",
-          fontWeight: 400,
-        }}
-      >
-        {chapter.body}
-      </div>
-    </div>
-  );
-}
+      <div className="gallery-mood-wash" />
+      <div className="gallery-mood-layer" ref={layerRef}>
+        {MOOD_OBJECTS.map((object, index) => {
+          const profile = scrollProfile(object, index);
 
-function MobileChapter({
-  chapters,
-  activities,
-  opacity,
-}: {
-  chapters: Chapter[];
-  activities: number[];
-  opacity: number;
-}) {
-  let activeIndex = 0;
-  let maxActivity = -1;
-
-  activities.forEach((activity, index) => {
-    if (activity > maxActivity) {
-      maxActivity = activity;
-      activeIndex = index;
-    }
-  });
-
-  const chapter = chapters[activeIndex];
-
-  return (
-    <div
-      className="lg:hidden"
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: "8vh",
-        padding: "0 28px",
-        opacity,
-        pointerEvents: "none",
-        zIndex: 30,
-      }}
-    >
-      <div
-        key={activeIndex}
-        style={{
-          textAlign: "center",
-          animation: "mobile-chapter-fade 0.45s ease",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-din-alternate)",
-            fontSize: 11,
-            letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.72)",
-            marginBottom: 10,
-          }}
-        >
-          - {chapter.eyebrow}
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-cyrene)",
-            fontStyle: "italic",
-            fontWeight: 500,
-            fontSize: 28,
-            lineHeight: 1.1,
-            color: "#ffffff",
-            marginBottom: 12,
-            textShadow: "0 8px 24px rgba(0,0,0,0.22)",
-          }}
-        >
-          {chapter.title}.
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-din-alternate)",
-            fontSize: 13.5,
-            lineHeight: 1.6,
-            color: "rgba(255,255,255,0.78)",
-            maxWidth: 360,
-            margin: "0 auto",
-          }}
-        >
-          {chapter.body}
-        </div>
+          return (
+          <div
+            key={object.id}
+            className={`gallery-mood-object gallery-mood-object--${object.anim} gallery-mood-object--${object.kind} ${
+              object.hideOnMobile ? "gallery-mood-object--hide-mobile" : ""
+            }`}
+            style={
+              {
+                left: `${object.x}%`,
+                top: `${object.y}%`,
+                width: object.w,
+                height: object.h,
+                zIndex: object.z,
+                "--rot": `${object.rotate}deg`,
+                "--sx": profile.sx,
+                "--sy": profile.sy,
+                "--sr": profile.sr,
+              } as CSSProperties
+            }
+          >
+            <div
+              className="gallery-mood-inner"
+              style={{
+                animationDuration: `${object.dur}s`,
+                animationDelay: `${-object.delay}s`,
+              }}
+            >
+              <MoodObjectGraphic object={object} />
+            </div>
+          </div>
+          );
+        })}
       </div>
+      <div className="gallery-mood-overlay" />
+      <div className="gallery-mood-vignette" />
+      <div className="gallery-mood-grain" />
       <style>
-        {`@keyframes mobile-chapter-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}
+        {`
+          .gallery-mood-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            isolation: isolate;
+            background: var(--gallery-bg, oklch(0.92 0.008 76));
+          }
+
+          .gallery-mood-bg::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(255,240,210,0.06) 1px, transparent 1.5px);
+            background-size: 18px 18px;
+            opacity: 0.9;
+          }
+
+          .gallery-mood-wash {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background:
+              radial-gradient(ellipse 70% 60% at 50% 55%,
+                oklch(0.98 0.005 80 / 0.65) 0%,
+                oklch(0.85 0.01 80 / 0) 60%);
+          }
+
+          .gallery-mood-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            --p: 0;
+            transform: translateZ(0);
+            filter: blur(var(--gallery-blur, 0px));
+            backface-visibility: hidden;
+          }
+
+          .gallery-mood-object {
+            position: absolute;
+            pointer-events: none;
+            transform-origin: center;
+            transform:
+              translate3d(
+                calc(var(--sx, 0) * var(--p, 0) * 1px),
+                calc(var(--sy, 0) * var(--p, 0) * 1px),
+                0
+              )
+              rotate(calc(var(--sr, 0) * var(--p, 0) * 1deg));
+            will-change: transform;
+          }
+
+          .gallery-mood-inner {
+            width: 100%;
+            height: 100%;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            transform-origin: center;
+            border-radius: 4px;
+            box-shadow: 0 10px 18px rgba(4, 8, 22, 0.36), 0 2px 4px rgba(4, 8, 22, 0.22);
+            will-change: transform;
+          }
+
+          .gallery-mood-object--ringBoxImage .gallery-mood-inner,
+          .gallery-mood-object--ringImage .gallery-mood-inner {
+            width: calc(100% * var(--gallery-png-scale, 1));
+            height: calc(100% * var(--gallery-png-scale, 1));
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+          }
+
+          .gallery-mood-card {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            border: 1px solid rgba(20, 12, 0, 0.14);
+            background:
+              repeating-linear-gradient(35deg, rgba(216, 200, 174, 0.45) 0 1px, transparent 1px 8px),
+              #ece2d2;
+          }
+
+          .gallery-mood-card--cream,
+          .gallery-mood-ribbon {
+            background:
+              repeating-linear-gradient(35deg, rgba(224, 210, 179, 0.55) 0 1px, transparent 1px 8px),
+              #f3ead9;
+          }
+
+          .gallery-mood-card--green {
+            background:
+              repeating-linear-gradient(35deg, rgba(169, 177, 148, 0.55) 0 1px, transparent 1px 8px),
+              #c8cdb2;
+          }
+
+          .gallery-mood-card--dark {
+            background:
+              repeating-linear-gradient(35deg, rgba(62, 56, 43, 0.7) 0 1px, transparent 1px 8px),
+              #2a261f;
+          }
+
+          .gallery-mood-polaroid {
+            width: 100%;
+            height: 100%;
+            padding: 8px 8px 26px;
+            background: #f5efe2;
+          }
+
+          .gallery-mood-polaroid span {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background:
+              repeating-linear-gradient(35deg, rgba(216, 200, 174, 0.45) 0 1px, transparent 1px 8px),
+              #ece2d2;
+          }
+
+          .gallery-mood-framed-photo {
+            width: 100%;
+            height: 100%;
+            padding: 10px 10px 32px;
+            position: relative;
+            background: #fbf7ee;
+            border: 1px solid rgba(43, 36, 29, 0.08);
+            box-shadow:
+              inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+              0 10px 22px rgba(20, 12, 0, 0.18);
+          }
+
+          .gallery-mood-framed-photo__image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 2px;
+          }
+
+          .gallery-mood-framed-photo span {
+            position: absolute;
+            left: 50%;
+            bottom: 11px;
+            width: 44%;
+            height: 1px;
+            transform: translateX(-50%);
+            background: rgba(43, 36, 29, 0.18);
+          }
+
+          .gallery-mood-ringbox-image,
+          .gallery-mood-ring-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+          }
+
+          .gallery-mood-branch {
+            position: relative;
+            width: 100%;
+            height: 100%;
+          }
+
+          .gallery-mood-branch::before {
+            content: "";
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: 50%;
+            height: 2px;
+            background: rgba(122, 107, 74, 0.8);
+          }
+
+          .gallery-mood-branch i {
+            position: absolute;
+            top: 42%;
+            width: 24%;
+            height: 18%;
+            border-radius: 50%;
+            background: #c8cdb2;
+            opacity: 0.8;
+          }
+
+          .gallery-mood-branch i:nth-child(1) { left: 18%; transform: rotate(-18deg); }
+          .gallery-mood-branch i:nth-child(2) { left: 35%; transform: rotate(18deg); top: 50%; }
+          .gallery-mood-branch i:nth-child(3) { left: 54%; transform: rotate(-14deg); }
+          .gallery-mood-branch i:nth-child(4) { left: 68%; transform: rotate(20deg); top: 51%; }
+
+          .gallery-mood-vase {
+            position: relative;
+            width: 100%;
+            height: 100%;
+          }
+
+          .gallery-mood-vase span {
+            position: absolute;
+            top: 8%;
+            width: 38%;
+            height: 28%;
+            border-radius: 50%;
+            background: #c8cdb2;
+            opacity: 0.78;
+          }
+
+          .gallery-mood-vase span:nth-child(1) { left: 20%; transform: rotate(-24deg); }
+          .gallery-mood-vase span:nth-child(2) { right: 18%; top: 18%; transform: rotate(18deg); }
+
+          .gallery-mood-vase i {
+            position: absolute;
+            left: 23%;
+            right: 23%;
+            bottom: 3%;
+            height: 50%;
+            border-radius: 44% 44% 16% 16%;
+            background: #f3ead9;
+            border: 1px solid rgba(20, 12, 0, 0.14);
+          }
+
+          .gallery-mood-ringbox {
+            position: relative;
+            width: 100%;
+            height: 100%;
+          }
+
+          .gallery-mood-ringbox::before,
+          .gallery-mood-ringbox::after {
+            content: "";
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            background: #3a2e22;
+          }
+
+          .gallery-mood-ringbox::before { top: 4%; height: 35%; }
+          .gallery-mood-ringbox::after { bottom: 5%; height: 52%; }
+
+          .gallery-mood-ringbox span {
+            position: absolute;
+            left: 18%;
+            right: 18%;
+            bottom: 11%;
+            height: 38%;
+            z-index: 2;
+            background: rgba(241, 230, 204, 0.78);
+          }
+
+          .gallery-mood-ringbox i,
+          .gallery-mood-ring {
+            position: absolute;
+            left: 50%;
+            top: 62%;
+            width: 28%;
+            height: 28%;
+            border: 4px solid #c9b083;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) rotate(-12deg) scaleY(0.55);
+            z-index: 3;
+          }
+
+          .gallery-mood-ring {
+            position: relative;
+            left: auto;
+            top: auto;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-12deg) scaleY(0.46);
+          }
+
+          .gallery-mood-ring::before {
+            content: "";
+            position: absolute;
+            left: 48%;
+            top: 18%;
+            width: 10%;
+            height: 14%;
+            border-radius: 50%;
+            background: #f1e2bd;
+          }
+
+          .gallery-mood-citrus {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background:
+              repeating-conic-gradient(from 0deg, rgba(184, 136, 74, 0.55) 0deg 2deg, transparent 2deg 45deg),
+              radial-gradient(circle, #f0d39a 0 58%, #e2b87a 60% 100%);
+            opacity: 0.78;
+          }
+
+          .gallery-mood-ribbon {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            border: 1px solid rgba(20, 12, 0, 0.14);
+          }
+
+          .gallery-mood-ribbon span {
+            position: absolute;
+            left: 42%;
+            top: 0;
+            width: 16%;
+            height: 100%;
+            background: rgba(184, 158, 110, 0.65);
+          }
+
+          .gallery-mood-bottle {
+            position: relative;
+            width: 100%;
+            height: 100%;
+          }
+
+          .gallery-mood-bottle::before {
+            content: "";
+            position: absolute;
+            left: 39%;
+            top: 0;
+            width: 22%;
+            height: 22%;
+            background: #c9b890;
+          }
+
+          .gallery-mood-bottle span {
+            position: absolute;
+            left: 20%;
+            right: 20%;
+            bottom: 4%;
+            height: 70%;
+            border-radius: 8px;
+            background: rgba(216, 200, 168, 0.55);
+            border: 1px solid rgba(20, 12, 0, 0.16);
+          }
+
+          .gallery-mood-petals {
+            position: relative;
+            width: 100%;
+            height: 100%;
+          }
+
+          .gallery-mood-petals span {
+            position: absolute;
+            width: 22%;
+            height: 14%;
+            border-radius: 50%;
+            background: #d9b8a3;
+            opacity: 0.72;
+          }
+
+          .gallery-mood-petals span:nth-child(1) { left: 18%; top: 36%; transform: rotate(20deg); }
+          .gallery-mood-petals span:nth-child(2) { left: 48%; top: 24%; transform: rotate(-15deg); }
+          .gallery-mood-petals span:nth-child(3) { left: 72%; top: 50%; transform: rotate(40deg); }
+          .gallery-mood-petals span:nth-child(4) { left: 32%; top: 68%; transform: rotate(-30deg); }
+          .gallery-mood-petals span:nth-child(5) { left: 58%; top: 72%; transform: rotate(10deg); }
+
+          .gallery-mood-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            background: var(--gallery-overlay, rgba(120, 110, 90, 0.04));
+          }
+
+          .gallery-mood-vignette {
+            position: absolute;
+            inset: 0;
+            z-index: 7;
+            pointer-events: none;
+            background: radial-gradient(ellipse 100% 75% at 50% 50%, rgba(60,45,25,0) 40%, rgba(60,45,25,0.14) 85%, rgba(60,45,25,0.22) 100%);
+          }
+
+          .gallery-mood-grain {
+            position: absolute;
+            inset: 0;
+            z-index: 8;
+            pointer-events: none;
+            opacity: 0.35;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+          }
+
+          @keyframes gallery-breathe1 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-10px) rotate(calc(var(--rot, 0deg) + 0.6deg)); } }
+          @keyframes gallery-breathe2 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(8px) rotate(calc(var(--rot, 0deg) - 0.8deg)); } }
+          @keyframes gallery-breathe3 { 0%,100% { transform: translateY(2px) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-12px) rotate(calc(var(--rot, 0deg) + 1.2deg)); } }
+          @keyframes gallery-breathe4 { 0%,100% { transform: translateY(-4px) rotate(var(--rot, 0deg)); } 50% { transform: translateY(6px) rotate(calc(var(--rot, 0deg) + 0.4deg)); } }
+          @keyframes gallery-breathe5 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-14px) rotate(calc(var(--rot, 0deg) - 1deg)); } }
+          @keyframes gallery-breathe6 { 0%,100% { transform: translateY(6px) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-6px) rotate(calc(var(--rot, 0deg) + 0.8deg)); } }
+          @keyframes gallery-breathe7 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-7px) rotate(calc(var(--rot, 0deg) + 1.6deg)); } }
+          @keyframes gallery-breathe8 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(9px) rotate(calc(var(--rot, 0deg) - 0.5deg)); } }
+          @keyframes gallery-breathe9 { 0%,100% { transform: translateY(-3px) rotate(var(--rot, 0deg)); } 50% { transform: translateY(11px) rotate(calc(var(--rot, 0deg) + 1deg)); } }
+          @keyframes gallery-breathe10 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-9px) rotate(calc(var(--rot, 0deg) - 1.4deg)); } }
+          @keyframes gallery-breathe11 { 0%,100% { transform: translateY(4px) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-8px) rotate(calc(var(--rot, 0deg) + 0.7deg)); } }
+          @keyframes gallery-breathe12 { 0%,100% { transform: translateY(0) rotate(var(--rot, 0deg)); } 50% { transform: translateY(-13px) rotate(calc(var(--rot, 0deg) - 0.9deg)); } }
+
+          .gallery-mood-object--1 .gallery-mood-inner { animation-name: gallery-breathe1; }
+          .gallery-mood-object--2 .gallery-mood-inner { animation-name: gallery-breathe2; }
+          .gallery-mood-object--3 .gallery-mood-inner { animation-name: gallery-breathe3; }
+          .gallery-mood-object--4 .gallery-mood-inner { animation-name: gallery-breathe4; }
+          .gallery-mood-object--5 .gallery-mood-inner { animation-name: gallery-breathe5; }
+          .gallery-mood-object--6 .gallery-mood-inner { animation-name: gallery-breathe6; }
+          .gallery-mood-object--7 .gallery-mood-inner { animation-name: gallery-breathe7; }
+          .gallery-mood-object--8 .gallery-mood-inner { animation-name: gallery-breathe8; }
+          .gallery-mood-object--9 .gallery-mood-inner { animation-name: gallery-breathe9; }
+          .gallery-mood-object--10 .gallery-mood-inner { animation-name: gallery-breathe10; }
+          .gallery-mood-object--11 .gallery-mood-inner { animation-name: gallery-breathe11; }
+          .gallery-mood-object--12 .gallery-mood-inner { animation-name: gallery-breathe12; }
+
+          @media (max-width: 760px) {
+            .gallery-mood-layer {
+              transform: translateX(-24px);
+            }
+
+            .gallery-mood-object--hide-mobile {
+              display: none;
+            }
+
+            .gallery-mood-inner {
+              width: 72%;
+              height: 72%;
+              transform-origin: center;
+            }
+
+            .gallery-mood-object--ringBoxImage .gallery-mood-inner,
+            .gallery-mood-object--ringImage .gallery-mood-inner {
+              width: calc(72% * var(--gallery-png-scale, 1));
+              height: calc(72% * var(--gallery-png-scale, 1));
+            }
+
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .gallery-mood-inner {
+              animation: none !important;
+            }
+          }
+        `}
       </style>
     </div>
   );
@@ -241,7 +742,7 @@ function PolaroidStack({
   width: number;
   viewportHeight: number;
 }) {
-  const start = 0.18;
+  const start = 0.04;
   const end = 0.95;
   const slotSize = (end - start) / photos.length;
 
@@ -334,6 +835,7 @@ function PolaroidStack({
 
 export default function Section3Video() {
   const sectionRef = useRef<HTMLElement>(null);
+  const moodLayerRef = useRef<HTMLDivElement>(null);
   const [scrollState, setScrollState] = useState({
     sectionTop: 0,
     sectionHeight: 0,
@@ -350,9 +852,17 @@ export default function Section3Video() {
       if (!section) return;
 
       const rect = section.getBoundingClientRect();
+      const sectionTop = window.scrollY + rect.top;
+      const sectionHeight = section.offsetHeight;
+      const sectionScroll = window.scrollY - sectionTop;
+      const stickyStart = window.innerHeight * GALLERY_STICKY_DELAY;
+      const stickyRange = sectionHeight - window.innerHeight - stickyStart;
+      const stickyProgress = clamp((sectionScroll - stickyStart) / stickyRange);
+      moodLayerRef.current?.style.setProperty("--p", (easeInOut(stickyProgress) * (GALLERY_TWEAKS.bgLift / 90)).toFixed(4));
+
       setScrollState({
-        sectionTop: window.scrollY + rect.top,
-        sectionHeight: section.offsetHeight,
+        sectionTop,
+        sectionHeight,
         scrollY: window.scrollY,
         viewportHeight: window.innerHeight,
         viewportWidth: window.innerWidth,
@@ -383,7 +893,7 @@ export default function Section3Video() {
   const photos = useMemo(() => PHOTOS, []);
   const sectionScroll = scrollState.scrollY - scrollState.sectionTop;
   const introHeight = scrollState.viewportHeight;
-  const stickyStart = introHeight;
+  const stickyStart = introHeight * GALLERY_STICKY_DELAY;
   const stickyRange = scrollState.sectionHeight - scrollState.viewportHeight - stickyStart;
   const stickyProgress = clamp((sectionScroll - stickyStart) / stickyRange);
   const introProgress = clamp(sectionScroll / (scrollState.viewportHeight * 0.95));
@@ -392,8 +902,7 @@ export default function Section3Video() {
   const headingTop = lerp(18, 6, easeInOut(stickyProgress));
   const isMobile = scrollState.viewportWidth < 768;
   const polaroidWidth = isMobile ? 220 : 280;
-  const introReveal = clamp((introProgress - 0.5) / 0.5);
-  const chapterActivities = CHAPTERS.map((_, index) => getChapterActivity(stickyProgress, index));
+  const activeDotIndex = Math.min(PHOTOS.length - 1, Math.max(0, Math.floor(stickyProgress * PHOTOS.length)));
 
   return (
     <section
@@ -403,6 +912,14 @@ export default function Section3Video() {
         height: "calc(100vh + 500vh + 100vh)",
         width: "100%",
         overflow: "visible",
+        backgroundColor: "#0c4dbe",
+        backgroundImage: `
+          linear-gradient(to bottom, rgba(12,39,82,0.24), rgba(12,39,82,0.32)),
+          url("${STORY_SKY}")
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center bottom",
+        backgroundRepeat: "no-repeat",
       }}
     >
       <div
@@ -445,17 +962,7 @@ export default function Section3Video() {
           overflow: "hidden",
         }}
       >
-        <video
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[3px]"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-        >
-          <source src="/wallpaper.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-[#2B241D]/20" />
+        <GalleryMoodboardBackground layerRef={moodLayerRef} />
 
         <div
           style={{
@@ -540,7 +1047,7 @@ export default function Section3Video() {
             left: "50%",
             top: isMobile ? "38%" : "47%",
             transform: "translate(-50%, -50%)",
-            opacity: clamp((introProgress - 0.55) / 0.4),
+            opacity: clamp((introProgress - 0.32) / 0.28),
             zIndex: 20,
           }}
         >
@@ -552,16 +1059,6 @@ export default function Section3Video() {
           />
         </div>
 
-        {CHAPTERS.map((chapter, index) => (
-          <ChapterText
-            key={chapter.eyebrow}
-            chapter={chapter}
-            activity={chapterActivities[index]}
-          />
-        ))}
-
-        <MobileChapter chapters={CHAPTERS} activities={chapterActivities} opacity={introReveal} />
-
         <div
           style={{
             position: "absolute",
@@ -570,12 +1067,12 @@ export default function Section3Video() {
             transform: "translateX(-50%)",
             display: "flex",
             gap: 10,
-            opacity: clamp((introProgress - 0.6) / 0.4),
+            opacity: clamp((introProgress - 0.38) / 0.3),
             zIndex: 35,
           }}
         >
-          {CHAPTERS.map((_, index) => {
-            const active = chapterActivities[index] > 0.5;
+          {PHOTOS.map((_, index) => {
+            const active = activeDotIndex === index;
 
             return (
               <div

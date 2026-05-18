@@ -17,62 +17,64 @@ type StoryCard = {
   body: string;
   place: string;
   image: string;
+  mobileImage?: string;
 };
 
 const TORN_PAPER = "/our-story-torn-paper.png";
-const SKY = "/sky%20our%20story.png";
+const SKY = "/sky%20new%20our%20story.png";
 
 const STORY_CARDS: StoryCard[] = [
   {
     side: "left",
     tilt: "-2.2deg",
-    stamp: "01 · Where it began",
+    stamp: "01 · AWAL MULA",
     caption: "first hello",
-    chapter: "i. The Meeting",
-    date: "Chapter One",
+    chapter: "I. PERTEMUAN",
+    date: "BAB SATU",
     title: (
       <>
-        A simple hello that became <em>everything</em>.
+        Satu salam yang ternyata nggak <em>sesimpel itu</em>.
       </>
     ),
     body:
-      "Some stories begin loudly. Ours began softly, in the kind of moment that felt ordinary until we kept remembering it.",
-    place: "Salsa & Arkan",
-    image: "/hero/photo-left.jpeg",
+      "Ada yang bilang cinta itu dramatis. Punya kami? Dimulai dari satu chat random yang biasa banget sampai tiba-tiba jadi nggak bisa berhenti ngobrol.",
+    place: "SALSA & ARKAN",
+    image: "/ourstory%20asset/foto%201.png",
+    mobileImage: "/ourstory%20asset/foto%201%20mobile.png",
   },
   {
     side: "right",
     tilt: "1.8deg",
     stamp: "02 · First date",
-    caption: "a long conversation",
+    caption: "OBROLAN PANJANG",
     chapter: "ii. The First Date",
     date: "Chapter Two",
     title: (
       <>
-        Time moved slowly, then all at <em>once</em>.
+        Di sini semuanya <em>dimulai</em>.
       </>
     ),
     body:
-      "Dinner turned into another plan, another walk, another reason to stay a little longer. We were already choosing each other in small ways.",
+      "Canggung? Iya. Tapi obrolannya nyambung terus — sampe lupa kalau sebenernya masih baru kenal.",
     place: "The beginning",
-    image: "/hero/photo-right.jpeg",
+    image: "/ourstory%20asset/foto%202.png",
   },
   {
     side: "left",
     tilt: "-1.4deg",
-    stamp: "03 · The journey",
-    caption: "growing together",
-    chapter: "iii. Our Adventure",
-    date: "Chapter Three",
+    stamp: "03 · PERJALANAN",
+    caption: "TUMBUH BARENG",
+    chapter: "III. PETUALANGAN KITA",
+    date: "BAB TIGA",
     title: (
       <>
-        We learned the shape of <em>home</em>.
+        Rencananya bikin album. Jadinya malah <em>IT berdua</em>.
       </>
     ),
     body:
-      "Through ordinary days and milestone nights, love became less about grand gestures and more about showing up with patience, laughter, and care.",
+      "Sama-sama suka musik, sering cover lagu, sampai ngebayangin punya album sendiri. Hidup punya rencana lain tapi setidaknya nyasar ke IT nya bareng-bareng.",
     place: "Everyday love",
-    image: "/hero/photo-center.png",
+    image: "/ourstory%20asset/foto%203.jpg",
   },
   {
     side: "right",
@@ -89,7 +91,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "This celebration is not just where the story lands. It is where a new chapter begins, surrounded by everyone who helped us get here.",
     place: "Save the date",
-    image: "/hero/photo-kedua.png",
+    image: "/ourstory%20asset/foto%204.png",
   },
 ];
 
@@ -200,13 +202,21 @@ export default function OurStorySection() {
 
     const resizeObserver = new ResizeObserver(buildPath);
     resizeObserver.observe(cardsWrap);
+    const images = Array.from(cardsWrap.querySelectorAll<HTMLImageElement>("img"));
+    images.forEach((image) => {
+      if (!image.complete) image.addEventListener("load", buildPath);
+    });
+    document.fonts?.ready.then(buildPath).catch(() => {});
     window.addEventListener("scroll", scheduleScroll, { passive: true });
     window.addEventListener("resize", buildPath);
     window.requestAnimationFrame(() => window.requestAnimationFrame(buildPath));
+    window.setTimeout(buildPath, 250);
+    window.setTimeout(buildPath, 900);
 
     return () => {
       observer.disconnect();
       resizeObserver.disconnect();
+      images.forEach((image) => image.removeEventListener("load", buildPath));
       window.removeEventListener("scroll", scheduleScroll);
       window.removeEventListener("resize", buildPath);
       if (frameId) window.cancelAnimationFrame(frameId);
@@ -441,13 +451,24 @@ export default function OurStorySection() {
             key={card.stamp}
             data-story-card
             data-idx={index}
-            className={`card ${card.side}`}
+            className={`card ${card.side} ${index === 0 ? "card--first" : ""}`}
             style={{ "--tilt": card.tilt } as CSSProperties}
           >
             <div className="slot-img">
+              {index === 0 && <img className="story-sticker-one" src="/ourstory%20asset/stiker%201.png" alt="" />}
               <figure className="paper">
-                <img src={card.image} alt="" />
+                <picture>
+                  {card.mobileImage && <source media="(max-width: 820px)" srcSet={card.mobileImage} />}
+                  <img className={index === 0 ? "story-photo story-photo--first" : "story-photo"} src={card.image} alt="" />
+                </picture>
               </figure>
+              {index === 1 && (
+                <div className="story-sticker-wrap" aria-hidden="true">
+                  <img className="story-sticker" src="/ourstory%20asset/stiker.png" alt="" />
+                  <img className="story-pin" src="/ourstory%20asset/pin.png" alt="" />
+                </div>
+              )}
+              {index === 2 && <img className="story-sticker-three" src="/ourstory%20asset/stiker%203.png" alt="" />}
               <div className="stamp">{card.stamp}</div>
               <div className="caption">{card.caption}</div>
             </div>
@@ -488,16 +509,16 @@ export default function OurStorySection() {
             position: relative;
             isolation: isolate;
             overflow: visible;
-            padding: 12vh 0 18vh;
+            padding: 12vh 0 4vh;
             background-color: var(--story-sky);
-            color: var(--story-ink);
-          }
-
-          .story-sky {
-            position: absolute;
-            inset: 0;
-            z-index: -2;
             background-image:
+              linear-gradient(
+                to bottom,
+                #F7F1E7 0%,
+                rgba(247,241,231,0.82) 4%,
+                rgba(247,241,231,0.2) 11%,
+                rgba(12,77,190,0) 20%
+              ),
               linear-gradient(rgba(12,39,82,0.18), rgba(12,39,82,0.24)),
               radial-gradient(ellipse at 50% 110%, rgba(253,250,243,0.28) 0%, rgba(253,250,243,0) 55%),
               radial-gradient(ellipse at 50% 0%, rgba(12,39,82,0.16) 0%, rgba(12,39,82,0) 50%),
@@ -505,6 +526,14 @@ export default function OurStorySection() {
             background-size: cover;
             background-position: center top;
             background-repeat: no-repeat;
+            color: var(--story-ink);
+          }
+
+          .story-sky {
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background: transparent;
           }
 
           .ring-stage {
@@ -659,9 +688,10 @@ export default function OurStorySection() {
             aspect-ratio: 5 / 4;
             margin: 0;
             overflow: visible;
-            filter: drop-shadow(0 22px 28px rgba(0,0,0,0.55)) drop-shadow(0 0 1px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 18px 20px rgba(0,0,0,0.24));
             transform: rotate(var(--tilt, 0deg));
             transition: transform 0.8s cubic-bezier(.2,.7,.2,1);
+            transform-origin: 50% 58%;
           }
 
           .paper::before {
@@ -685,6 +715,10 @@ export default function OurStorySection() {
             mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
           }
 
+          .story-photo--first {
+            object-position: center center;
+          }
+
           .paper::after {
             content: "";
             position: absolute;
@@ -696,6 +730,90 @@ export default function OurStorySection() {
             mix-blend-mode: overlay;
             -webkit-mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
             mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
+          }
+
+          .story-sticker-wrap {
+            position: absolute;
+            z-index: 3;
+            left: 2%;
+            bottom: -42px;
+            width: clamp(120px, 18vw, 220px);
+            aspect-ratio: 1.8 / 1;
+            pointer-events: none;
+            transform: rotate(-8deg);
+          }
+
+          .story-sticker-one {
+            position: absolute;
+            left: 50%;
+            top: -54px;
+            z-index: 3;
+            width: clamp(104px, 16vw, 190px);
+            height: auto;
+            object-fit: contain;
+            pointer-events: none;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.24));
+            transform: translateX(-50%) rotate(7deg);
+          }
+
+          .story-sticker-three {
+            position: absolute;
+            right: 2%;
+            bottom: 2%;
+            z-index: 3;
+            width: clamp(110px, 14vw, 190px);
+            height: auto;
+            object-fit: contain;
+            pointer-events: none;
+            transform: rotate(9deg);
+            -webkit-mask: none;
+            mask: none;
+          }
+
+          .story-sticker,
+          .story-pin {
+            position: absolute;
+            height: auto;
+            object-fit: contain;
+            pointer-events: none;
+            -webkit-mask: none;
+            mask: none;
+          }
+
+          .story-sticker {
+            left: 50%;
+            bottom: 0;
+            width: 100%;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.28));
+            transform: translateX(-50%);
+          }
+
+          .story-pin {
+            left: 50%;
+            top: -18%;
+            z-index: 2;
+            width: 42%;
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.24));
+            transform: translateX(-50%) rotate(9deg);
+          }
+
+          .card.is-visible .paper {
+            animation: story-paper-breathe-in 1.8s cubic-bezier(.18,.82,.22,1) both;
+          }
+
+          @keyframes story-paper-breathe-in {
+            0% {
+              transform: translate3d(0, 14px, 0) rotate(calc(var(--tilt, 0deg) - 8deg)) scale(0.96);
+            }
+            42% {
+              transform: translate3d(0, -4px, 0) rotate(calc(var(--tilt, 0deg) + 1.8deg)) scale(1.018);
+            }
+            72% {
+              transform: translate3d(0, 1px, 0) rotate(calc(var(--tilt, 0deg) - 0.7deg)) scale(0.996);
+            }
+            100% {
+              transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg)) scale(1);
+            }
           }
 
           .stamp {
@@ -838,7 +956,7 @@ export default function OurStorySection() {
           .closer {
             position: relative;
             z-index: 2;
-            padding: 18vh 24px 4vh;
+            padding: 18vh 24px 0;
             color: var(--story-ink-dim);
             text-align: center;
           }
@@ -917,6 +1035,31 @@ export default function OurStorySection() {
             .card.right .slot-text { padding-right: 6px; }
             .slot-img { padding: 10px 4px; }
             .paper { aspect-ratio: 4 / 5; }
+            .card--first .paper {
+              aspect-ratio: 3 / 4;
+            }
+            .card--first .paper .story-photo--first {
+              inset: 6px;
+              width: calc(100% - 12px);
+              height: calc(100% - 12px);
+              object-fit: cover;
+              object-position: center 42%;
+              background: transparent;
+            }
+            .story-sticker-wrap {
+              left: -4px;
+              bottom: -30px;
+              width: clamp(96px, 30vw, 140px);
+            }
+            .story-sticker-one {
+              top: -36px;
+              width: clamp(78px, 26vw, 120px);
+            }
+            .story-sticker-three {
+              right: 2px;
+              bottom: 2px;
+              width: clamp(68px, 22vw, 104px);
+            }
             .stamp {
               top: 0;
               padding: 4px 6px 3px;

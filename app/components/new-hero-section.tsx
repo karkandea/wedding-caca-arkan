@@ -210,7 +210,7 @@ export default function NewHeroSection() {
               inset: isMobile ? "auto" : 0,
               left: isMobile ? "50%" : undefined,
               top: isMobile ? "50%" : undefined,
-              width: isMobile ? "100vw" : "100%",
+              width: "100%",
               height: isMobile ? "100svh" : "100%",
               overflow: "hidden",
               transform: isMobile ? "translate3d(-50%, -50%, 0)" : undefined,
@@ -290,8 +290,8 @@ export default function NewHeroSection() {
 
         {isMobile &&
           [
-            { src: "/hero/photo-center.png", appearAt: 0.45, top: "64svh" },
-            { src: "/hero/photo-kedua.png", appearAt: 0.65, top: "82svh" },
+            { src: "/hero/photo-center.png", appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
+            { src: "/hero/photo-kedua.png", appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
           ].map((photo, index) => {
             const photoProgress = easeOut((progress - photo.appearAt) / 0.35);
 
@@ -312,6 +312,22 @@ export default function NewHeroSection() {
                 }}
               >
                 <Image src={photo.src} alt="" fill sizes="calc(100vw - 48px)" className="object-cover" />
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center">
+                  <span
+                    className="text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.38)]"
+                    style={{
+                      fontFamily: photo.labelType === "name" ? "serif" : "var(--font-din-alternate)",
+                      fontStyle: photo.labelType === "name" ? "italic" : "normal",
+                      fontWeight: photo.labelType === "name" ? 500 : 400,
+                      fontSize: photo.labelType === "name" ? "clamp(28px, 8.5vw, 42px)" : "clamp(13px, 4vw, 18px)",
+                      lineHeight: photo.labelType === "name" ? 0.95 : 1,
+                      letterSpacing: photo.labelType === "name" ? "-0.01em" : "0.24em",
+                      textTransform: photo.labelType === "name" ? "none" : "uppercase",
+                    }}
+                  >
+                    {photo.label}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -323,7 +339,9 @@ export default function NewHeroSection() {
 function HeroNav() {
   return (
     <nav className="absolute left-1/2 top-[18px] z-30 flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-[22px] pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px]">
-      <span className="font-serif text-xl italic text-[#2B241D]">S&amp;A</span>
+      <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-full">
+        <Image src="/logo%20new%201.png" alt="Salsa & Arkan" fill sizes="32px" className="object-cover" />
+      </span>
       <div className="flex items-center gap-5">
         {["Travel Logistics", "Registry", "FAQ"].map((label) => (
           <a key={label} className="hidden cursor-pointer text-[13px] text-[#2B241D] no-underline md:inline">

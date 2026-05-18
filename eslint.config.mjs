@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/bg gallery/**",
     "public/draco/**",
     "public/refrensi hero/**",
     "public/refrensi/**",

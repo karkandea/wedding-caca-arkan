@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const TRACK_SRC = "/Married Life.mp3";
+const TRACK_SRC = "/Grandma's Home.mp3";
 
 export default function MusicPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const hasStartedRef = useRef(false);
+  const isManuallyPausedRef = useRef(false);
   const retryTimersRef = useRef<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -21,6 +22,8 @@ export default function MusicPlayer() {
 
     const syncState = () => setIsPlaying(!audio.paused);
     const playFromStart = async () => {
+      if (isManuallyPausedRef.current) return;
+
       try {
         if (!hasStartedRef.current) {
           audio.currentTime = 0;
@@ -35,6 +38,8 @@ export default function MusicPlayer() {
 
     const queuePlayAttempts = () => {
       retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      if (isManuallyPausedRef.current) return;
+
       retryTimersRef.current = [0, 250, 700, 1400, 2400].map((delay) =>
         window.setTimeout(() => {
           void playFromStart();
@@ -46,6 +51,7 @@ export default function MusicPlayer() {
     queuePlayAttempts();
 
     const unlockAudio = () => {
+      if (isManuallyPausedRef.current) return;
       if (!audio.paused) return;
       void playFromStart();
     };
@@ -85,6 +91,7 @@ export default function MusicPlayer() {
     if (!audio) return;
 
     if (audio.paused) {
+      isManuallyPausedRef.current = false;
       try {
         await audio.play();
         setIsPlaying(true);
@@ -94,6 +101,8 @@ export default function MusicPlayer() {
       return;
     }
 
+    isManuallyPausedRef.current = true;
+    retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
     audio.pause();
     setIsPlaying(false);
   };
