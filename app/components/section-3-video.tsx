@@ -28,7 +28,14 @@ type MoodObject = {
     | "petals"
     | "framedPhoto"
     | "ringBoxImage"
-    | "ringImage";
+    | "ringImage"
+    | "flowerImage"
+    | "paperScrollImage"
+    | "dryLemonImage"
+    | "dryLemon2Image"
+    | "whiteFlowerImage"
+    | "coinImage"
+    | "upBookImage";
   rotate: number;
   anim: number;
   dur: number;
@@ -65,19 +72,19 @@ const PHOTOS: StoryPhoto[] = [
 
 const MOOD_OBJECTS: MoodObject[] = [
   { id: "photo-tl", x: 6, y: 7, w: 150, h: 202, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: -8, anim: 1, dur: 10, delay: 0, z: 4 },
-  { id: "card-tcl", x: 24, y: 3, w: 155, h: 106, kind: "card", rotate: 4, anim: 2, dur: 11, delay: 1.2, z: 4, tone: "cream" },
-  { id: "green-tcr", x: 54, y: 2, w: 180, h: 120, kind: "card", rotate: -3, anim: 4, dur: 10, delay: 2, z: 4, tone: "green" },
-  { id: "card-tr", x: 76, y: 4, w: 200, h: 180, kind: "card", rotate: 6, anim: 5, dur: 12, delay: 0.8, z: 3, tone: "cream" },
+  { id: "paper-scroll-tcl", x: 78, y: 28, w: 255, h: 220, kind: "paperScrollImage", rotate: 11, anim: 2, dur: 11, delay: 1.2, z: 6 },
+  { id: "dry-lemon-tcr", x: 54, y: 2, w: 150, h: 120, kind: "dryLemonImage", rotate: -3, anim: 4, dur: 10, delay: 2, z: 4 },
+  { id: "up-book-rm", x: 20, y: 0, w: 300, h: 225, kind: "upBookImage", rotate: -13, anim: 5, dur: 12, delay: 0.8, z: 4 },
   { id: "branch-tc", x: 40, y: 7, w: 130, h: 92, kind: "branch", rotate: 12, anim: 3, dur: 8, delay: 0.5, z: 5, hideOnMobile: true },
   { id: "photo-lm", x: 10, y: 34, w: 132, h: 178, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -11, anim: 7, dur: 11, delay: 1.8, z: 5 },
   { id: "euca-lm", x: 16, y: 46, w: 220, h: 110, kind: "branch", rotate: -8, anim: 2, dur: 13, delay: 3, z: 3, hideOnMobile: true },
   { id: "petals-lm", x: 4, y: 56, w: 150, h: 110, kind: "petals", rotate: 0, anim: 8, dur: 10, delay: 4, z: 4, hideOnMobile: true },
   { id: "ringbox-lb", x: 5, y: 68, w: 260, h: 205, kind: "ringBoxImage", rotate: 8, anim: 9, dur: 9, delay: 0.4, z: 5 },
   { id: "ring-llm", x: 28, y: 62, w: 96, h: 76, kind: "ringImage", rotate: -15, anim: 10, dur: 8, delay: 2.6, z: 6 },
-  { id: "blank-blc", x: 26, y: 78, w: 180, h: 150, kind: "card", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
-  { id: "black-bc", x: 44, y: 82, w: 200, h: 140, kind: "card", rotate: 3, anim: 12, dur: 10, delay: 3.5, z: 3, tone: "dark" },
-  { id: "citrus-bcr", x: 64, y: 70, w: 90, h: 90, kind: "citrus", rotate: 0, anim: 1, dur: 8, delay: 1.4, z: 5, hideOnMobile: true },
-  { id: "ribbon-rm", x: 88, y: 22, w: 130, h: 200, kind: "ribbon", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
+  { id: "dry-lemon-2-blc", x: 26, y: 78, w: 190, h: 150, kind: "dryLemon2Image", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
+  { id: "white-flower-bc", x: 44, y: 82, w: 190, h: 150, kind: "whiteFlowerImage", rotate: 3, anim: 12, dur: 10, delay: 3.5, z: 3 },
+  { id: "flower-bcr", x: 62, y: 68, w: 180, h: 180, kind: "flowerImage", rotate: -8, anim: 1, dur: 8, delay: 1.4, z: 5 },
+  { id: "coin-rm", x: 86, y: 20, w: 190, h: 190, kind: "coinImage", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
   { id: "photo-tr", x: 78, y: 8, w: 148, h: 198, kind: "framedPhoto", src: "/hero/photo-right.jpeg", rotate: 7, anim: 5, dur: 12, delay: 0.8, z: 3 },
   { id: "photo-rm", x: 82, y: 48, w: 150, h: 205, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: 12, anim: 7, dur: 12, delay: 4.5, z: 5 },
   { id: "photo-br", x: 74, y: 72, w: 138, h: 182, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
@@ -149,6 +156,62 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
     return (
       <div className="gallery-mood-ring-image">
         <Image src="/bg%20gallery/ring.png" alt="" fill sizes="140px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "flowerImage") {
+    return (
+      <div className="gallery-mood-flower-image">
+        <Image src="/bg%20gallery/bunga.png" alt="" fill sizes="140px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "paperScrollImage") {
+    return (
+      <div className="gallery-mood-paper-scroll-image">
+        <Image src="/bg%20gallery/paper%20scroll.png" alt="" fill sizes="180px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "dryLemonImage") {
+    return (
+      <div className="gallery-mood-dry-lemon-image">
+        <Image src="/bg%20gallery/dry%20lemon.png" alt="" fill sizes="160px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "dryLemon2Image") {
+    return (
+      <div className="gallery-mood-dry-lemon-2-image">
+        <Image src="/bg%20gallery/dry%20lemon%202.png" alt="" fill sizes="190px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "whiteFlowerImage") {
+    return (
+      <div className="gallery-mood-white-flower-image">
+        <Image src="/bg%20gallery/white%20flower.png" alt="" fill sizes="190px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "coinImage") {
+    return (
+      <div className="gallery-mood-coin-image">
+        <Image src="/bg%20gallery/coin.png" alt="" fill sizes="140px" className="object-contain" />
+      </div>
+    );
+  }
+
+  if (object.kind === "upBookImage") {
+    return (
+      <div className="gallery-mood-up-book-image">
+        <Image src="/bg%20gallery/Up%20Book.png" alt="" fill sizes="180px" className="object-contain" />
       </div>
     );
   }
@@ -363,12 +426,31 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
           }
 
           .gallery-mood-object--ringBoxImage .gallery-mood-inner,
-          .gallery-mood-object--ringImage .gallery-mood-inner {
+          .gallery-mood-object--ringImage .gallery-mood-inner,
+          .gallery-mood-object--flowerImage .gallery-mood-inner,
+          .gallery-mood-object--paperScrollImage .gallery-mood-inner,
+          .gallery-mood-object--dryLemonImage .gallery-mood-inner,
+          .gallery-mood-object--dryLemon2Image .gallery-mood-inner,
+          .gallery-mood-object--whiteFlowerImage .gallery-mood-inner,
+          .gallery-mood-object--coinImage .gallery-mood-inner,
+          .gallery-mood-object--upBookImage .gallery-mood-inner {
             width: calc(100% * var(--gallery-png-scale, 1));
             height: calc(100% * var(--gallery-png-scale, 1));
             background: transparent;
             box-shadow: none;
             border-radius: 0;
+          }
+
+          .gallery-mood-flower-image,
+          .gallery-mood-paper-scroll-image,
+          .gallery-mood-dry-lemon-image,
+          .gallery-mood-dry-lemon-2-image,
+          .gallery-mood-white-flower-image,
+          .gallery-mood-coin-image,
+          .gallery-mood-up-book-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
           }
 
           .gallery-mood-card {
@@ -718,7 +800,14 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
             }
 
             .gallery-mood-object--ringBoxImage .gallery-mood-inner,
-            .gallery-mood-object--ringImage .gallery-mood-inner {
+            .gallery-mood-object--ringImage .gallery-mood-inner,
+            .gallery-mood-object--flowerImage .gallery-mood-inner,
+            .gallery-mood-object--paperScrollImage .gallery-mood-inner,
+            .gallery-mood-object--dryLemonImage .gallery-mood-inner,
+            .gallery-mood-object--dryLemon2Image .gallery-mood-inner,
+            .gallery-mood-object--whiteFlowerImage .gallery-mood-inner,
+            .gallery-mood-object--coinImage .gallery-mood-inner,
+            .gallery-mood-object--upBookImage .gallery-mood-inner {
               width: calc(72% * var(--gallery-png-scale, 1));
               height: calc(72% * var(--gallery-png-scale, 1));
             }
@@ -898,6 +987,8 @@ export default function Section3Video() {
 
   return (
     <section
+      id="gallery-section"
+      data-gallery-photo-count={PHOTOS.length}
       ref={sectionRef}
       style={{
         position: "relative",

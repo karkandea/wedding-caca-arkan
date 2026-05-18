@@ -1,14 +1,16 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import MusicPlayer from "./music-player";
 
 const COUPLE = "Salsa & Arkan";
 
 const SIDE_PHOTOS = [
   {
     id: "top-left",
-    src: "/hero/photo-left.jpeg",
+    src: "/hero/photo%20lain%201.png",
     edge: "left",
     offset: "-2%",
     top: "4%",
@@ -18,7 +20,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "bottom-left",
-    src: "/hero/photo-kedua.png",
+    src: "/hero/photo%20web%201.png",
     edge: "left",
     offset: "8%",
     top: "55%",
@@ -28,7 +30,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "top-right",
-    src: "/hero/photo-right.jpeg",
+    src: "/hero/photo%20lain%202.png",
     edge: "right",
     offset: "-1%",
     top: "32%",
@@ -38,7 +40,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "bottom-right",
-    src: "/hero/photo-center.png",
+    src: "/hero/photo%20web%202.png",
     edge: "right",
     offset: "-2%",
     top: "65%",
@@ -130,6 +132,11 @@ export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [fontScale, setFontScale] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const savedScale = Number(window.localStorage.getItem("wedding-font-scale"));
+    return Number.isFinite(savedScale) && savedScale >= 0.85 && savedScale <= 1.25 ? savedScale : 1;
+  });
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -167,6 +174,12 @@ export default function NewHeroSection() {
     };
   }, []);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty("--wedding-font-scale", String(fontScale));
+    window.localStorage.setItem("wedding-font-scale", String(fontScale));
+    window.dispatchEvent(new Event("wedding-font-scale-change"));
+  }, [fontScale]);
+
   const eased = easeInOut(progress);
   const heroStyle = isMobile
     ? {
@@ -194,8 +207,8 @@ export default function NewHeroSection() {
       className="relative h-[300vh] w-full bg-[#F7F1E7]"
       id="new-hero-section"
     >
+      <HeroNav fontScale={fontScale} onFontScaleChange={setFontScale} />
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
-        <HeroNav />
         <div
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
@@ -336,22 +349,134 @@ export default function NewHeroSection() {
   );
 }
 
-function HeroNav() {
+function HeroNav({
+  fontScale,
+  onFontScaleChange,
+}: {
+  fontScale: number;
+  onFontScaleChange: (scale: number) => void;
+}) {
+  const changeFontScale = (direction: -1 | 1) => {
+    onFontScaleChange(clamp(Number((fontScale + direction * 0.08).toFixed(2)), 0.85, 1.25));
+  };
+
+  const scrollSection = (direction: -1 | 1) => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("main > section"));
+    if (!sections.length) return;
+
+    const currentY = window.scrollY + window.innerHeight * 0.35;
+    const currentIndex = sections.reduce((activeIndex, section, index) => {
+      return section.offsetTop <= currentY ? index : activeIndex;
+    }, 0);
+
+    const storySection = document.getElementById("our-story");
+    if (storySection) {
+      const storyTop = storySection.offsetTop;
+      const storyBottom = storyTop + storySection.offsetHeight;
+      const isInsideStory = currentY >= storyTop && currentY < storyBottom;
+
+      if (isInsideStory) {
+        const storyCards = Array.from(storySection.querySelectorAll<HTMLElement>("[data-story-card]"));
+        const storyCardIndex = storyCards.reduce((activeIndex, card, index) => {
+          return card.offsetTop + storyTop <= currentY ? index : activeIndex;
+        }, -1);
+        const nextStoryIndex = storyCardIndex + direction;
+
+        if (nextStoryIndex >= 0 && nextStoryIndex < storyCards.length) {
+          window.scrollTo({
+            top: storyTop + storyCards[nextStoryIndex].offsetTop - window.innerHeight * 0.16,
+            behavior: "smooth",
+          });
+          return;
+        }
+      }
+    }
+
+    const gallerySection = document.getElementById("gallery-section");
+    if (gallerySection) {
+      const galleryTop = gallerySection.offsetTop;
+      const galleryBottom = galleryTop + gallerySection.offsetHeight;
+      const isInsideGallery = currentY >= galleryTop && currentY < galleryBottom;
+
+      if (isInsideGallery) {
+        const photoCount = Number(gallerySection.dataset.galleryPhotoCount) || 4;
+        const stickyStart = window.innerHeight * 0.35;
+        const stickyRange = gallerySection.offsetHeight - window.innerHeight - stickyStart;
+        const sectionScroll = window.scrollY - galleryTop;
+        const galleryProgress = stickyRange > 0 ? clamp((sectionScroll - stickyStart) / stickyRange) : 0;
+        const revealStart = 0.04;
+        const revealEnd = 0.95;
+        const slotSize = (revealEnd - revealStart) / photoCount;
+        const activePhotoIndex =
+          galleryProgress < revealStart ? -1 : clamp(Math.floor((galleryProgress - revealStart) / slotSize), 0, photoCount - 1);
+        const nextPhotoIndex = activePhotoIndex + direction;
+
+        if (nextPhotoIndex >= 0 && nextPhotoIndex < photoCount) {
+          const targetProgress = revealStart + slotSize * (nextPhotoIndex + 0.55);
+          window.scrollTo({
+            top: galleryTop + stickyStart + targetProgress * stickyRange,
+            behavior: "smooth",
+          });
+          return;
+        }
+      }
+    }
+
+    const nextIndex = clamp(currentIndex + direction, 0, sections.length - 1);
+
+    window.scrollTo({
+      top: sections[nextIndex].offsetTop,
+      behavior: "smooth",
+    });
+  };
+
   return (
-    <nav className="absolute left-1/2 top-[18px] z-30 flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-[22px] pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px]">
-      <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-full">
-        <Image src="/logo%20new%201.png" alt="Salsa & Arkan" fill sizes="32px" className="object-cover" />
-      </span>
-      <div className="flex items-center gap-5">
+    <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
+      <MusicPlayer variant="nav" />
+      <div className="flex items-center gap-2 sm:gap-5">
         {["Travel Logistics", "Registry", "FAQ"].map((label) => (
           <a key={label} className="hidden cursor-pointer text-[13px] text-[#2B241D] no-underline md:inline">
             {label}
           </a>
         ))}
-        <button className="rounded-full border-0 bg-[#2B241D] px-4 py-2 text-[12px] font-medium text-[#F7F1E7] md:text-[13px]">
-          <span className="md:hidden">RSVP</span>
-          <span className="hidden md:inline">Submit RSVP</span>
-        </button>
+        <div className="flex items-center gap-1 rounded-full bg-[#2B241D]/[0.06] p-1" aria-label="Font size controls">
+          <button
+            type="button"
+            onClick={() => changeFontScale(-1)}
+            className="h-8 rounded-full border-0 bg-transparent px-3 text-[12px] font-bold text-[#2B241D] transition hover:bg-white/70 disabled:opacity-35"
+            disabled={fontScale <= 0.85}
+            aria-label="Kecilkan font"
+          >
+            A-
+          </button>
+          <button
+            type="button"
+            onClick={() => changeFontScale(1)}
+            className="h-8 rounded-full border-0 bg-transparent px-3 text-[12px] font-bold text-[#2B241D] transition hover:bg-white/70 disabled:opacity-35"
+            disabled={fontScale >= 1.25}
+            aria-label="Besarkan font"
+          >
+            A+
+          </button>
+        </div>
+        <div className="flex items-center gap-1 rounded-full bg-[#2B241D] p-1" aria-label="Section navigation">
+          <button
+            type="button"
+            onClick={() => scrollSection(-1)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border-0 bg-transparent text-[#F7F1E7] transition hover:bg-white/15 active:scale-95"
+            aria-label="Section sebelumnya"
+          >
+            <ChevronLeft size={18} strokeWidth={2.4} />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollSection(1)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border-0 bg-[#F7F1E7] text-[#2B241D] transition hover:bg-white active:scale-95"
+            aria-label="Section berikutnya"
+          >
+            <ChevronRight size={18} strokeWidth={2.4} />
+          </button>
+        </div>
       </div>
     </nav>
   );

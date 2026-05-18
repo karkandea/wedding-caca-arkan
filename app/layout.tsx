@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import MusicPlayer from "./components/music-player";
+import TextScaleController from "./components/text-scale-controller";
 import "./globals.css";
 
 const cyrene = localFont({
@@ -31,8 +31,8 @@ export default function RootLayout({
       className={`${cyrene.variable} ${dinAlternate.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <TextScaleController />
         {children}
-        <MusicPlayer />
       </body>
     </html>
   );

@@ -4,9 +4,11 @@
   --background: #F5EFE6;
   --foreground: #ff5c28;
   --logo-color: #f9dec6;
+  --wedding-font-scale: 1;
 }
 
 html {
+  font-size: calc(16px * var(--wedding-font-scale));
   scroll-behavior: smooth;
   width: 100%;
   max-width: 100%;

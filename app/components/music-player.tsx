@@ -1,15 +1,24 @@
 "use client";
 
+import { Pause, Play } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const TRACK_SRC = "/Grandma's Home.mp3";
 
-export default function MusicPlayer() {
+type MusicPlayerProps = {
+  variant?: "floating" | "nav";
+};
+
+export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const discRef = useRef<HTMLSpanElement>(null);
   const hasStartedRef = useRef(false);
   const isManuallyPausedRef = useRef(false);
   const retryTimersRef = useRef<number[]>([]);
+  const rotationRef = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const isNav = variant === "nav";
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -86,6 +95,33 @@ export default function MusicPlayer() {
     };
   }, []);
 
+  useEffect(() => {
+    const disc = discRef.current;
+    if (!disc) return;
+
+    let frameId = 0;
+    let lastTimestamp = 0;
+    const degreesPerMs = 360 / 4000;
+
+    const tick = (timestamp: number) => {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+      rotationRef.current = (rotationRef.current + delta * degreesPerMs) % 360;
+      disc.style.transform = `rotate(${rotationRef.current.toFixed(2)}deg)`;
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    disc.style.transform = `rotate(${rotationRef.current.toFixed(2)}deg)`;
+    if (isPlaying) {
+      frameId = window.requestAnimationFrame(tick);
+    }
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+    };
+  }, [isPlaying]);
+
   const togglePlayback = async () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -115,33 +151,44 @@ export default function MusicPlayer() {
         onClick={togglePlayback}
         aria-label={isPlaying ? "Pause music" : "Play music"}
         aria-pressed={isPlaying}
-        className="fixed bottom-4 right-4 z-[2147483000] flex h-14 w-14 items-center justify-center rounded-full border border-white/55 bg-[#161412]/70 shadow-[0_12px_34px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:scale-105 active:scale-95 sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
+        className={
+          isNav
+            ? "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#2B241D]/10 bg-[#FFFCF5]/90 shadow-[0_6px_18px_rgba(43,36,29,0.16)] transition hover:scale-105 active:scale-95"
+            : "fixed bottom-4 right-4 z-[2147483000] flex h-14 w-14 items-center justify-center rounded-full border border-white/55 bg-[#161412]/70 shadow-[0_12px_34px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:scale-105 active:scale-95 sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
+        }
       >
         <span
-          className="relative block h-10 w-10 rounded-full border border-white/35 bg-[radial-gradient(circle_at_50%_50%,#f7f1e7_0_9%,#1f1c1a_10%_18%,#eee8dc_19%_22%,#111_23%_42%,#2d2925_43%_47%,#0f0e0d_48%_100%)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] sm:h-12 sm:w-12"
-          style={{
-            animation: isPlaying ? "music-disc-spin 4s linear infinite" : "none",
-          }}
+          ref={discRef}
+          className={`relative block overflow-hidden rounded-full border ${
+            isNav
+              ? "h-8 w-8 border-[#2B241D]/10 shadow-[0_2px_8px_rgba(43,36,29,0.12)]"
+              : "h-10 w-10 border-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] sm:h-12 sm:w-12"
+          }`}
         >
-          <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F7F1E7] shadow-[0_0_0_3px_rgba(255,255,255,0.12)]" />
-          <span
-            className="absolute inset-[7px] rounded-full border border-white/10"
-            style={{
-              background:
-                "repeating-radial-gradient(circle at center, transparent 0 3px, rgba(255,255,255,0.09) 4px 5px)",
-            }}
-          />
+          {isNav ? (
+            <Image src="/logo%20new%201.png" alt="" fill sizes="32px" className="object-cover" />
+          ) : (
+            <>
+              <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#f7f1e7_0_9%,#1f1c1a_10%_18%,#eee8dc_19%_22%,#111_23%_42%,#2d2925_43%_47%,#0f0e0d_48%_100%)]" />
+              <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F7F1E7] shadow-[0_0_0_3px_rgba(255,255,255,0.12)]" />
+              <span
+                className="absolute inset-[7px] rounded-full border border-white/10"
+                style={{
+                  background:
+                    "repeating-radial-gradient(circle at center, transparent 0 3px, rgba(255,255,255,0.09) 4px 5px)",
+                }}
+              />
+            </>
+          )}
         </span>
-        <span className="absolute bottom-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#F7F1E7] text-[9px] font-bold leading-none text-[#161412] shadow-[0_2px_8px_rgba(0,0,0,0.22)]">
-          {isPlaying ? "II" : "▶"}
+        <span
+          className={`absolute flex items-center justify-center rounded-full bg-[#F7F1E7] font-bold leading-none text-[#161412] shadow-[0_2px_8px_rgba(0,0,0,0.22)] ${
+            isNav ? "bottom-0 right-0 h-4 w-4" : "bottom-1.5 right-1.5 h-5 w-5"
+          }`}
+        >
+          {isPlaying ? <Pause size={isNav ? 9 : 11} strokeWidth={3} /> : <Play size={isNav ? 9 : 11} strokeWidth={3} fill="currentColor" />}
         </span>
       </button>
-      <style>
-        {`@keyframes music-disc-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }`}
-      </style>
     </>
   );
 }
