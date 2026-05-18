@@ -33,11 +33,11 @@ const STORY_CARDS: StoryCard[] = [
     date: "BAB SATU",
     title: (
       <>
-        Satu salam yang ternyata nggak <em>sesimpel itu</em>.
+        Satu chat sederhana yang jadi awal cerita kami.
       </>
     ),
     body:
-      "Ada yang bilang cinta itu dramatis. Punya kami? Dimulai dari satu chat random yang biasa banget sampai tiba-tiba jadi nggak bisa berhenti ngobrol.",
+      "Kami bertemu di komunitas yang sama. Awalnya Arkan mengirim chat duluan, lalu Salsa merespons karena ternyata Arkan bisa bermain musik.\n\nDari obrolan kecil itu, percakapan kami terus berlanjut, sampai akhirnya menjadi awal dari cerita yang nggak pernah kami duga.",
     place: "SALSA & ARKAN",
     image: "/ourstory%20asset/foto%201.png",
     mobileImage: "/ourstory%20asset/foto%201%20mobile.png",
@@ -47,16 +47,16 @@ const STORY_CARDS: StoryCard[] = [
     tilt: "1.8deg",
     stamp: "02 · First date",
     caption: "OBROLAN PANJANG",
-    chapter: "ii. The First Date",
-    date: "Chapter Two",
+    chapter: "II. THE FIRST DATE",
+    date: "CHAPTER TWO",
     title: (
       <>
-        Di sini semuanya <em>dimulai</em>.
+        First date, first meet, dan deg-degan yang dobel.
       </>
     ),
     body:
-      "Canggung? Iya. Tapi obrolannya nyambung terus — sampe lupa kalau sebenernya masih baru kenal.",
-    place: "The beginning",
+      "Setelah cukup lama ngobrol lewat chat, kami akhirnya janjian bertemu di Mall Bintaro. Hari itu kami nonton film horor, katanya biar nggak terlalu canggung.\n\nTapi nyatanya, kami bahkan lupa judul filmnya. Mungkin karena yang lebih terasa bukan filmnya, tapi deg-degan dan canggungnya pertemuan pertama.",
+    place: "THE BEGINNING",
     image: "/ourstory%20asset/foto%202.png",
   },
   {
@@ -68,12 +68,12 @@ const STORY_CARDS: StoryCard[] = [
     date: "BAB TIGA",
     title: (
       <>
-        Rencananya bikin album. Jadinya malah <em>IT berdua</em>.
+        Dari bikin musik online, sampai nyasar ke IT bareng-bareng.
       </>
     ),
     body:
-      "Sama-sama suka musik, sering cover lagu, sampai ngebayangin punya album sendiri. Hidup punya rencana lain tapi setidaknya nyasar ke IT nya bareng-bareng.",
-    place: "Everyday love",
+      "Saat Covid datang, hubungan kami berjalan LDR. Musik jadi salah satu cara kami tetap dekat, dari cover lagu sampai bikin karya bersama secara online.\n\nWalau akhirnya sadar musik bukan jalan karier utama kami, perjalanan itu membawa kami mencoba hal baru: memulai karier di dunia IT, dan melewati semuanya bareng-bareng.",
+    place: "EVERYDAY LOVE",
     image: "/ourstory%20asset/foto%203.jpg",
   },
   {
@@ -81,16 +81,16 @@ const STORY_CARDS: StoryCard[] = [
     tilt: "2.4deg",
     stamp: "04 · Today",
     caption: "the next chapter",
-    chapter: "iv. Forever",
-    date: "Chapter Four",
+    chapter: "IV. FOREVER",
+    date: "CHAPTER FOUR",
     title: (
       <>
-        And now, the best part is <em>ahead</em>.
+        Setelah enam tahun, akhirnya sampai di hari ini.
       </>
     ),
     body:
-      "This celebration is not just where the story lands. It is where a new chapter begins, surrounded by everyone who helped us get here.",
-    place: "Save the date",
+      "Setelah enam tahun tumbuh, belajar, dan melewati banyak hal bersama, akhirnya perjalanan kami sampai di titik ini.\n\nHari ini bukan akhir dari cerita kami, tapi awal dari babak baru yang akan kami jalani sebagai satu keluarga.",
+    place: "SAVE THE DATE",
     image: "/ourstory%20asset/foto%204.png",
   },
 ];
@@ -446,42 +446,53 @@ export default function OurStorySection() {
       </div>
 
       <div ref={cardsRef} className="cards">
-        {STORY_CARDS.map((card, index) => (
-          <article
-            key={card.stamp}
-            data-story-card
-            data-idx={index}
-            className={`card ${card.side} ${index === 0 ? "card--first" : ""}`}
-            style={{ "--tilt": card.tilt } as CSSProperties}
-          >
-            <div className="slot-img">
-              {index === 0 && <img className="story-sticker-one" src="/ourstory%20asset/stiker%201.png" alt="" />}
-              <figure className="paper">
-                <picture>
-                  {card.mobileImage && <source media="(max-width: 820px)" srcSet={card.mobileImage} />}
-                  <img className={index === 0 ? "story-photo story-photo--first" : "story-photo"} src={card.image} alt="" />
-                </picture>
-              </figure>
-              {index === 1 && (
-                <div className="story-sticker-wrap" aria-hidden="true">
-                  <img className="story-sticker" src="/ourstory%20asset/stiker.png" alt="" />
-                  <img className="story-pin" src="/ourstory%20asset/pin.png" alt="" />
-                </div>
-              )}
-              {index === 2 && <img className="story-sticker-three" src="/ourstory%20asset/stiker%203.png" alt="" />}
-              <div className="stamp">{card.stamp}</div>
-              <div className="caption">{card.caption}</div>
-            </div>
-            <div className="node" />
-            <div className="slot-text">
-              <div className="chapter">{card.chapter}</div>
-              <div className="date">{card.date}</div>
-              <h3>{card.title}</h3>
-              <p>{card.body}</p>
-              <div className="place">{card.place}</div>
-            </div>
-          </article>
-        ))}
+        {STORY_CARDS.map((card, index) => {
+          const bodyLines = card.body.split("\n");
+
+          return (
+            <article
+              key={card.stamp}
+              data-story-card
+              data-idx={index}
+              className={`card ${card.side} ${index === 0 ? "card--first" : ""}`}
+              style={{ "--tilt": card.tilt } as CSSProperties}
+            >
+              <div className="slot-img">
+                {index === 0 && <img className="story-sticker-one" src="/ourstory%20asset/stiker%201.png" alt="" />}
+                <figure className="paper">
+                  <picture>
+                    {card.mobileImage && <source media="(max-width: 820px)" srcSet={card.mobileImage} />}
+                    <img className={index === 0 ? "story-photo story-photo--first" : "story-photo"} src={card.image} alt="" />
+                  </picture>
+                </figure>
+                {index === 1 && (
+                  <div className="story-sticker-wrap" aria-hidden="true">
+                    <img className="story-sticker" src="/ourstory%20asset/stiker.png" alt="" />
+                    <img className="story-pin" src="/ourstory%20asset/pin.png" alt="" />
+                  </div>
+                )}
+                {index === 2 && <img className="story-sticker-three" src="/ourstory%20asset/stiker%203.png" alt="" />}
+                <div className="stamp">{card.stamp}</div>
+                <div className="caption">{card.caption}</div>
+              </div>
+              <div className="node" />
+              <div className="slot-text">
+                <div className="chapter">{card.chapter}</div>
+                <div className="date">{card.date}</div>
+                <h3>{card.title}</h3>
+                <p>
+                  {bodyLines.map((line, lineIndex) => (
+                    <span key={`${card.stamp}-body-${lineIndex}`}>
+                      {line}
+                      {lineIndex < bodyLines.length - 1 && <br />}
+                    </span>
+                  ))}
+                </p>
+                <div className="place">{card.place}</div>
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       <div className="closer">
@@ -512,6 +523,13 @@ export default function OurStorySection() {
             padding: 12vh 0 4vh;
             background-color: var(--story-sky);
             background-image:
+              linear-gradient(
+                to bottom,
+                rgba(247,241,231,0) 0%,
+                rgba(247,241,231,0) 82%,
+                rgba(247,241,231,0.48) 94%,
+                #F7F1E7 100%
+              ),
               linear-gradient(
                 to bottom,
                 #F7F1E7 0%,
@@ -957,12 +975,12 @@ export default function OurStorySection() {
             position: relative;
             z-index: 2;
             padding: 18vh 24px 0;
-            color: var(--story-ink-dim);
+            color: #0c4dbe;
             text-align: center;
           }
 
           .glyph {
-            color: var(--story-gold);
+            color: #0c4dbe;
             font-family: var(--font-cyrene);
             font-style: italic;
             font-size: 64px;
@@ -979,7 +997,7 @@ export default function OurStorySection() {
 
           .sign {
             margin-top: 24px;
-            color: var(--story-ink-mute);
+            color: #0c4dbe;
             font-family: var(--font-din-alternate);
             font-size: 11px;
             letter-spacing: 0.5em;

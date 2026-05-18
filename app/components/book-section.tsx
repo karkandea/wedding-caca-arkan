@@ -340,7 +340,7 @@ export default function BookSection() {
       });
     });
 
-    loader.load("/adventure_book_FINAL.glb", (gltf) => {
+    loader.load("/my%20wedding%20book.glb", (gltf) => {
       const book = gltf.scene;
       book.traverse((node) => {
         if (!(node instanceof THREE.Mesh)) return;
@@ -601,15 +601,31 @@ export default function BookSection() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_64%,rgba(232,238,255,0.08),transparent_34%),linear-gradient(180deg,rgba(10,20,50,0)_0%,rgba(10,20,50,0.18)_62%,rgba(10,20,50,0.78)_100%)]" />
         <div
           ref={overlayRef}
-          className="absolute left-1/2 top-[56%] z-10 flex w-[min(500px,calc(100%-72px))] flex-col items-center text-center opacity-0 max-sm:top-[54%] max-sm:w-[min(340px,calc(100%-56px))]"
+          className="absolute left-1/2 top-[50%] z-10 flex w-[min(500px,calc(100%-72px))] flex-col items-center text-center opacity-0 max-sm:top-[48%] max-sm:w-[min(340px,calc(100%-56px))]"
           style={{ pointerEvents: "none" }}
         >
-          <h2
-            className="m-0 text-[clamp(30px,5.4vw,62px)] leading-[0.94] text-[#F8EFE2] drop-shadow-[0_14px_32px_rgba(0,0,0,0.42)] max-sm:text-[clamp(24px,9vw,38px)]"
-            style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 500 }}
-          >
-            Masih ada cerita lain yang menanti
-          </h2>
+          <div className="text-[#F8EFE2] drop-shadow-[0_14px_32px_rgba(0,0,0,0.42)]">
+            <div
+              className="text-[clamp(22px,3.4vw,42px)] leading-[1.25] tracking-[0.18em] max-sm:text-[clamp(18px,6vw,28px)]"
+              style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 400 }}
+            >
+              Kepada Yth.
+              <br />
+              Bapak/Ibu/Saudara/i
+            </div>
+            <h2
+              className="m-0 mt-7 text-[clamp(28px,4.8vw,58px)] font-semibold uppercase leading-none tracking-[0.16em] max-sm:mt-5 max-sm:text-[clamp(24px,7.5vw,36px)]"
+              style={{ fontFamily: "var(--font-din-alternate), sans-serif" }}
+            >
+              Novan &amp; Partner
+            </h2>
+            <p
+              className="m-0 mt-8 text-[clamp(14px,2.2vw,24px)] leading-[1.35] max-sm:mt-5 max-sm:text-[clamp(12px,3.6vw,16px)]"
+              style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 400 }}
+            >
+              *Mohon maaf apabila terdapat kesalahan dalam penulisan nama / gelar
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -617,7 +633,7 @@ export default function BookSection() {
             }}
             className="mt-5 rounded-full border border-[#F8EFE2]/45 bg-[#F8EFE2] px-7 py-3 text-[13px] font-medium uppercase tracking-[0.28em] text-[#2B241D] shadow-[0_18px_45px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:bg-white active:translate-y-0 max-sm:mt-4 max-sm:px-6 max-sm:py-2.5 max-sm:text-[11px]"
           >
-            Buka
+            Buka Undangan
           </button>
         </div>
       </div>

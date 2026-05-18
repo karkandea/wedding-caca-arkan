@@ -23,6 +23,32 @@ export default function LoadingScreen() {
   const hasFinishedRef = useRef(false);
   const canRunBalloonTransitionRef = useRef(false);
   const isMobileRef = useRef(false);
+  const restoreScrollLockRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    const previousScrollRestoration = history.scrollRestoration;
+
+    history.scrollRestoration = "manual";
+    document.documentElement.style.scrollBehavior = "auto";
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
+    const restoreScrollLock = () => {
+      history.scrollRestoration = previousScrollRestoration;
+      document.documentElement.style.scrollBehavior = previousScrollBehavior;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+    restoreScrollLockRef.current = restoreScrollLock;
+
+    return () => {
+      restoreScrollLock();
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -91,7 +117,18 @@ export default function LoadingScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isHidden) return;
+    restoreScrollLockRef.current?.();
+  }, [isHidden]);
+
   if (isHidden) return null;
+
+  const completeTransition = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    restoreScrollLockRef.current?.();
+    setIsHidden(true);
+  };
 
   return (
     <div
@@ -168,7 +205,7 @@ export default function LoadingScreen() {
         }`}
       </style>
       </div>
-      {isDone && canRunBalloonTransition && <BalloonTransition onComplete={() => setIsHidden(true)} />}
+      {isDone && canRunBalloonTransition && <BalloonTransition onComplete={completeTransition} />}
     </div>
   );
 }

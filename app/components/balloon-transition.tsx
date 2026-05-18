@@ -12,17 +12,31 @@ type BalloonAnimation = {
   mesh: THREE.Mesh;
   startX: number;
   startY: number;
+  startZ: number;
   currentY: number;
+  currentZ: number;
   endY: number;
+  endZ: number;
   startTime: number;
   duration: number;
   driftX: number;
   flySpeed: number;
+  baseScale: number;
+  endScale: number;
+  opacityStart: number;
+  opacityEnd: number;
+  swayPhase: number;
+  swaySpeed: number;
+  swayAmount: number;
   spin: THREE.Vector3;
   baseRotation: THREE.Euler;
 };
 
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, value)), 3);
+const easeInOutSine = (value: number) => {
+  const t = Math.min(1, Math.max(0, value));
+  return -(Math.cos(Math.PI * t) - 1) / 2;
+};
 const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const random = (min: number, max: number) => min + Math.random() * (max - min);
@@ -89,23 +103,37 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
       for (const balloon of animations) {
         const elapsed = time - startedAt - balloon.startTime;
         const progress = elapsed <= 0 ? 0 : easeOutCubic(elapsed / balloon.duration);
+        const depthProgress = elapsed <= 0 ? 0 : easeInOutSine(elapsed / balloon.duration);
         const xProgress = Math.min(1, Math.max(0, elapsed / balloon.duration));
         const targetY = lerp(balloon.startY, balloon.endY, progress);
+        const targetZ = lerp(balloon.startZ, balloon.endZ, depthProgress);
+        const targetScale = lerp(balloon.baseScale, balloon.endScale, depthProgress);
+        const opacityProgress = clamp((xProgress - balloon.opacityStart) / (balloon.opacityEnd - balloon.opacityStart), 0, 1);
+        const opacity = lerp(1, 0, easeOutCubic(opacityProgress));
+        const sway = Math.sin(time * 0.001 * balloon.swaySpeed + balloon.swayPhase) * balloon.swayAmount * (1 - opacityProgress * 0.6);
 
         balloon.currentY = lerp(balloon.currentY, targetY, balloon.flySpeed);
+        balloon.currentZ = lerp(balloon.currentZ, targetZ, balloon.flySpeed);
         if (elapsed >= balloon.duration && balloon.endY - balloon.currentY < 0.08) {
           balloon.currentY = balloon.endY;
+          balloon.currentZ = balloon.endZ;
         }
 
         balloon.mesh.position.y = balloon.currentY;
-        balloon.mesh.position.x = balloon.startX + balloon.driftX * xProgress;
+        balloon.mesh.position.x = balloon.startX + balloon.driftX * xProgress + sway;
+        balloon.mesh.position.z = balloon.currentZ;
+        balloon.mesh.scale.setScalar(targetScale);
         balloon.mesh.rotation.set(
-          balloon.baseRotation.x + balloon.spin.x * xProgress,
+          balloon.baseRotation.x + balloon.spin.x * xProgress + Math.sin(time * 0.0014 + balloon.swayPhase) * 0.06,
           balloon.baseRotation.y + balloon.spin.y * xProgress,
-          balloon.baseRotation.z + balloon.spin.z * xProgress,
+          balloon.baseRotation.z + balloon.spin.z * xProgress + Math.cos(time * 0.0012 + balloon.swayPhase) * 0.04,
         );
+        const materials = Array.isArray(balloon.mesh.material) ? balloon.mesh.material : [balloon.mesh.material];
+        materials.forEach((material) => {
+          material.opacity = opacity;
+        });
 
-        if (balloon.currentY >= balloon.endY) {
+        if (balloon.currentY >= balloon.endY || opacity <= 0.02) {
           exitedCount += 1;
         }
       }
@@ -154,19 +182,30 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
         animations = sortedMeshes.map((sourceMesh, index) => {
           const mesh = sourceMesh.clone();
           mesh.geometry = sourceMesh.geometry;
-          mesh.material = sourceMesh.material;
+          const sourceMaterials = Array.isArray(sourceMesh.material) ? sourceMesh.material : [sourceMesh.material];
+          const materials = sourceMaterials.map((material) => {
+            const cloned = material.clone();
+            cloned.transparent = true;
+            cloned.opacity = 1;
+            cloned.depthWrite = false;
+            return cloned;
+          });
+          mesh.material = Array.isArray(sourceMesh.material) ? materials : materials[0];
 
-          const scale = random(0.4, 1.2);
+          const isNearCamera = index % 13 === 0 || index < 8;
+          const baseScale = random(0.42, 1.05) * (isNearCamera ? random(1.35, 1.9) : 1);
           const col = index % numCols;
           const row = Math.floor(index / numCols);
           const gridX = ((col + 0.5) / numCols) * totalWidth - totalWidth / 2;
-          const startX = clamp(gridX + random(-0.3, 0.3), -2.5, 2.5);
-          const startY = random(-14, -8) - row * 0.18;
-          const endY = random(25, 31);
-          const z = random(-2, 2);
+          const startX = isNearCamera ? random(-1.8, 1.8) : clamp(gridX + random(-0.3, 0.3), -2.5, 2.5);
+          const startY = isNearCamera ? random(-9.5, -6) : random(-14, -8) - row * 0.18;
+          const endY = isNearCamera ? random(12, 18) : random(23, 30);
+          const startZ = isNearCamera ? random(-1.6, 0.8) : random(-3.2, 1.4);
+          const endZ = isNearCamera ? random(5.4, 7.1) : random(2.4, 5.4);
+          const endScale = baseScale * (isNearCamera ? random(3.8, 5.8) : random(1.55, 2.55));
 
-          mesh.position.set(startX, startY, z);
-          mesh.scale.setScalar(scale);
+          mesh.position.set(startX, startY, startZ);
+          mesh.scale.setScalar(baseScale);
           mesh.rotation.set(random(-0.2, 0.2), random(-0.35, 0.35), random(-0.2, 0.2));
           mesh.frustumCulled = false;
           balloonGroup.add(mesh);
@@ -175,13 +214,23 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
             mesh,
             startX,
             startY,
+            startZ,
             currentY: startY,
+            currentZ: startZ,
             endY,
-            startTime: random(0, 1200),
-            duration: random(1500, 2200),
-            driftX: random(-0.55, 0.55),
-            flySpeed: random(0.06, 0.11),
-            spin: new THREE.Vector3(random(-0.25, 0.25), random(-0.45, 0.45), random(-0.25, 0.25)),
+            endZ,
+            startTime: isNearCamera ? random(160, 820) : random(0, 1300),
+            duration: isNearCamera ? random(2100, 2850) : random(1800, 2800),
+            driftX: random(-0.72, 0.72),
+            flySpeed: random(0.07, 0.13),
+            baseScale,
+            endScale,
+            opacityStart: isNearCamera ? 0.68 : 0.8,
+            opacityEnd: isNearCamera ? 0.98 : 1,
+            swayPhase: random(0, Math.PI * 2),
+            swaySpeed: random(0.7, 1.35),
+            swayAmount: random(0.04, 0.16),
+            spin: new THREE.Vector3(random(-0.18, 0.18), random(-0.3, 0.3), random(-0.18, 0.18)),
             baseRotation: mesh.rotation.clone(),
           };
         });

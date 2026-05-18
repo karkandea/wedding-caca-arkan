@@ -56,8 +56,6 @@ const GALLERY_TWEAKS: GalleryTweaks = {
 };
 
 const GALLERY_STICKY_DELAY = 0.35;
-const STORY_SKY = "/sky%20new%20our%20story.png";
-
 const PHOTOS: StoryPhoto[] = [
   { src: "/hero/photo-left.jpeg", caption: "the easy yes", rotate: 3 },
   { src: "/hero/photo-center.png", caption: "our city corner", rotate: -1 },
@@ -298,7 +296,14 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
             inset: 0;
             overflow: hidden;
             isolation: isolate;
-            background: var(--gallery-bg, oklch(0.92 0.008 76));
+            background:
+              linear-gradient(
+                to bottom,
+                #F7F1E7 0%,
+                rgba(247,241,231,0.88) 18%,
+                var(--gallery-bg, oklch(0.92 0.008 76)) 54%
+              ),
+              var(--gallery-bg, oklch(0.92 0.008 76));
           }
 
           .gallery-mood-bg::before {
@@ -813,19 +818,6 @@ function PolaroidStack({
             >
               <Image src={photo.src} alt={photo.caption} fill sizes="320px" className="object-cover" />
             </div>
-            <div
-              style={{
-                fontFamily: "var(--font-cyrene)",
-                fontStyle: "italic",
-                fontWeight: 400,
-                fontSize: 18,
-                color: "#2B241D",
-                textAlign: "center",
-                padding: "16px 8px 14px",
-              }}
-            >
-              {photo.caption}
-            </div>
           </div>
         );
       })}
@@ -912,47 +904,9 @@ export default function Section3Video() {
         height: "calc(100vh + 500vh + 100vh)",
         width: "100%",
         overflow: "visible",
-        backgroundColor: "#0c4dbe",
-        backgroundImage: `
-          linear-gradient(to bottom, rgba(12,39,82,0.24), rgba(12,39,82,0.32)),
-          url("${STORY_SKY}")
-        `,
-        backgroundSize: "cover",
-        backgroundPosition: "center bottom",
-        backgroundRepeat: "no-repeat",
+        backgroundColor: "#F7F1E7",
       }}
     >
-      <div
-        style={{
-          height: "32vh",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          paddingBottom: 24,
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-din-alternate)",
-            fontSize: 11,
-            letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.76)",
-            opacity: clamp(1 - sectionScroll / 220),
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            textShadow: "0 8px 24px rgba(0,0,0,0.25)",
-          }}
-        >
-          <span style={{ display: "inline-block", width: 24, height: 1, background: "currentColor" }} />
-          scroll to begin
-          <span style={{ display: "inline-block", width: 24, height: 1, background: "currentColor" }} />
-        </div>
-      </div>
-
       <div
         style={{
           position: "sticky",
