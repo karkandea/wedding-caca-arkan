@@ -220,7 +220,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       blurTexture.image = blurCanvas;
       blurTexture.needsUpdate = true;
     };
-    cloudImg.src = assetPath("/cloud.png");
+    cloudImg.src = assetPath("/cloud.webp");
 
     type CloudInstance = {
       sharpMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
@@ -293,112 +293,118 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
 
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    loader.load(assetPath("/baloon.glb"), (gltf) => {
-      const source = gltf.scene;
-      source.updateMatrixWorld(true);
-      const sourceBox = new THREE.Box3().setFromObject(source);
-      const sourceSize = sourceBox.getSize(new THREE.Vector3());
-      const maxSourceDim = Math.max(sourceSize.x, sourceSize.y, sourceSize.z);
-      const normalizeScale = maxSourceDim > 0 ? 1.2 / maxSourceDim : 1;
+    let modelsLoaded = false;
+    const loadModels = () => {
+      if (modelsLoaded) return;
+      modelsLoaded = true;
 
-      BALLOON_CONFIGS.forEach((config, index) => {
-        const group = source.clone(true);
-        const materials: THREE.Material[] = [];
-        const tintMat = new THREE.MeshStandardMaterial({
-          color: BALLOON_COLORS[index % BALLOON_COLORS.length],
-          roughness: 0.28,
-          metalness: 0,
-          transparent: true,
-          opacity: 1,
-        });
-        tintMat.userData.baseOpacity = 1;
+      loader.load(assetPath("/baloon.glb"), (gltf) => {
+        const source = gltf.scene;
+        source.updateMatrixWorld(true);
+        const sourceBox = new THREE.Box3().setFromObject(source);
+        const sourceSize = sourceBox.getSize(new THREE.Vector3());
+        const maxSourceDim = Math.max(sourceSize.x, sourceSize.y, sourceSize.z);
+        const normalizeScale = maxSourceDim > 0 ? 1.2 / maxSourceDim : 1;
 
-        group.traverse((node) => {
-          if (!(node instanceof THREE.Mesh)) return;
-          node.material = tintMat;
-          node.castShadow = false;
-          node.receiveShadow = false;
-          node.frustumCulled = false;
-        });
-
-        const stringPoints: THREE.Vector3[] = [];
-        for (let pointIndex = 0; pointIndex <= 12; pointIndex += 1) {
-          const t = pointIndex / 12;
-          stringPoints.push(new THREE.Vector3(Math.sin(t * Math.PI) * 0.08, -0.65 - t * 2.8, 0));
-        }
-        const stringGeometry = new THREE.BufferGeometry().setFromPoints(stringPoints);
-        const stringMat = new THREE.LineBasicMaterial({
-          color: 0xf8efe2,
-          transparent: true,
-          opacity: 0.42,
-        });
-        stringMat.userData.baseOpacity = 0.42;
-        const stringLine = new THREE.Line(stringGeometry, stringMat);
-        group.add(stringLine);
-
-        materials.push(tintMat, stringMat);
-        group.position.set(config.x, config.y, config.baseZ);
-        group.scale.setScalar(normalizeScale * config.scale);
-        group.rotation.set(0.08 * Math.sin(config.phase), config.phase, 0.08 * Math.cos(config.phase));
-        balloonGroup.add(group);
-        balloons.push({ group, config, materials });
-      });
-    });
-
-    loader.load(assetPath("/my wedding book copy 2.glb"), (gltf) => {
-      const book = gltf.scene;
-      book.traverse((node) => {
-        if (!(node instanceof THREE.Mesh)) return;
-        node.castShadow = true;
-        node.receiveShadow = true;
-        if (Array.isArray(node.material)) {
-          node.material.forEach((material) => {
-            material.side = THREE.FrontSide;
+        BALLOON_CONFIGS.forEach((config, index) => {
+          const group = source.clone(true);
+          const materials: THREE.Material[] = [];
+          const tintMat = new THREE.MeshStandardMaterial({
+            color: BALLOON_COLORS[index % BALLOON_COLORS.length],
+            roughness: 0.28,
+            metalness: 0,
+            transparent: true,
+            opacity: 1,
           });
-        } else {
-          node.material.side = THREE.FrontSide;
-        }
+          tintMat.userData.baseOpacity = 1;
+
+          group.traverse((node) => {
+            if (!(node instanceof THREE.Mesh)) return;
+            node.material = tintMat;
+            node.castShadow = false;
+            node.receiveShadow = false;
+            node.frustumCulled = false;
+          });
+
+          const stringPoints: THREE.Vector3[] = [];
+          for (let pointIndex = 0; pointIndex <= 12; pointIndex += 1) {
+            const t = pointIndex / 12;
+            stringPoints.push(new THREE.Vector3(Math.sin(t * Math.PI) * 0.08, -0.65 - t * 2.8, 0));
+          }
+          const stringGeometry = new THREE.BufferGeometry().setFromPoints(stringPoints);
+          const stringMat = new THREE.LineBasicMaterial({
+            color: 0xf8efe2,
+            transparent: true,
+            opacity: 0.42,
+          });
+          stringMat.userData.baseOpacity = 0.42;
+          const stringLine = new THREE.Line(stringGeometry, stringMat);
+          group.add(stringLine);
+
+          materials.push(tintMat, stringMat);
+          group.position.set(config.x, config.y, config.baseZ);
+          group.scale.setScalar(normalizeScale * config.scale);
+          group.rotation.set(0.08 * Math.sin(config.phase), config.phase, 0.08 * Math.cos(config.phase));
+          balloonGroup.add(group);
+          balloons.push({ group, config, materials });
+        });
       });
 
-      book.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(book);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = maxDim > 0 ? 3.2 / maxDim : 1;
-      book.position.sub(center);
-      book.scale.setScalar(scale);
-      book.rotation.set(-0.08, -0.28, 0);
-      bookModel = book;
-      bookRoot.add(book);
+      loader.load(assetPath("/my wedding book copy 2.glb"), (gltf) => {
+        const book = gltf.scene;
+        book.traverse((node) => {
+          if (!(node instanceof THREE.Mesh)) return;
+          node.castShadow = true;
+          node.receiveShadow = true;
+          if (Array.isArray(node.material)) {
+            node.material.forEach((material) => {
+              material.side = THREE.FrontSide;
+            });
+          } else {
+            node.material.side = THREE.FrontSide;
+          }
+        });
 
-      mixer = new THREE.AnimationMixer(book);
-      const clip =
-        THREE.AnimationClip.findByName(gltf.animations, "BookCover_HingeAction") ??
-        gltf.animations[0];
+        book.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(book);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 3.2 / maxDim : 1;
+        book.position.sub(center);
+        book.scale.setScalar(scale);
+        book.rotation.set(-0.08, -0.28, 0);
+        bookModel = book;
+        bookRoot.add(book);
 
-      if (clip) {
-        const correctedClip = new THREE.AnimationClip(
-          `${clip.name}_OpenUp`,
-          clip.duration,
-          clip.tracks.map((track) => {
-            const correctedTrack = track.clone();
-            if (correctedTrack.name === "BookCover_Hinge.quaternion") {
-              for (let index = 0; index < correctedTrack.values.length; index += 4) {
-                correctedTrack.values[index + 2] *= -1;
+        mixer = new THREE.AnimationMixer(book);
+        const clip =
+          THREE.AnimationClip.findByName(gltf.animations, "BookCover_HingeAction") ??
+          gltf.animations[0];
+
+        if (clip) {
+          const correctedClip = new THREE.AnimationClip(
+            `${clip.name}_OpenUp`,
+            clip.duration,
+            clip.tracks.map((track) => {
+              const correctedTrack = track.clone();
+              if (correctedTrack.name === "BookCover_Hinge.quaternion") {
+                for (let index = 0; index < correctedTrack.values.length; index += 4) {
+                  correctedTrack.values[index + 2] *= -1;
+                }
               }
-            }
-            return correctedTrack;
-          })
-        );
+              return correctedTrack;
+            })
+          );
 
-        action = mixer.clipAction(correctedClip);
-        action.play();
-        action.paused = true;
-        action.time = 0;
-        mixer.update(0);
-      }
-    });
+          action = mixer.clipAction(correctedClip);
+          action.play();
+          action.paused = true;
+          action.time = 0;
+          mixer.update(0);
+        }
+      });
+    };
 
     const updateScrollProgress = () => {
       const rect = section.getBoundingClientRect();
@@ -551,16 +557,53 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       }
 
       renderer.render(scene, camera);
+      frameId = isSceneVisible ? window.requestAnimationFrame(animate) : 0;
+    };
+
+    let isSceneVisible = false;
+    const startAnimation = () => {
+      if (frameId) return;
       frameId = window.requestAnimationFrame(animate);
     };
+    const stopAnimation = () => {
+      if (!frameId) return;
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+    };
+
+    const loadObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        loadModels();
+        loadObserver.disconnect();
+      },
+      { root: null, rootMargin: "900px 0px", threshold: 0 },
+    );
+    loadObserver.observe(section);
+
+    const renderObserver = new IntersectionObserver(
+      ([entry]) => {
+        isSceneVisible = Boolean(entry?.isIntersecting);
+        if (isSceneVisible) {
+          resize();
+          updateScrollProgress();
+          startAnimation();
+        } else {
+          stopAnimation();
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 0 },
+    );
+    renderObserver.observe(section);
 
     resize();
     updateScrollProgress();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", resize);
-    frameId = window.requestAnimationFrame(animate);
 
     return () => {
+      loadObserver.disconnect();
+      renderObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", resize);
       if (frameId) window.cancelAnimationFrame(frameId);

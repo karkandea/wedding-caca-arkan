@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { assetPath } from "../lib/asset-path";
+import { ShimmerPicture } from "./shimmer-image";
 
 type StoryCard = {
   side: "left" | "right";
@@ -21,8 +22,8 @@ type StoryCard = {
   mobileImage?: string;
 };
 
-const TORN_PAPER = assetPath("/our-story-torn-paper.png");
-const SKY = assetPath("/sky new our story.png");
+const TORN_PAPER = assetPath("/our-story-torn-paper.webp");
+const SKY = assetPath("/sky new our story.webp");
 
 const STORY_CARDS: StoryCard[] = [
   {
@@ -40,8 +41,8 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Kami bertemu di komunitas yang sama. Awalnya Arkan mengirim chat duluan, lalu Salsa merespons karena ternyata Arkan bisa bermain musik.\n\nDari obrolan kecil itu, percakapan kami terus berlanjut, sampai akhirnya menjadi awal dari cerita yang nggak pernah kami duga.",
     place: "SALSA & ARKAN",
-    image: assetPath("/ourstory asset/foto 1.png"),
-    mobileImage: assetPath("/ourstory asset/foto 1 mobile.png"),
+    image: assetPath("/ourstory asset/foto 1.webp"),
+    mobileImage: assetPath("/ourstory asset/foto 1 mobile.webp"),
   },
   {
     side: "right",
@@ -58,7 +59,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Setelah cukup lama ngobrol lewat chat, kami akhirnya janjian bertemu di Mall Bintaro. Hari itu kami nonton film horor, katanya biar nggak terlalu canggung.\n\nTapi nyatanya, kami bahkan lupa judul filmnya. Mungkin karena yang lebih terasa bukan filmnya, tapi deg-degan dan canggungnya pertemuan pertama.",
     place: "THE BEGINNING",
-    image: assetPath("/ourstory asset/foto 2.png"),
+    image: assetPath("/ourstory asset/foto 2.webp"),
   },
   {
     side: "left",
@@ -75,7 +76,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Saat Covid datang, hubungan kami berjalan LDR. Musik jadi salah satu cara kami tetap dekat, dari cover lagu sampai bikin karya bersama secara online.\n\nWalau akhirnya sadar musik bukan jalan karier utama kami, perjalanan itu membawa kami mencoba hal baru: memulai karier di dunia IT, dan melewati semuanya bareng-bareng.",
     place: "EVERYDAY LOVE",
-    image: assetPath("/ourstory asset/foto 3.jpg"),
+    image: assetPath("/ourstory asset/foto 3.webp"),
   },
   {
     side: "right",
@@ -92,7 +93,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Setelah enam tahun tumbuh, belajar, dan melewati banyak hal bersama, akhirnya perjalanan kami sampai di titik ini.\n\nHari ini bukan akhir dari cerita kami, tapi awal dari babak baru yang akan kami jalani sebagai satu keluarga.",
     place: "SAVE THE DATE",
-    image: assetPath("/ourstory asset/foto 4.png"),
+    image: assetPath("/ourstory asset/foto 4.webp"),
   },
 ];
 
@@ -319,30 +320,36 @@ export default function OurStorySection() {
     };
 
     const loader = new GLTFLoader();
-    loader.load(
-      assetPath("/3d/ring/wedding_rings.glb"),
-      (gltf) => {
-        const arkanNodes: THREE.Mesh[] = [];
-        const salsaNodes: THREE.Mesh[] = [];
+    let ringsLoaded = false;
+    const loadRings = () => {
+      if (ringsLoaded) return;
+      ringsLoaded = true;
 
-        gltf.scene.traverse((node) => {
-          if (!(node instanceof THREE.Mesh)) return;
-          const name = node.name.toUpperCase();
-          if (name.includes("ARKAN")) arkanNodes.push(node);
-          else if (name.includes("SALSA")) salsaNodes.push(node);
-        });
+      loader.load(
+        assetPath("/3d/ring/cincin.glb"),
+        (gltf) => {
+          const arkanNodes: THREE.Mesh[] = [];
+          const salsaNodes: THREE.Mesh[] = [];
 
-        attachToRing(arkanNodes, pivot1, ring1Mat, 1.15);
-        attachToRing(salsaNodes, pivot2, ring2Mat, 1);
-        mesh1.visible = false;
-        mesh2.visible = false;
-      },
-      undefined,
-      () => {
-        mesh1.visible = true;
-        mesh2.visible = true;
-      },
-    );
+          gltf.scene.traverse((node) => {
+            if (!(node instanceof THREE.Mesh)) return;
+            const name = node.name.toUpperCase();
+            if (name.includes("ARKAN")) arkanNodes.push(node);
+            else if (name.includes("SALSA")) salsaNodes.push(node);
+          });
+
+          attachToRing(arkanNodes, pivot1, ring1Mat, 1.15);
+          attachToRing(salsaNodes, pivot2, ring2Mat, 1);
+          mesh1.visible = false;
+          mesh2.visible = false;
+        },
+        undefined,
+        () => {
+          mesh1.visible = true;
+          mesh2.visible = true;
+        },
+      );
+    };
 
     const resize = () => {
       const width = container.clientWidth || window.innerWidth;
@@ -396,15 +403,52 @@ export default function OurStorySection() {
       pivot2.position.set(ring2.posX, -0.06 - floatY, ring2.posZ);
 
       renderer.render(scene, camera);
+      frameId = isSceneVisible ? window.requestAnimationFrame(animate) : 0;
+    };
+
+    let isSceneVisible = false;
+    const observedSection = sectionRef.current ?? container;
+    const startAnimation = () => {
+      if (frameId) return;
       frameId = window.requestAnimationFrame(animate);
     };
+    const stopAnimation = () => {
+      if (!frameId) return;
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+    };
+
+    const loadObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        loadRings();
+        loadObserver.disconnect();
+      },
+      { root: null, rootMargin: "700px 0px", threshold: 0 },
+    );
+    loadObserver.observe(observedSection);
+
+    const renderObserver = new IntersectionObserver(
+      ([entry]) => {
+        isSceneVisible = Boolean(entry?.isIntersecting);
+        if (isSceneVisible) {
+          resize();
+          startAnimation();
+        } else {
+          stopAnimation();
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 0 },
+    );
+    renderObserver.observe(observedSection);
 
     resize();
     window.setTimeout(resize, 100);
     window.addEventListener("resize", resize);
-    animate();
 
     return () => {
+      loadObserver.disconnect();
+      renderObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.cancelAnimationFrame(frameId);
       geo1.dispose();
@@ -459,20 +503,23 @@ export default function OurStorySection() {
               style={{ "--tilt": card.tilt } as CSSProperties}
             >
               <div className="slot-img">
-                {index === 0 && <img className="story-sticker-one" src={assetPath("/ourstory asset/stiker 1.png")} alt="" />}
+                {index === 0 && <img className="story-sticker-one" src={assetPath("/ourstory asset/stiker 1.webp")} alt="" />}
                 <figure className="paper">
-                  <picture>
-                    {card.mobileImage && <source media="(max-width: 820px)" srcSet={card.mobileImage} />}
-                    <img className={index === 0 ? "story-photo story-photo--first" : "story-photo"} src={card.image} alt="" />
-                  </picture>
+                  <ShimmerPicture
+                    sources={card.mobileImage ? [{ media: "(max-width: 820px)", srcSet: card.mobileImage }] : []}
+                    className={index === 0 ? "story-photo story-photo--first" : "story-photo"}
+                    src={card.image}
+                    alt=""
+                    shimmerClassName="story-photo-shimmer"
+                  />
                 </figure>
                 {index === 1 && (
                   <div className="story-sticker-wrap" aria-hidden="true">
-                    <img className="story-sticker" src={assetPath("/ourstory asset/stiker.png")} alt="" />
-                    <img className="story-pin" src={assetPath("/ourstory asset/pin.png")} alt="" />
+                    <img className="story-sticker" src={assetPath("/ourstory asset/stiker.webp")} alt="" />
+                    <img className="story-pin" src={assetPath("/ourstory asset/pin.webp")} alt="" />
                   </div>
                 )}
-                {index === 2 && <img className="story-sticker-three" src={assetPath("/ourstory asset/stiker 3.png")} alt="" />}
+                {index === 2 && <img className="story-sticker-three" src={assetPath("/ourstory asset/stiker 3.webp")} alt="" />}
                 <div className="stamp">{card.stamp}</div>
                 <div className="caption">{card.caption}</div>
               </div>
@@ -733,6 +780,14 @@ export default function OurStorySection() {
             height: calc(100% - 12px);
             object-fit: cover;
             filter: saturate(0.92) contrast(1.02);
+            -webkit-mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
+            mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
+          }
+
+          .paper .story-photo-shimmer {
+            inset: 6px;
+            width: calc(100% - 12px);
+            height: calc(100% - 12px);
             -webkit-mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
             mask: url("${TORN_PAPER}") center / 100% 100% no-repeat;
           }

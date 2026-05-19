@@ -126,7 +126,7 @@ export default function RingSection() {
     // (GLB engraved text chars will be added as children of pivot1/2)
     const loader = new GLTFLoader();
     loader.load(
-      "/3d/ring/wedding_rings.glb",
+      "/3d/ring/cincin.glb",
       (gltf) => {
         const arkanNodes: THREE.Mesh[] = [];
         const salsaNodes: THREE.Mesh[] = [];

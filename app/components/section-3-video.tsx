@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { type CSSProperties, type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
+import { ShimmerImage } from "./shimmer-image";
 
 type StoryPhoto = {
   src: string;
@@ -53,7 +54,7 @@ type GalleryTweaks = {
   contrast: number;
   blur: number;
   bgLift: number;
-  pngScale: number;
+  assetScale: number;
 };
 
 const GALLERY_TWEAKS: GalleryTweaks = {
@@ -61,26 +62,26 @@ const GALLERY_TWEAKS: GalleryTweaks = {
   contrast: 8,
   blur: 2,
   bgLift: 90,
-  pngScale: 1,
+  assetScale: 1,
 };
 
 const GALLERY_STICKY_DELAY = 0.35;
 const PHOTOS: StoryPhoto[] = [
-  { src: assetPath("/bg gallery/photo 1.png"), caption: "the easy yes", rotate: 3 },
-  { src: assetPath("/bg gallery/photo 2.png"), caption: "our city corner", rotate: -1 },
-  { src: assetPath("/bg gallery/photo 3.png"), caption: "coffee, always", rotate: 2 },
-  { src: assetPath("/bg gallery/photo 4.png"), caption: "the night we met", rotate: -3 },
+  { src: assetPath("/bg gallery/photo 1.webp"), caption: "the easy yes", rotate: 3 },
+  { src: assetPath("/bg gallery/photo 2.webp"), caption: "our city corner", rotate: -1 },
+  { src: assetPath("/bg gallery/photo 3.webp"), caption: "coffee, always", rotate: 2 },
+  { src: assetPath("/bg gallery/photo 4.webp"), caption: "the night we met", rotate: -3 },
 ];
 
 const HERO_MOOD_PHOTOS = [
-  assetPath("/hero/photo lain 1.png"),
-  assetPath("/hero/photo lain 2.png"),
-  assetPath("/hero/photo web 1.png"),
-  assetPath("/hero/photo web 2.png"),
-  assetPath("/hero/photo-center.png"),
-  assetPath("/hero/photo-kedua.png"),
-  assetPath("/hero/photo lain 1.png"),
-  assetPath("/hero/photo lain 2.png"),
+  assetPath("/hero/photo lain 1.webp"),
+  assetPath("/hero/photo lain 2.webp"),
+  assetPath("/hero/photo web 1.webp"),
+  assetPath("/hero/photo web 2.webp"),
+  assetPath("/hero/photo-center.webp"),
+  assetPath("/hero/photo-kedua.webp"),
+  assetPath("/hero/photo lain 1.webp"),
+  assetPath("/hero/photo lain 2.webp"),
 ] as const;
 
 const MOOD_OBJECTS: MoodObject[] = [
@@ -162,7 +163,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "ringBoxImage") {
     return (
       <div className="gallery-mood-ringbox-image">
-        <Image src={assetPath("/bg gallery/box ring.png")} alt="" fill sizes="220px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/box ring.webp")} alt="" fill sizes="220px" className="object-contain" />
       </div>
     );
   }
@@ -170,7 +171,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "ringImage") {
     return (
       <div className="gallery-mood-ring-image">
-        <Image src={assetPath("/bg gallery/ring.png")} alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/ring.webp")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -178,7 +179,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "flowerImage") {
     return (
       <div className="gallery-mood-flower-image">
-        <Image src={assetPath("/bg gallery/bunga.png")} alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/bunga.webp")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -186,7 +187,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "paperScrollImage") {
     return (
       <div className="gallery-mood-paper-scroll-image">
-        <Image src={assetPath("/bg gallery/paper scroll.png")} alt="" fill sizes="180px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/paper scroll.webp")} alt="" fill sizes="180px" className="object-contain" />
       </div>
     );
   }
@@ -194,7 +195,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "dryLemonImage") {
     return (
       <div className="gallery-mood-dry-lemon-image">
-        <Image src={assetPath("/bg gallery/dry lemon.png")} alt="" fill sizes="160px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/dry lemon.webp")} alt="" fill sizes="160px" className="object-contain" />
       </div>
     );
   }
@@ -202,7 +203,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "dryLemon2Image") {
     return (
       <div className="gallery-mood-dry-lemon-2-image">
-        <Image src={assetPath("/bg gallery/dry lemon 2.png")} alt="" fill sizes="190px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/dry lemon 2.webp")} alt="" fill sizes="190px" className="object-contain" />
       </div>
     );
   }
@@ -210,7 +211,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "whiteFlowerImage") {
     return (
       <div className="gallery-mood-white-flower-image">
-        <Image src={assetPath("/bg gallery/white flower.png")} alt="" fill sizes="190px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/white flower.webp")} alt="" fill sizes="190px" className="object-contain" />
       </div>
     );
   }
@@ -218,7 +219,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "coinImage") {
     return (
       <div className="gallery-mood-coin-image">
-        <Image src={assetPath("/bg gallery/coin.png")} alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/coin.webp")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -226,7 +227,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "upBookImage") {
     return (
       <div className="gallery-mood-up-book-image">
-        <Image src={assetPath("/bg gallery/Up Book.png")} alt="" fill sizes="180px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/Up Book.webp")} alt="" fill sizes="180px" className="object-contain" />
       </div>
     );
   }
@@ -322,7 +323,7 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
           "--gallery-bg": `oklch(${bgLightness} ${bgChroma} ${bgHue})`,
           "--gallery-overlay": `rgba(120, 110, 90, ${GALLERY_TWEAKS.contrast / 200})`,
           "--gallery-blur": `${GALLERY_TWEAKS.blur}px`,
-          "--gallery-png-scale": GALLERY_TWEAKS.pngScale,
+          "--gallery-asset-scale": GALLERY_TWEAKS.assetScale,
         } as CSSProperties
       }
     >
@@ -333,7 +334,7 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
       />
       <div className="gallery-mood-vignette" />
       <style>
@@ -432,8 +433,8 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
           .gallery-mood-object--whiteFlowerImage .gallery-mood-inner,
           .gallery-mood-object--coinImage .gallery-mood-inner,
           .gallery-mood-object--upBookImage .gallery-mood-inner {
-            width: calc(100% * var(--gallery-png-scale, 1));
-            height: calc(100% * var(--gallery-png-scale, 1));
+            width: calc(100% * var(--gallery-asset-scale, 1));
+            height: calc(100% * var(--gallery-asset-scale, 1));
             background: transparent;
             box-shadow: none;
             border-radius: 0;
@@ -810,8 +811,8 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
             .gallery-mood-object--whiteFlowerImage .gallery-mood-inner,
             .gallery-mood-object--coinImage .gallery-mood-inner,
             .gallery-mood-object--upBookImage .gallery-mood-inner {
-              width: calc(72% * var(--gallery-png-scale, 1));
-              height: calc(72% * var(--gallery-png-scale, 1));
+              width: calc(72% * var(--gallery-asset-scale, 1));
+              height: calc(72% * var(--gallery-asset-scale, 1));
             }
 
           }
@@ -907,7 +908,7 @@ function PolaroidStack({
                 borderRadius: 2,
               }}
             >
-              <Image src={photo.src} alt={photo.caption} fill sizes="320px" className="object-cover" />
+              <ShimmerImage src={photo.src} alt={photo.caption} fill sizes="320px" className="object-cover" />
             </div>
           </div>
         );

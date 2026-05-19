@@ -169,7 +169,7 @@ export default function HeroSection({ accentColor, coupleNames, heroReady, photo
         className="flex w-full items-center gap-2 border px-4 py-2 sm:px-6"
       >
         <div className="relative h-11 w-11 overflow-hidden rounded-full bg-white/80 shadow-md">
-          <Image src={assetPath("/logo.png")} alt="Logo" fill sizes="44px" className="object-cover" />
+          <Image src={assetPath("/logo new 1.webp")} alt="Logo" fill sizes="44px" className="object-cover" />
         </div>
         <div className="flex items-center gap-4 sm:gap-7">
           {["The Day", "Travel", "Registry", "FAQ"].map((label) => (
