@@ -1,11 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
-import BalloonTransition from "./balloon-transition";
+
+const BalloonTransition = dynamic(() => import("./balloon-transition"), { ssr: false });
 
 const HERO_ASSETS = [assetPath("/hero/photo lain 1.webp"), assetPath("/hero/photo lain 2.webp"), assetPath("/hero/photo-center.webp")];
-const BALLOON_ASSET = assetPath("/hero/balloons/baloon.glb");
 
 async function preloadAsset(src: string) {
   try {
@@ -90,7 +91,7 @@ export default function LoadingScreen() {
     };
 
     const preloadCriticalAssets = async () => {
-      const assets = [...HERO_ASSETS, BALLOON_ASSET];
+      const assets = HERO_ASSETS;
       totalAssets = assets.length;
 
       await Promise.all(

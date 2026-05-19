@@ -310,12 +310,31 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
 }
 
 function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivElement | null> }) {
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const bgLightness = 0.94 - (GALLERY_TWEAKS.contrast / 100) * 0.25;
   const bgChroma = 0.005 + (GALLERY_TWEAKS.warmth / 100) * 0.008;
   const bgHue = 70 + (GALLERY_TWEAKS.warmth / 100) * 20;
 
+  useEffect(() => {
+    const node = layerRef.current;
+    if (!node || shouldLoadVideo) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoadVideo(true);
+        observer.disconnect();
+      },
+      { root: null, rootMargin: "1200px 0px", threshold: 0 },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [layerRef, shouldLoadVideo]);
+
   return (
     <div
+      ref={layerRef}
       className="gallery-mood-bg"
       aria-hidden="true"
       style={
@@ -329,7 +348,7 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
     >
       <video
         className="gallery-mood-video"
-        src={assetPath("/bg gallery/looping-video-v1.mp4")}
+        src={shouldLoadVideo ? assetPath("/bg gallery/looping-video-v1.mp4") : undefined}
         autoPlay
         muted
         loop
