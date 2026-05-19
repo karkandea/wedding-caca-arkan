@@ -16,9 +16,13 @@ type WeddingPageProps = {
 function DeferredSection({
   children,
   placeholder,
+  minHeight,
+  background,
 }: {
   children: ReactNode;
   placeholder: ReactNode;
+  minHeight: string;
+  background: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [shouldMount, setShouldMount] = useState(false);
@@ -40,7 +44,11 @@ function DeferredSection({
     return () => observer.disconnect();
   }, [shouldMount]);
 
-  return <div ref={ref}>{shouldMount ? children : placeholder}</div>;
+  return (
+    <div ref={ref} style={{ minHeight, background }}>
+      {shouldMount ? children : placeholder}
+    </div>
+  );
 }
 
 export default function WeddingPage({ guestName }: WeddingPageProps) {
@@ -50,11 +58,15 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
       <main className="flex flex-1 flex-col">
         <ImageSequenceSection />
         <DeferredSection
+          minHeight="460vh"
+          background="#0c4dbe"
           placeholder={<section id="our-story" aria-hidden="true" style={{ minHeight: "460vh", background: "#0c4dbe" }} />}
         >
           <OurStorySection />
         </DeferredSection>
         <DeferredSection
+          minHeight="700vh"
+          background="#F7F1E7"
           placeholder={
             <section
               id="gallery-section"
@@ -66,6 +78,8 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
           <Section3Video />
         </DeferredSection>
         <DeferredSection
+          minHeight="600vh"
+          background="#0a1432"
           placeholder={<section aria-hidden="true" style={{ minHeight: "600vh", background: "#0a1432" }} />}
         >
           <BookSection guestName={guestName} />

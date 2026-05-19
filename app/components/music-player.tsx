@@ -18,6 +18,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
   const isManuallyPausedRef = useRef(false);
   const retryTimersRef = useRef<number[]>([]);
   const rotationRef = useRef(0);
+  const sourceAttachedRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const isNav = variant === "nav";
 
@@ -25,16 +26,18 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.volume = 0.58;
-    audio.currentTime = 0;
-    audio.autoplay = true;
-    audio.load();
-
     const syncState = () => setIsPlaying(!audio.paused);
+    const attachSource = () => {
+      if (sourceAttachedRef.current) return;
+      sourceAttachedRef.current = true;
+      audio.src = TRACK_SRC;
+      audio.load();
+    };
     const playFromStart = async () => {
       if (isManuallyPausedRef.current) return;
 
       try {
+        attachSource();
         if (!hasStartedRef.current) {
           audio.currentTime = 0;
           hasStartedRef.current = true;
@@ -57,9 +60,6 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
       );
     };
 
-    void playFromStart();
-    queuePlayAttempts();
-
     const unlockAudio = () => {
       if (isManuallyPausedRef.current) return;
       if (!audio.paused) return;
@@ -69,6 +69,9 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
     const playAfterLoading = () => {
       queuePlayAttempts();
     };
+
+    audio.volume = 0.58;
+    audio.autoplay = true;
 
     window.addEventListener("pointerdown", unlockAudio, { passive: true });
     window.addEventListener("touchstart", unlockAudio, { passive: true });
@@ -130,6 +133,11 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
     if (audio.paused) {
       isManuallyPausedRef.current = false;
       try {
+        if (!sourceAttachedRef.current) {
+          sourceAttachedRef.current = true;
+          audio.src = TRACK_SRC;
+          audio.load();
+        }
         await audio.play();
         setIsPlaying(true);
       } catch {
@@ -146,7 +154,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
 
   return (
     <>
-      <audio ref={audioRef} src={TRACK_SRC} preload="auto" autoPlay loop playsInline />
+      <audio ref={audioRef} preload="none" autoPlay loop playsInline />
       <button
         type="button"
         onClick={togglePlayback}
