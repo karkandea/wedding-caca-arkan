@@ -97,7 +97,11 @@ const BALLOON_COLORS = [
   0x6fcf97,
 ];
 
-export default function BookSection() {
+type BookSectionProps = {
+  guestName?: string;
+};
+
+export default function BookSection({ guestName = "Novan & Partner" }: BookSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -216,7 +220,7 @@ export default function BookSection() {
       blurTexture.image = blurCanvas;
       blurTexture.needsUpdate = true;
     };
-    cloudImg.src = "/cloud.png";
+    cloudImg.src = assetPath("/cloud.png");
 
     type CloudInstance = {
       sharpMesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>;
@@ -618,7 +622,7 @@ export default function BookSection() {
               className="m-0 mt-7 text-[clamp(22px,3.8vw,46px)] font-semibold uppercase leading-none tracking-[0.16em] max-sm:mt-5 max-sm:text-[clamp(19px,6vw,28px)]"
               style={{ fontFamily: "var(--font-din-alternate), sans-serif" }}
             >
-              Novan &amp; Partner
+              {guestName}
             </h2>
             <p
               className="m-0 mt-8 text-[clamp(14px,2.2vw,24px)] leading-[1.35] max-sm:mt-5 max-sm:text-[clamp(12px,3.6vw,16px)]"
