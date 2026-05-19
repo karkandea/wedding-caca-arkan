@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { assetPath } from "../lib/asset-path";
 
 type StoryCard = {
   side: "left" | "right";
@@ -20,8 +21,8 @@ type StoryCard = {
   mobileImage?: string;
 };
 
-const TORN_PAPER = "/our-story-torn-paper.png";
-const SKY = "/sky%20new%20our%20story.png";
+const TORN_PAPER = assetPath("/our-story-torn-paper.png");
+const SKY = assetPath("/sky new our story.png");
 
 const STORY_CARDS: StoryCard[] = [
   {
@@ -39,8 +40,8 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Kami bertemu di komunitas yang sama. Awalnya Arkan mengirim chat duluan, lalu Salsa merespons karena ternyata Arkan bisa bermain musik.\n\nDari obrolan kecil itu, percakapan kami terus berlanjut, sampai akhirnya menjadi awal dari cerita yang nggak pernah kami duga.",
     place: "SALSA & ARKAN",
-    image: "/ourstory%20asset/foto%201.png",
-    mobileImage: "/ourstory%20asset/foto%201%20mobile.png",
+    image: assetPath("/ourstory asset/foto 1.png"),
+    mobileImage: assetPath("/ourstory asset/foto 1 mobile.png"),
   },
   {
     side: "right",
@@ -57,7 +58,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Setelah cukup lama ngobrol lewat chat, kami akhirnya janjian bertemu di Mall Bintaro. Hari itu kami nonton film horor, katanya biar nggak terlalu canggung.\n\nTapi nyatanya, kami bahkan lupa judul filmnya. Mungkin karena yang lebih terasa bukan filmnya, tapi deg-degan dan canggungnya pertemuan pertama.",
     place: "THE BEGINNING",
-    image: "/ourstory%20asset/foto%202.png",
+    image: assetPath("/ourstory asset/foto 2.png"),
   },
   {
     side: "left",
@@ -74,7 +75,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Saat Covid datang, hubungan kami berjalan LDR. Musik jadi salah satu cara kami tetap dekat, dari cover lagu sampai bikin karya bersama secara online.\n\nWalau akhirnya sadar musik bukan jalan karier utama kami, perjalanan itu membawa kami mencoba hal baru: memulai karier di dunia IT, dan melewati semuanya bareng-bareng.",
     place: "EVERYDAY LOVE",
-    image: "/ourstory%20asset/foto%203.jpg",
+    image: assetPath("/ourstory asset/foto 3.jpg"),
   },
   {
     side: "right",
@@ -91,7 +92,7 @@ const STORY_CARDS: StoryCard[] = [
     body:
       "Setelah enam tahun tumbuh, belajar, dan melewati banyak hal bersama, akhirnya perjalanan kami sampai di titik ini.\n\nHari ini bukan akhir dari cerita kami, tapi awal dari babak baru yang akan kami jalani sebagai satu keluarga.",
     place: "SAVE THE DATE",
-    image: "/ourstory%20asset/foto%204.png",
+    image: assetPath("/ourstory asset/foto 4.png"),
   },
 ];
 
@@ -319,7 +320,7 @@ export default function OurStorySection() {
 
     const loader = new GLTFLoader();
     loader.load(
-      "/3d/ring/wedding_rings.glb",
+      assetPath("/3d/ring/wedding_rings.glb"),
       (gltf) => {
         const arkanNodes: THREE.Mesh[] = [];
         const salsaNodes: THREE.Mesh[] = [];
@@ -458,7 +459,7 @@ export default function OurStorySection() {
               style={{ "--tilt": card.tilt } as CSSProperties}
             >
               <div className="slot-img">
-                {index === 0 && <img className="story-sticker-one" src="/ourstory%20asset/stiker%201.png" alt="" />}
+                {index === 0 && <img className="story-sticker-one" src={assetPath("/ourstory asset/stiker 1.png")} alt="" />}
                 <figure className="paper">
                   <picture>
                     {card.mobileImage && <source media="(max-width: 820px)" srcSet={card.mobileImage} />}
@@ -467,11 +468,11 @@ export default function OurStorySection() {
                 </figure>
                 {index === 1 && (
                   <div className="story-sticker-wrap" aria-hidden="true">
-                    <img className="story-sticker" src="/ourstory%20asset/stiker.png" alt="" />
-                    <img className="story-pin" src="/ourstory%20asset/pin.png" alt="" />
+                    <img className="story-sticker" src={assetPath("/ourstory asset/stiker.png")} alt="" />
+                    <img className="story-pin" src={assetPath("/ourstory asset/pin.png")} alt="" />
                   </div>
                 )}
-                {index === 2 && <img className="story-sticker-three" src="/ourstory%20asset/stiker%203.png" alt="" />}
+                {index === 2 && <img className="story-sticker-three" src={assetPath("/ourstory asset/stiker 3.png")} alt="" />}
                 <div className="stamp">{card.stamp}</div>
                 <div className="caption">{card.caption}</div>
               </div>

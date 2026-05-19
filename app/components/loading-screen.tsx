@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 import BalloonTransition from "./balloon-transition";
 
-const HERO_ASSETS = ["/hero/photo lain 1.png", "/hero/photo lain 2.png", "/hero/photo-center.png"];
-const BALLOON_ASSET = "/hero/balloons/baloon.glb";
+const HERO_ASSETS = [assetPath("/hero/photo lain 1.png"), assetPath("/hero/photo lain 2.png"), assetPath("/hero/photo-center.png")];
+const BALLOON_ASSET = assetPath("/hero/balloons/baloon.glb");
 
 async function preloadAsset(src: string) {
   try {

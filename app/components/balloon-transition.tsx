@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { assetPath } from "../lib/asset-path";
 
 type BalloonTransitionProps = {
   onComplete: () => void;
@@ -150,7 +151,7 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
 
     const loader = new GLTFLoader();
     loader.load(
-      "/hero/balloons/baloon.glb",
+      assetPath("/hero/balloons/baloon.glb"),
       (gltf) => {
         if (isDisposed) return;
 

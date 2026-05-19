@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { type CSSProperties, type RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 
 type StoryPhoto = {
   src: string;
@@ -65,21 +66,21 @@ const GALLERY_TWEAKS: GalleryTweaks = {
 
 const GALLERY_STICKY_DELAY = 0.35;
 const PHOTOS: StoryPhoto[] = [
-  { src: "/bg gallery/photo 1.png", caption: "the easy yes", rotate: 3 },
-  { src: "/bg gallery/photo 2.png", caption: "our city corner", rotate: -1 },
-  { src: "/bg gallery/photo 3.png", caption: "coffee, always", rotate: 2 },
-  { src: "/bg gallery/photo 4.png", caption: "the night we met", rotate: -3 },
+  { src: assetPath("/bg gallery/photo 1.png"), caption: "the easy yes", rotate: 3 },
+  { src: assetPath("/bg gallery/photo 2.png"), caption: "our city corner", rotate: -1 },
+  { src: assetPath("/bg gallery/photo 3.png"), caption: "coffee, always", rotate: 2 },
+  { src: assetPath("/bg gallery/photo 4.png"), caption: "the night we met", rotate: -3 },
 ];
 
 const HERO_MOOD_PHOTOS = [
-  "/hero/photo lain 1.png",
-  "/hero/photo lain 2.png",
-  "/hero/photo web 1.png",
-  "/hero/photo web 2.png",
-  "/hero/photo-center.png",
-  "/hero/photo-kedua.png",
-  "/hero/photo lain 1.png",
-  "/hero/photo lain 2.png",
+  assetPath("/hero/photo lain 1.png"),
+  assetPath("/hero/photo lain 2.png"),
+  assetPath("/hero/photo web 1.png"),
+  assetPath("/hero/photo web 2.png"),
+  assetPath("/hero/photo-center.png"),
+  assetPath("/hero/photo-kedua.png"),
+  assetPath("/hero/photo lain 1.png"),
+  assetPath("/hero/photo lain 2.png"),
 ] as const;
 
 const MOOD_OBJECTS: MoodObject[] = [
@@ -161,7 +162,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "ringBoxImage") {
     return (
       <div className="gallery-mood-ringbox-image">
-        <Image src="/bg%20gallery/box%20ring.png" alt="" fill sizes="220px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/box ring.png")} alt="" fill sizes="220px" className="object-contain" />
       </div>
     );
   }
@@ -169,7 +170,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "ringImage") {
     return (
       <div className="gallery-mood-ring-image">
-        <Image src="/bg%20gallery/ring.png" alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/ring.png")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -177,7 +178,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "flowerImage") {
     return (
       <div className="gallery-mood-flower-image">
-        <Image src="/bg%20gallery/bunga.png" alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/bunga.png")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -185,7 +186,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "paperScrollImage") {
     return (
       <div className="gallery-mood-paper-scroll-image">
-        <Image src="/bg%20gallery/paper%20scroll.png" alt="" fill sizes="180px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/paper scroll.png")} alt="" fill sizes="180px" className="object-contain" />
       </div>
     );
   }
@@ -193,7 +194,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "dryLemonImage") {
     return (
       <div className="gallery-mood-dry-lemon-image">
-        <Image src="/bg%20gallery/dry%20lemon.png" alt="" fill sizes="160px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/dry lemon.png")} alt="" fill sizes="160px" className="object-contain" />
       </div>
     );
   }
@@ -201,7 +202,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "dryLemon2Image") {
     return (
       <div className="gallery-mood-dry-lemon-2-image">
-        <Image src="/bg%20gallery/dry%20lemon%202.png" alt="" fill sizes="190px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/dry lemon 2.png")} alt="" fill sizes="190px" className="object-contain" />
       </div>
     );
   }
@@ -209,7 +210,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "whiteFlowerImage") {
     return (
       <div className="gallery-mood-white-flower-image">
-        <Image src="/bg%20gallery/white%20flower.png" alt="" fill sizes="190px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/white flower.png")} alt="" fill sizes="190px" className="object-contain" />
       </div>
     );
   }
@@ -217,7 +218,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "coinImage") {
     return (
       <div className="gallery-mood-coin-image">
-        <Image src="/bg%20gallery/coin.png" alt="" fill sizes="140px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/coin.png")} alt="" fill sizes="140px" className="object-contain" />
       </div>
     );
   }
@@ -225,7 +226,7 @@ function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "upBookImage") {
     return (
       <div className="gallery-mood-up-book-image">
-        <Image src="/bg%20gallery/Up%20Book.png" alt="" fill sizes="180px" className="object-contain" />
+        <Image src={assetPath("/bg gallery/Up Book.png")} alt="" fill sizes="180px" className="object-contain" />
       </div>
     );
   }
@@ -327,7 +328,7 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
     >
       <video
         className="gallery-mood-video"
-        src="/bg gallery/looping-video-v1.mp4"
+        src={assetPath("/bg gallery/looping-video-v1.mp4")}
         autoPlay
         muted
         loop

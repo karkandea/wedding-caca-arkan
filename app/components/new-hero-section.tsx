@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 import MusicPlayer from "./music-player";
 
 const COUPLE = "Salsa & Arkan";
@@ -10,7 +11,7 @@ const COUPLE = "Salsa & Arkan";
 const SIDE_PHOTOS = [
   {
     id: "top-left",
-    src: "/hero/photo%20lain%201.png",
+    src: assetPath("/hero/photo lain 1.png"),
     edge: "left",
     offset: "-2%",
     top: "4%",
@@ -20,7 +21,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "bottom-left",
-    src: "/hero/photo%20web%201.png",
+    src: assetPath("/hero/photo web 1.png"),
     edge: "left",
     offset: "8%",
     top: "55%",
@@ -30,7 +31,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "top-right",
-    src: "/hero/photo%20lain%202.png",
+    src: assetPath("/hero/photo lain 2.png"),
     edge: "right",
     offset: "-1%",
     top: "32%",
@@ -40,7 +41,7 @@ const SIDE_PHOTOS = [
   },
   {
     id: "bottom-right",
-    src: "/hero/photo%20web%202.png",
+    src: assetPath("/hero/photo web 2.png"),
     edge: "right",
     offset: "-2%",
     top: "65%",
@@ -53,56 +54,56 @@ const SIDE_PHOTOS = [
 const PARALLAX_BALLOONS = [
   {
     id: "above-3",
-    src: "/hero/baloon above 3.png",
+    src: assetPath("/hero/baloon above 3.png"),
     zIndex: 2,
     desktop: { left: "56%", top: "22%", width: "5.5%", dirX: 0.32, dirY: -0.95, endScale: 3, drift: 80 },
     mobile: { left: "58%", top: "27%", width: "10%", dirX: 0.46, dirY: -0.89, endScale: 2.8, drift: 80 },
   },
   {
     id: "above-1",
-    src: "/hero/baloon above 1.png",
+    src: assetPath("/hero/baloon above 1.png"),
     zIndex: 3,
     desktop: { left: "36%", top: "17%", width: "5.5%", dirX: -0.32, dirY: -0.95, endScale: 3, drift: 80 },
     mobile: { left: "33%", top: "22%", width: "10%", dirX: -0.36, dirY: -0.93, endScale: 2.8, drift: 80 },
   },
   {
     id: "above-2",
-    src: "/hero/baloon above 2.png",
+    src: assetPath("/hero/baloon above 2.png"),
     zIndex: 4,
     desktop: { left: "47%", top: "15%", width: "5.5%", dirX: -0.08, dirY: -1, endScale: 2.8, drift: 75 },
     mobile: { left: "47%", top: "19%", width: "10%", dirX: -0.05, dirY: -1, endScale: 2.6, drift: 75 },
   },
   {
     id: "right-behind",
-    src: "/hero/baloon right behind.png",
+    src: assetPath("/hero/baloon right behind.png"),
     zIndex: 5,
     desktop: { left: "58%", top: "55%", width: "37%", dirX: 0.95, dirY: 0.05, endScale: 1.14, drift: 4 },
     mobile: { left: "56%", top: "60%", width: "42%", dirX: 0.95, dirY: 0.05, endScale: 1.14, drift: 5 },
   },
   {
     id: "left-small-1",
-    src: "/hero/baloon left small 1.png",
+    src: assetPath("/hero/baloon left small 1.png"),
     zIndex: 7,
     desktop: { left: "19%", top: "40%", width: "7%", dirX: -0.86, dirY: -0.5, endScale: 3.8, drift: 92 },
     mobile: { left: "12%", top: "47%", width: "12%", dirX: -0.93, dirY: -0.37, endScale: 3.6, drift: 90 },
   },
   {
     id: "left-small-2",
-    src: "/hero/baloon left small 2.png",
+    src: assetPath("/hero/baloon left small 2.png"),
     zIndex: 8,
     desktop: { left: "26%", top: "32%", width: "6%", dirX: -0.68, dirY: -0.74, endScale: 3.6, drift: 88 },
     mobile: { left: "21%", top: "40%", width: "11%", dirX: -0.62, dirY: -0.78, endScale: 3.4, drift: 85 },
   },
   {
     id: "close-above",
-    src: "/hero/baloon close above.png",
+    src: assetPath("/hero/baloon close above.png"),
     zIndex: 9,
     desktop: { left: "3%", top: "65%", width: "26%", dirX: -0.89, dirY: 0.46, endScale: 4.5, drift: 85 },
     mobile: { left: "-4%", top: "70%", width: "32%", dirX: -0.93, dirY: 0.38, endScale: 4.2, drift: 80 },
   },
   {
     id: "big-left",
-    src: "/hero/baloon big left.png",
+    src: assetPath("/hero/baloon big left.png"),
     zIndex: 10,
     desktop: { left: "24%", top: "56%", width: "23%", dirX: -0.83, dirY: 0.55, endScale: 5.2, drift: 88 },
     mobile: { left: "28%", top: "60%", width: "22%", dirX: -0.78, dirY: 0.62, endScale: 4.5, drift: 85 },
@@ -297,8 +298,8 @@ export default function NewHeroSection() {
 
         {isMobile &&
           [
-            { src: "/hero/photo-center.png", appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
-            { src: "/hero/photo-kedua.png", appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
+            { src: assetPath("/hero/photo-center.png"), appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
+            { src: assetPath("/hero/photo-kedua.png"), appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
           ].map((photo, index) => {
             const photoProgress = easeOut((progress - photo.appearAt) / 0.35);
 
@@ -493,7 +494,7 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
         }}
       >
         <Image
-          src="/hero/couple with bg.png"
+          src={assetPath("/hero/couple with bg.png")}
           alt=""
           fill
           priority
@@ -520,7 +521,7 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
         }}
       >
         <Image
-          src="/hero/couple without bg.png"
+          src={assetPath("/hero/couple without bg.png")}
           alt={COUPLE}
           fill
           priority

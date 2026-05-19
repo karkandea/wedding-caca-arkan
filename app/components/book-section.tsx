@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { assetPath } from "../lib/asset-path";
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const lerp = (start: number, end: number, amount: number) => start + (end - start) * amount;
@@ -284,11 +285,11 @@ export default function BookSection() {
     };
 
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("/draco/");
+    dracoLoader.setDecoderPath(assetPath("/draco/"));
 
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    loader.load("/baloon.glb", (gltf) => {
+    loader.load(assetPath("/baloon.glb"), (gltf) => {
       const source = gltf.scene;
       source.updateMatrixWorld(true);
       const sourceBox = new THREE.Box3().setFromObject(source);
@@ -340,7 +341,7 @@ export default function BookSection() {
       });
     });
 
-    loader.load("/my%20wedding%20book%20copy%202.glb", (gltf) => {
+    loader.load(assetPath("/my wedding book copy 2.glb"), (gltf) => {
       const book = gltf.scene;
       book.traverse((node) => {
         if (!(node instanceof THREE.Mesh)) return;

@@ -3,8 +3,9 @@
 import { Pause, Play } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 
-const TRACK_SRC = "/Grandma's Home.mp3";
+const TRACK_SRC = assetPath("/Grandma's Home.mp3");
 
 type MusicPlayerProps = {
   variant?: "floating" | "nav";
@@ -166,7 +167,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
           }`}
         >
           {isNav ? (
-            <Image src="/logo%20new%201.png" alt="" fill sizes="32px" className="object-cover" />
+            <Image src={assetPath("/logo new 1.png")} alt="" fill sizes="32px" className="object-cover" />
           ) : (
             <>
               <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#f7f1e7_0_9%,#1f1c1a_10%_18%,#eee8dc_19%_22%,#111_23%_42%,#2d2925_43%_47%,#0f0e0d_48%_100%)]" />

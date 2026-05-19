@@ -4,6 +4,7 @@ import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 
 type CloudSectionProps = {
   line1: string;
@@ -259,7 +260,7 @@ export default function CloudSection({
             pointerEvents: "none",
           }}
         >
-          <DotLottieReact src="/plane.lottie" loop autoplay />
+          <DotLottieReact src={assetPath("/plane.lottie")} loop autoplay />
         </div>
 
         <div className="relative z-[1] w-full max-w-[480px] px-6">
