@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import BalloonTransition from "./balloon-transition";
 
-const HERO_ASSETS = ["/hero/photo-left.jpeg", "/hero/photo-right.jpeg", "/hero/photo-center.png"];
+const HERO_ASSETS = ["/hero/photo lain 1.png", "/hero/photo lain 2.png", "/hero/photo-center.png"];
 const BALLOON_ASSET = "/hero/balloons/baloon.glb";
 
 async function preloadAsset(src: string) {

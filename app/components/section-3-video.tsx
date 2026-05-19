@@ -44,6 +44,7 @@ type MoodObject = {
   tone?: "cream" | "green" | "dark";
   hideOnMobile?: boolean;
   src?: string;
+  photoIndex?: number;
 };
 
 type GalleryTweaks = {
@@ -57,39 +58,50 @@ type GalleryTweaks = {
 const GALLERY_TWEAKS: GalleryTweaks = {
   warmth: 32,
   contrast: 8,
-  blur: 1.2,
+  blur: 2,
   bgLift: 90,
   pngScale: 1,
 };
 
 const GALLERY_STICKY_DELAY = 0.35;
 const PHOTOS: StoryPhoto[] = [
-  { src: "/bg%20gallery/photo%201.png", caption: "the easy yes", rotate: 3 },
-  { src: "/bg%20gallery/photo%202.png", caption: "our city corner", rotate: -1 },
-  { src: "/bg%20gallery/photo%203.png", caption: "coffee, always", rotate: 2 },
-  { src: "/bg%20gallery/photo%204.png", caption: "the night we met", rotate: -3 },
+  { src: "/bg gallery/photo 1.png", caption: "the easy yes", rotate: 3 },
+  { src: "/bg gallery/photo 2.png", caption: "our city corner", rotate: -1 },
+  { src: "/bg gallery/photo 3.png", caption: "coffee, always", rotate: 2 },
+  { src: "/bg gallery/photo 4.png", caption: "the night we met", rotate: -3 },
 ];
 
+const HERO_MOOD_PHOTOS = [
+  "/hero/photo lain 1.png",
+  "/hero/photo lain 2.png",
+  "/hero/photo web 1.png",
+  "/hero/photo web 2.png",
+  "/hero/photo-center.png",
+  "/hero/photo-kedua.png",
+  "/hero/photo lain 1.png",
+  "/hero/photo lain 2.png",
+] as const;
+
 const MOOD_OBJECTS: MoodObject[] = [
-  { id: "photo-tl", x: 6, y: 7, w: 150, h: 202, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: -8, anim: 1, dur: 10, delay: 0, z: 4 },
+  { id: "photo-tl", x: 13, y: 7, w: 150, h: 202, kind: "framedPhoto", photoIndex: 0, rotate: -8, anim: 1, dur: 10, delay: 0, z: 4 },
   { id: "paper-scroll-tcl", x: 78, y: 28, w: 255, h: 220, kind: "paperScrollImage", rotate: 11, anim: 2, dur: 11, delay: 1.2, z: 6 },
   { id: "dry-lemon-tcr", x: 54, y: 2, w: 150, h: 120, kind: "dryLemonImage", rotate: -3, anim: 4, dur: 10, delay: 2, z: 4 },
   { id: "up-book-rm", x: 20, y: 0, w: 300, h: 225, kind: "upBookImage", rotate: -13, anim: 5, dur: 12, delay: 0.8, z: 4 },
-  { id: "branch-tc", x: 40, y: 7, w: 130, h: 92, kind: "branch", rotate: 12, anim: 3, dur: 8, delay: 0.5, z: 5, hideOnMobile: true },
-  { id: "photo-lm", x: 10, y: 34, w: 132, h: 178, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -11, anim: 7, dur: 11, delay: 1.8, z: 5 },
+  { id: "photo-tc", x: 40, y: 7, w: 140, h: 108, kind: "framedPhoto", photoIndex: 5, rotate: 12, anim: 3, dur: 8, delay: 0.5, z: 5 },
+  { id: "photo-lm", x: 15, y: 34, w: 132, h: 178, kind: "framedPhoto", photoIndex: 2, rotate: -11, anim: 7, dur: 11, delay: 1.8, z: 5 },
   { id: "euca-lm", x: 16, y: 46, w: 220, h: 110, kind: "branch", rotate: -8, anim: 2, dur: 13, delay: 3, z: 3, hideOnMobile: true },
-  { id: "petals-lm", x: 4, y: 56, w: 150, h: 110, kind: "petals", rotate: 0, anim: 8, dur: 10, delay: 4, z: 4, hideOnMobile: true },
+  { id: "photo-lb", x: 14, y: 56, w: 150, h: 118, kind: "framedPhoto", photoIndex: 6, rotate: 0, anim: 8, dur: 10, delay: 4, z: 4 },
   { id: "ringbox-lb", x: 5, y: 68, w: 260, h: 205, kind: "ringBoxImage", rotate: 8, anim: 9, dur: 9, delay: 0.4, z: 5 },
   { id: "ring-llm", x: 28, y: 62, w: 96, h: 76, kind: "ringImage", rotate: -15, anim: 10, dur: 8, delay: 2.6, z: 6 },
   { id: "dry-lemon-2-blc", x: 27, y: 79, w: 135, h: 108, kind: "dryLemon2Image", rotate: -6, anim: 11, dur: 12, delay: 1, z: 4 },
   { id: "white-flower-bc", x: 44, y: 82, w: 190, h: 150, kind: "whiteFlowerImage", rotate: 3, anim: 12, dur: 10, delay: 3.5, z: 3 },
   { id: "flower-bcr", x: 62, y: 68, w: 180, h: 180, kind: "flowerImage", rotate: -8, anim: 1, dur: 8, delay: 1.4, z: 5 },
   { id: "coin-rm", x: 84, y: 18, w: 260, h: 260, kind: "coinImage", rotate: -6, anim: 3, dur: 9, delay: 0.6, z: 4 },
-  { id: "photo-tr", x: 78, y: 8, w: 148, h: 198, kind: "framedPhoto", src: "/hero/photo-right.jpeg", rotate: 7, anim: 5, dur: 12, delay: 0.8, z: 3 },
-  { id: "photo-rm", x: 82, y: 48, w: 150, h: 205, kind: "framedPhoto", src: "/hero/photo-left.jpeg", rotate: 12, anim: 7, dur: 12, delay: 4.5, z: 5 },
-  { id: "photo-br", x: 74, y: 72, w: 138, h: 182, kind: "framedPhoto", src: "/hero/photo-center.png", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
+  { id: "photo-tr", x: 70, y: 8, w: 148, h: 198, kind: "framedPhoto", photoIndex: 1, rotate: 7, anim: 5, dur: 12, delay: 0.8, z: 3 },
+  { id: "photo-rm", x: 72, y: 48, w: 150, h: 205, kind: "framedPhoto", photoIndex: 3, rotate: 12, anim: 7, dur: 12, delay: 4.5, z: 5 },
+  { id: "photo-br", x: 67, y: 72, w: 138, h: 182, kind: "framedPhoto", photoIndex: 4, rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
   { id: "rolls-br", x: 87, y: 74, w: 150, h: 200, kind: "ribbon", rotate: -10, anim: 11, dur: 11, delay: 3.2, z: 3 },
-  { id: "bottle-br", x: 91, y: 84, w: 110, h: 170, kind: "bottle", rotate: 6, anim: 4, dur: 9, delay: 2.2, z: 5, hideOnMobile: true },
+  { id: "photo-edge-br", x: 75, y: 82, w: 116, h: 170, kind: "framedPhoto", photoIndex: 7, rotate: 6, anim: 4, dur: 9, delay: 2.2, z: 5 },
 ];
 
 function clamp(value: number, min = 0, max = 1) {
@@ -134,10 +146,12 @@ function scrollProfile(object: MoodObject, index: number) {
 
 function MoodObjectGraphic({ object }: { object: MoodObject }) {
   if (object.kind === "framedPhoto") {
+    const photoSrc = HERO_MOOD_PHOTOS[object.photoIndex ?? 0] ?? HERO_MOOD_PHOTOS[0];
+
     return (
       <div className="gallery-mood-framed-photo">
         <div className="gallery-mood-framed-photo__image">
-          <Image src={object.src ?? "/hero/photo-right.jpeg"} alt="" fill sizes="180px" className="object-cover" />
+          <Image src={photoSrc} alt="" fill sizes="180px" className="object-cover" />
         </div>
         <span />
       </div>
@@ -311,47 +325,16 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
         } as CSSProperties
       }
     >
-      <div className="gallery-mood-wash" />
-      <div className="gallery-mood-layer" ref={layerRef}>
-        {MOOD_OBJECTS.map((object, index) => {
-          const profile = scrollProfile(object, index);
-
-          return (
-          <div
-            key={object.id}
-            className={`gallery-mood-object gallery-mood-object--${object.anim} gallery-mood-object--${object.kind} ${
-              object.hideOnMobile ? "gallery-mood-object--hide-mobile" : ""
-            }`}
-            style={
-              {
-                left: `${object.x}%`,
-                top: `${object.y}%`,
-                width: object.w,
-                height: object.h,
-                zIndex: object.z,
-                "--rot": `${object.rotate}deg`,
-                "--sx": profile.sx,
-                "--sy": profile.sy,
-                "--sr": profile.sr,
-              } as CSSProperties
-            }
-          >
-            <div
-              className="gallery-mood-inner"
-              style={{
-                animationDuration: `${object.dur}s`,
-                animationDelay: `${-object.delay}s`,
-              }}
-            >
-              <MoodObjectGraphic object={object} />
-            </div>
-          </div>
-          );
-        })}
-      </div>
-      <div className="gallery-mood-overlay" />
+      <video
+        className="gallery-mood-video"
+        src="/bg gallery/looping-video-v1.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+      />
       <div className="gallery-mood-vignette" />
-      <div className="gallery-mood-grain" />
       <style>
         {`
           .gallery-mood-bg {
@@ -370,7 +353,7 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
           }
 
           .gallery-mood-bg::before {
-            content: "";
+            content: none;
             position: absolute;
             inset: 0;
             z-index: 8;
@@ -378,6 +361,20 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
             background-image: radial-gradient(rgba(255,240,210,0.06) 1px, transparent 1.5px);
             background-size: 18px 18px;
             opacity: 0.9;
+          }
+
+          .gallery-mood-video {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            pointer-events: none;
+            opacity: 1;
+            filter: blur(3px);
+            transform: scale(1.02);
           }
 
           .gallery-mood-wash {
@@ -789,6 +786,10 @@ function GalleryMoodboardBackground({ layerRef }: { layerRef: RefObject<HTMLDivE
               transform: translateX(-24px);
             }
 
+            .gallery-mood-video {
+              object-position: left center;
+            }
+
             .gallery-mood-object--hide-mobile {
               display: none;
             }
@@ -1082,7 +1083,7 @@ export default function Section3Video() {
               backfaceVisibility: "hidden",
             }}
           >
-            Gallery
+            Us
           </h2>
         </div>
 

@@ -353,6 +353,21 @@ function HeroNav() {
       return section.offsetTop <= currentY ? index : activeIndex;
     }, 0);
 
+    const heroSection = document.getElementById("new-hero-section");
+    if (heroSection) {
+      const heroTop = heroSection.offsetTop;
+      const heroEnd = heroTop + heroSection.offsetHeight - window.innerHeight;
+      const isInsideHero = currentY >= heroTop && currentY < heroTop + heroSection.offsetHeight;
+
+      if (isInsideHero && direction === 1 && window.scrollY < heroEnd - 8) {
+        window.scrollTo({
+          top: heroEnd,
+          behavior: "smooth",
+        });
+        return;
+      }
+    }
+
     const storySection = document.getElementById("our-story");
     if (storySection) {
       const storyTop = storySection.offsetTop;
