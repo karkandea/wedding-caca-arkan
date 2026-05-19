@@ -17,6 +17,11 @@ const dinAlternate = localFont({
 export const metadata: Metadata = {
   title: "Wedding Caca Arka",
   description: "Wedding site with a polaroid-style animated preloader.",
+  icons: {
+    icon: [{ url: "/salsaarkan/favicon.png", type: "image/png" }],
+    shortcut: ["/salsaarkan/favicon.png"],
+    apple: [{ url: "/salsaarkan/favicon.png", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
