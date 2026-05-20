@@ -501,7 +501,7 @@ function ScrollRadarIndicator({ opacity }: { opacity: number }) {
 
 function HeroNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
-  const [isScrollHintDismissed, setIsScrollHintDismissed] = useState(false);
+  const [scrollHintResetKey, setScrollHintResetKey] = useState(0);
 
   useEffect(() => {
     let idleTimer = 0;
@@ -509,11 +509,10 @@ function HeroNav() {
     const scheduleHint = () => {
       setShowScrollHint(false);
       window.clearTimeout(idleTimer);
-      if (isScrollHintDismissed) return;
       idleTimer = window.setTimeout(() => {
         const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
         setShowScrollHint(!nearBottom);
-      }, 7000);
+      }, 3000);
     };
 
     scheduleHint();
@@ -523,11 +522,11 @@ function HeroNav() {
       window.clearTimeout(idleTimer);
       window.removeEventListener("scroll", scheduleHint);
     };
-  }, [isScrollHintDismissed]);
+  }, [scrollHintResetKey]);
 
   const scrollSection = (direction: -1 | 1) => {
     setShowScrollHint(false);
-    setIsScrollHintDismissed(true);
+    setScrollHintResetKey((key) => key + 1);
     const sections = Array.from(document.querySelectorAll<HTMLElement>("main section"));
     if (!sections.length) return;
 
@@ -604,6 +603,44 @@ function HeroNav() {
       }
     }
 
+    const bookSection = document.getElementById("book-section");
+    if (bookSection) {
+      const bookTop = bookSection.offsetTop;
+      const bookEnd = bookTop + bookSection.offsetHeight - window.innerHeight;
+      const bookBottom = bookTop + bookSection.offsetHeight;
+      const isInsideBook = currentY >= bookTop && currentY < bookBottom;
+
+      if (isInsideBook) {
+        const bookRange = bookEnd - bookTop;
+        const bookProgress = bookRange > 0 ? clamp((window.scrollY - bookTop) / bookRange) : 0;
+        const nextBookProgress = clamp(bookProgress + direction * 0.18);
+
+        if (nextBookProgress > 0 && nextBookProgress < 1) {
+          window.scrollTo({
+            top: bookTop + nextBookProgress * bookRange,
+            behavior: "smooth",
+          });
+          return;
+        }
+
+        if (direction === 1 && window.scrollY < bookEnd - 8) {
+          window.scrollTo({
+            top: bookEnd,
+            behavior: "smooth",
+          });
+          return;
+        }
+
+        if (direction === -1 && window.scrollY > bookTop + 8) {
+          window.scrollTo({
+            top: bookTop,
+            behavior: "smooth",
+          });
+          return;
+        }
+      }
+    }
+
     const nextIndex = clamp(currentIndex + direction, 0, sections.length - 1);
 
     window.scrollTo({
@@ -637,7 +674,7 @@ function HeroNav() {
               type="button"
               onClick={() => {
                 setShowScrollHint(false);
-                setIsScrollHintDismissed(true);
+                setScrollHintResetKey((key) => key + 1);
               }}
               className={`absolute bottom-[calc(100%+12px)] right-0 w-[190px] rounded-[14px] border-0 bg-[#2B241D] px-3 py-2 text-center text-[11px] font-semibold leading-snug text-[#FFFCF5] shadow-[0_12px_28px_rgba(43,36,29,0.18)] transition duration-300 sm:w-[220px] sm:text-xs ${
                 showScrollHint ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"

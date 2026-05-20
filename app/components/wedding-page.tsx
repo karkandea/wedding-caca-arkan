@@ -106,7 +106,7 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
         <DeferredSection
           minHeight="600vh"
           background="#0a1432"
-          placeholder={<section aria-hidden="true" style={{ minHeight: "600vh", background: "#0a1432" }} />}
+          placeholder={<section id="book-section" aria-hidden="true" style={{ minHeight: "600vh", background: "#0a1432" }} />}
         >
           <BookSection guestName={guestName} />
         </DeferredSection>

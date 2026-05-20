@@ -636,6 +636,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
 
   return (
     <section
+      id="book-section"
       ref={sectionRef}
       className="relative h-[600vh] overflow-visible bg-[#0a1432]"
       aria-label="Adventure book"
