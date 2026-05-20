@@ -6,6 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
 
 const TRACK_SRC = assetPath("/Grandma's Home.mp3");
+const TRACK_START_TIME_SECONDS = 110;
+const TARGET_VOLUME = 0.58;
+const FADE_IN_DURATION_MS = 9000;
 
 type MusicPlayerProps = {
   variant?: "floating" | "nav";
@@ -19,6 +22,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
   const retryTimersRef = useRef<number[]>([]);
   const rotationRef = useRef(0);
   const sourceAttachedRef = useRef(false);
+  const fadeFrameRef = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const isNav = variant === "nav";
 
@@ -27,6 +31,29 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
     if (!audio) return;
 
     const syncState = () => setIsPlaying(!audio.paused);
+    const stopFade = () => {
+      if (!fadeFrameRef.current) return;
+      window.cancelAnimationFrame(fadeFrameRef.current);
+      fadeFrameRef.current = 0;
+    };
+    const fadeIn = () => {
+      stopFade();
+      const startedAt = performance.now();
+      audio.volume = 0;
+
+      const tick = (timestamp: number) => {
+        const progress = Math.min(1, (timestamp - startedAt) / FADE_IN_DURATION_MS);
+        audio.volume = TARGET_VOLUME * Math.pow(progress, 1.8);
+        if (progress < 1 && !audio.paused) {
+          fadeFrameRef.current = window.requestAnimationFrame(tick);
+        } else {
+          fadeFrameRef.current = 0;
+          if (!audio.paused) audio.volume = TARGET_VOLUME;
+        }
+      };
+
+      fadeFrameRef.current = window.requestAnimationFrame(tick);
+    };
     const attachSource = () => {
       if (sourceAttachedRef.current) return;
       sourceAttachedRef.current = true;
@@ -39,10 +66,11 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
       try {
         attachSource();
         if (!hasStartedRef.current) {
-          audio.currentTime = 0;
+          audio.currentTime = TRACK_START_TIME_SECONDS;
           hasStartedRef.current = true;
         }
         await audio.play();
+        fadeIn();
         syncState();
       } catch {
         syncState();
@@ -70,7 +98,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
       queuePlayAttempts();
     };
 
-    audio.volume = 0.58;
+    audio.volume = 0;
     audio.autoplay = true;
 
     window.addEventListener("pointerdown", unlockAudio, { passive: true });
@@ -96,6 +124,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
       audio.removeEventListener("canplaythrough", playAfterLoading);
       audio.removeEventListener("play", syncState);
       audio.removeEventListener("pause", syncState);
+      stopFade();
     };
   }, []);
 
@@ -138,7 +167,25 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
           audio.src = TRACK_SRC;
           audio.load();
         }
+        if (!hasStartedRef.current) {
+          audio.currentTime = TRACK_START_TIME_SECONDS;
+          hasStartedRef.current = true;
+        }
         await audio.play();
+        const startedAt = performance.now();
+        if (fadeFrameRef.current) window.cancelAnimationFrame(fadeFrameRef.current);
+        audio.volume = 0;
+        const tick = (timestamp: number) => {
+          const progress = Math.min(1, (timestamp - startedAt) / FADE_IN_DURATION_MS);
+          audio.volume = TARGET_VOLUME * Math.pow(progress, 1.8);
+          if (progress < 1 && !audio.paused) {
+            fadeFrameRef.current = window.requestAnimationFrame(tick);
+          } else {
+            fadeFrameRef.current = 0;
+            if (!audio.paused) audio.volume = TARGET_VOLUME;
+          }
+        };
+        fadeFrameRef.current = window.requestAnimationFrame(tick);
         setIsPlaying(true);
       } catch {
         setIsPlaying(false);
@@ -148,6 +195,10 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
 
     isManuallyPausedRef.current = true;
     retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    if (fadeFrameRef.current) {
+      window.cancelAnimationFrame(fadeFrameRef.current);
+      fadeFrameRef.current = 0;
+    }
     audio.pause();
     setIsPlaying(false);
   };
