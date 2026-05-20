@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
@@ -340,14 +340,195 @@ export default function NewHeroSection() {
               </div>
             );
           })}
+        <ScrollRadarIndicator opacity={clamp(1 - progress / 0.18)} />
       </div>
     </section>
   );
 }
 
+function ScrollRadarIndicator({ opacity }: { opacity: number }) {
+  return (
+    <div
+      className="pointer-events-none absolute bottom-[88px] left-0 right-0 z-[70] mx-auto flex w-fit flex-col items-center gap-2 text-[#2B241D] sm:bottom-[104px]"
+      style={{
+        opacity,
+        transform: `translate3d(0, ${lerp(0, 12, 1 - opacity)}px, 0)`,
+        transition: "opacity 180ms ease",
+      }}
+      aria-hidden="true"
+    >
+      <div className="scroll-radar">
+        <span />
+        <span />
+        <span />
+        <div className="scroll-radar-arrows">
+          <ChevronDown className="scroll-radar-arrow scroll-radar-arrow-top" size={20} strokeWidth={2.15} />
+          <ChevronDown className="scroll-radar-arrow scroll-radar-arrow-middle" size={22} strokeWidth={2.35} />
+          <ChevronDown className="scroll-radar-arrow scroll-radar-arrow-bottom" size={20} strokeWidth={2.15} />
+        </div>
+      </div>
+      <p
+        className="m-0 whitespace-nowrap bg-gradient-to-r from-[#2B241D] via-[#A66B35] to-[#2B241D] bg-clip-text text-[10px] font-semibold uppercase tracking-[0.28em] text-transparent drop-shadow-[0_1px_8px_rgba(255,252,245,0.82)] sm:text-[11px]"
+        style={{ fontFamily: "var(--font-din-alternate)" }}
+      >
+        Scroll pelan
+      </p>
+      <style jsx>{`
+        .scroll-radar {
+          position: relative;
+          display: grid;
+          width: 58px;
+          height: 58px;
+          place-items: center;
+        }
+
+        .scroll-radar span {
+          position: absolute;
+          inset: 0;
+          border: 1px solid rgba(43, 36, 29, 0.28);
+          border-radius: 999px;
+          animation: scroll-radar-pulse 2.4s ease-out infinite;
+          background: rgba(255, 252, 245, 0.16);
+          box-shadow: 0 10px 28px rgba(43, 36, 29, 0.08);
+        }
+
+        .scroll-radar span:nth-child(2) {
+          animation-delay: 0.55s;
+        }
+
+        .scroll-radar span:nth-child(3) {
+          animation-delay: 1.1s;
+        }
+
+        .scroll-radar-arrows {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0;
+          filter: drop-shadow(0 4px 10px rgba(43, 36, 29, 0.16));
+        }
+
+        :global(.scroll-radar-arrow) {
+          display: block;
+          margin-top: -9px;
+          color: #2b241d;
+          animation-duration: 1.55s;
+          animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+          animation-iteration-count: infinite;
+          will-change: transform, opacity;
+        }
+
+        :global(.scroll-radar-arrow-top) {
+          margin-top: 0;
+          animation-name: scroll-arrow-walk-top;
+          animation-delay: 0s;
+        }
+
+        :global(.scroll-radar-arrow-middle) {
+          animation-name: scroll-arrow-walk-middle;
+          animation-delay: 0.18s;
+        }
+
+        :global(.scroll-radar-arrow-bottom) {
+          animation-name: scroll-arrow-walk-bottom;
+          animation-delay: 0.36s;
+        }
+
+        @keyframes scroll-radar-pulse {
+          0% {
+            opacity: 0;
+            transform: scale(0.42);
+          }
+          22% {
+            opacity: 0.85;
+          }
+          100% {
+            opacity: 0;
+            transform: scale(1.25);
+          }
+        }
+
+        @keyframes scroll-arrow-walk-top {
+          0% {
+            opacity: 0.18;
+            transform: translate3d(0, -8px, 0);
+          }
+          48% {
+            opacity: 0.42;
+            transform: translate3d(0, 1px, 0);
+          }
+          100% {
+            opacity: 0.16;
+            transform: translate3d(0, 12px, 0);
+          }
+        }
+
+        @keyframes scroll-arrow-walk-middle {
+          0% {
+            opacity: 0.5;
+            transform: translate3d(0, -8px, 0);
+          }
+          45% {
+            opacity: 1;
+            transform: translate3d(0, 2px, 0);
+          }
+          100% {
+            opacity: 0.42;
+            transform: translate3d(0, 14px, 0);
+          }
+        }
+
+        @keyframes scroll-arrow-walk-bottom {
+          0% {
+            opacity: 0.14;
+            transform: translate3d(0, -8px, 0);
+          }
+          48% {
+            opacity: 0.5;
+            transform: translate3d(0, 2px, 0);
+          }
+          100% {
+            opacity: 0.12;
+            transform: translate3d(0, 14px, 0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function HeroNav() {
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const [isScrollHintDismissed, setIsScrollHintDismissed] = useState(false);
+
+  useEffect(() => {
+    let idleTimer = 0;
+
+    const scheduleHint = () => {
+      setShowScrollHint(false);
+      window.clearTimeout(idleTimer);
+      if (isScrollHintDismissed) return;
+      idleTimer = window.setTimeout(() => {
+        const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
+        setShowScrollHint(!nearBottom);
+      }, 7000);
+    };
+
+    scheduleHint();
+    window.addEventListener("scroll", scheduleHint, { passive: true });
+
+    return () => {
+      window.clearTimeout(idleTimer);
+      window.removeEventListener("scroll", scheduleHint);
+    };
+  }, [isScrollHintDismissed]);
+
   const scrollSection = (direction: -1 | 1) => {
-    const sections = Array.from(document.querySelectorAll<HTMLElement>("main > section"));
+    setShowScrollHint(false);
+    setIsScrollHintDismissed(true);
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("main section"));
     if (!sections.length) return;
 
     const currentY = window.scrollY + window.innerHeight * 0.35;
@@ -434,24 +615,58 @@ function HeroNav() {
   return (
     <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
       <MusicPlayer variant="nav" />
+      <span
+        className="hidden whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-[#2B241D]/55 sm:block"
+        style={{ fontFamily: "var(--font-din-alternate)" }}
+      >
+        Website by dualangka.com
+      </span>
       <div className="flex items-center gap-2 sm:gap-5">
         <div className="flex items-center gap-1 rounded-full bg-[#2B241D] p-1" aria-label="Section navigation">
           <button
             type="button"
             onClick={() => scrollSection(-1)}
-            className="flex h-8 w-8 items-center justify-center rounded-full border-0 bg-transparent text-[#F7F1E7] transition hover:bg-white/15 active:scale-95"
+            className="flex h-8 items-center gap-1.5 rounded-full border-0 bg-transparent px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#F7F1E7] transition hover:bg-white/15 active:scale-95 sm:px-3 sm:text-[11px]"
             aria-label="Section sebelumnya"
           >
-            <ChevronLeft size={18} strokeWidth={2.4} />
+            <ChevronUp size={16} strokeWidth={2.4} />
+            <span>Naik</span>
           </button>
-          <button
-            type="button"
-            onClick={() => scrollSection(1)}
-            className="flex h-8 w-8 items-center justify-center rounded-full border-0 bg-[#F7F1E7] text-[#2B241D] transition hover:bg-white active:scale-95"
-            aria-label="Section berikutnya"
-          >
-            <ChevronRight size={18} strokeWidth={2.4} />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShowScrollHint(false);
+                setIsScrollHintDismissed(true);
+              }}
+              className={`absolute bottom-[calc(100%+12px)] right-0 w-[190px] rounded-[14px] border-0 bg-[#2B241D] px-3 py-2 text-center text-[11px] font-semibold leading-snug text-[#FFFCF5] shadow-[0_12px_28px_rgba(43,36,29,0.18)] transition duration-300 sm:w-[220px] sm:text-xs ${
+                showScrollHint ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+              }`}
+              style={{ fontFamily: "var(--font-din-alternate)" }}
+              aria-label="Tutup pengingat scroll"
+            >
+              Yuk lanjut, masih ada cerita berikutnya.
+              <span className="ml-1 text-[#FFFCF5]/55" aria-hidden="true">
+                Tap untuk tutup
+              </span>
+              <span className="absolute -bottom-1.5 right-7 h-3 w-3 rotate-45 bg-[#2B241D]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollSection(1)}
+              className="relative flex h-8 items-center gap-1.5 overflow-visible rounded-full border-0 bg-[#F7F1E7] px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2B241D] transition hover:bg-white active:scale-95 sm:px-3 sm:text-[11px]"
+              aria-label="Section berikutnya"
+            >
+              {showScrollHint && (
+                <>
+                  <span className="pointer-events-none absolute inset-0 rounded-full border border-[#F7F1E7]/70 animate-ping" />
+                  <span className="pointer-events-none absolute -inset-0.5 rounded-full border border-[#F7F1E7]/35 animate-ping [animation-delay:450ms]" />
+                </>
+              )}
+              <span>Lanjut</span>
+              <ChevronDown size={16} strokeWidth={2.4} />
+            </button>
+          </div>
         </div>
       </div>
     </nav>
