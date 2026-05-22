@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
 import MusicPlayer from "./music-player";
@@ -111,6 +112,16 @@ const PARALLAX_BALLOONS = [
   },
 ] as const;
 
+type ParallaxConfig = {
+  left: string;
+  top: string;
+  width: string;
+  dirX: number;
+  dirY: number;
+  endScale: number;
+  drift: number;
+};
+
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const lerp = (from: number, to: number, progress: number) => from + (to - from) * progress;
 const easeOut = (progress: number) => 1 - Math.pow(1 - clamp(progress), 3);
@@ -132,23 +143,158 @@ function lerpCss(from: string, to: string, progress: number) {
 
 export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
+  const heroFrameRef = useRef<HTMLDivElement>(null);
+  const sceneViewportRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
+  const chromeRef = useRef<HTMLDivElement>(null);
+  const scrollRadarRef = useRef<HTMLDivElement>(null);
+  const coupleLayerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const balloonRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const sidePhotoRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const mobilePhotoRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     let frameId = 0;
+    let currentIsMobile = window.innerWidth < 720;
+    let currentIsTinyMobile = currentIsMobile && window.innerWidth <= 380;
 
     const updateDeviceMode = () => {
-      setIsMobile(window.innerWidth < 720);
+      const nextIsMobile = window.innerWidth < 720;
+      currentIsMobile = nextIsMobile;
+      currentIsTinyMobile = nextIsMobile && window.innerWidth <= 380;
+      setIsMobile(nextIsMobile);
     };
 
     const updateProgress = () => {
       const rect = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
-      const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
-      setProgress(nextProgress);
+      const progress = total > 0 ? clamp(-rect.top / total) : 0;
+      const eased = easeInOut(progress);
+      const heroFrame = heroFrameRef.current;
+
+      if (heroFrame) {
+        if (currentIsMobile) {
+          heroFrame.style.left = `${lerp(0, 24, eased)}px`;
+          heroFrame.style.top = `${lerp(0, 110, eased)}px`;
+          heroFrame.style.width = `calc(100% - ${lerp(0, 48, eased)}px)`;
+          heroFrame.style.height = `${lerp(100, 46, eased)}svh`;
+          heroFrame.style.borderRadius = `${lerp(0, 22, eased)}px`;
+        } else {
+          heroFrame.style.left = lerpCss("0%", "31%", eased);
+          heroFrame.style.top = lerpCss("0%", "10%", eased);
+          heroFrame.style.width = lerpCss("100%", "38%", eased);
+          heroFrame.style.height = lerpCss("100%", "85%", eased);
+          heroFrame.style.borderRadius = `${lerp(0, 28, eased)}px`;
+        }
+      }
+
+      const sceneViewport = sceneViewportRef.current;
+      if (sceneViewport) {
+        if (currentIsMobile) {
+          sceneViewport.style.inset = "auto";
+          sceneViewport.style.left = "50%";
+          sceneViewport.style.top = "50%";
+          sceneViewport.style.height = "100svh";
+          sceneViewport.style.transform = "translate3d(-50%, -50%, 0)";
+        } else {
+          sceneViewport.style.inset = "0";
+          sceneViewport.style.left = "";
+          sceneViewport.style.top = "";
+          sceneViewport.style.height = "100%";
+          sceneViewport.style.transform = "";
+        }
+      }
+
+      const nameOpacity = clamp(1 - progress * 1.5);
+      const nameScale = lerp(1, 0.78, easeOut(progress));
+      const name = nameRef.current;
+      if (name) {
+        name.style.opacity = String(nameOpacity);
+        name.style.transform = `scale(${nameScale})`;
+      }
+
+      const chrome = chromeRef.current;
+      if (chrome) {
+        chrome.style.opacity = String(clamp(1 - progress / 0.22));
+      }
+
+      const radarOpacity = clamp(1 - progress / 0.18);
+      const radar = scrollRadarRef.current;
+      if (radar) {
+        radar.style.opacity = String(radarOpacity);
+        radar.style.transform = `translate3d(0, ${lerp(0, 12, 1 - radarOpacity)}px, 0)`;
+      }
+
+      const parallaxProgress = Math.pow(clamp(progress), 1.4);
+      const coupleScale = (1 + progress * 0.14).toFixed(4);
+      coupleLayerRefs.current.forEach((layer) => {
+        if (layer) layer.style.transform = `scale(${coupleScale})`;
+      });
+
+      const blurScaleFloor = 1.4;
+      const blurPerScale = 4;
+      const driftBase = currentIsMobile ? 7.8 : 7.2;
+
+      balloonRefs.current.forEach((node, index) => {
+        if (!node) return;
+        const balloon = PARALLAX_BALLOONS[index];
+        if (!balloon) return;
+        const cfg: ParallaxConfig = currentIsMobile ? { ...balloon.mobile } : { ...balloon.desktop };
+
+        if (currentIsTinyMobile) {
+          if (balloon.id === "big-left") {
+            cfg.left = "30%";
+            cfg.top = "62%";
+            cfg.width = "20%";
+            cfg.endScale = 4;
+          }
+          if (balloon.id === "close-above") {
+            cfg.left = "-2%";
+            cfg.top = "72%";
+            cfg.width = "30%";
+            cfg.endScale = 3.8;
+          }
+          if (balloon.id === "right-behind") {
+            cfg.width = "40%";
+          }
+        }
+
+        const x = cfg.dirX * parallaxProgress * cfg.drift * driftBase;
+        const y = cfg.dirY * parallaxProgress * cfg.drift * driftBase;
+        const scale = 1 + parallaxProgress * (cfg.endScale - 1);
+        const blur = Math.max(0, scale - blurScaleFloor) * blurPerScale;
+
+        node.style.left = cfg.left;
+        node.style.top = cfg.top;
+        node.style.width = cfg.width;
+        node.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`;
+        node.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
+      });
+
+      if (!currentIsMobile) {
+        sidePhotoRefs.current.forEach((photoNode, index) => {
+          if (!photoNode) return;
+          const photo = SIDE_PHOTOS[index];
+          if (!photo) return;
+          const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
+          const direction = photo.edge === "left" ? -110 : 110;
+          photoNode.style.opacity = String(photoProgress);
+          photoNode.style.transform = `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(0.94, 1, photoProgress)})`;
+        });
+      } else {
+        mobilePhotoRefs.current.forEach((photoNode, index) => {
+          if (!photoNode) return;
+          const appearAt = index === 0 ? 0.45 : 0.65;
+          const photoProgress = easeOut((progress - appearAt) / 0.35);
+          photoNode.style.opacity = String(photoProgress);
+          photoNode.style.transform = `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(0.96, 1, photoProgress)}) rotate(${
+            index === 0 ? "-1deg" : "1deg"
+          })`;
+        });
+      }
     };
 
     const scheduleUpdate = () => {
@@ -176,27 +322,6 @@ export default function NewHeroSection() {
     };
   }, []);
 
-  const eased = easeInOut(progress);
-  const heroStyle = isMobile
-    ? {
-        left: `${lerp(0, 24, eased)}px`,
-        top: `${lerp(0, 110, eased)}px`,
-        width: `calc(100% - ${lerp(0, 48, eased)}px)`,
-        height: `${lerp(100, 46, eased)}svh`,
-        borderRadius: `${lerp(0, 22, eased)}px`,
-      }
-    : {
-        left: lerpCss("0%", "31%", eased),
-        top: lerpCss("0%", "10%", eased),
-        width: lerpCss("100%", "38%", eased),
-        height: lerpCss("100%", "85%", eased),
-        borderRadius: `${lerp(0, 28, eased)}px`,
-      };
-
-  const nameOpacity = clamp(1 - progress * 1.5);
-  const nameScale = lerp(1, 0.78, easeOut(progress));
-  const chromeOpacity = clamp(1 - progress / 0.22);
-
   return (
     <section
       ref={sectionRef}
@@ -206,14 +331,20 @@ export default function NewHeroSection() {
       <HeroNav />
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
         <div
+          ref={heroFrameRef}
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
-            ...heroStyle,
+            left: isMobile ? "0px" : "0%",
+            top: isMobile ? "0px" : "0%",
+            width: "100%",
+            height: isMobile ? "100svh" : "100%",
+            borderRadius: "0px",
             willChange: "left, top, width, height, border-radius",
             backfaceVisibility: "hidden",
           }}
         >
           <div
+            ref={sceneViewportRef}
             style={{
               position: "absolute",
               inset: isMobile ? "auto" : 0,
@@ -225,14 +356,19 @@ export default function NewHeroSection() {
               transform: isMobile ? "translate3d(-50%, -50%, 0)" : undefined,
             }}
           >
-            <HeroParallaxScene progress={progress} isMobile={isMobile} />
+            <HeroParallaxScene
+              isMobile={isMobile}
+              coupleLayerRefs={coupleLayerRefs}
+              balloonRefs={balloonRefs}
+            />
           </div>
 
           <div
+            ref={nameRef}
             className="pointer-events-none absolute inset-0 flex items-center justify-center text-center"
             style={{
-              opacity: nameOpacity,
-              transform: `scale(${nameScale})`,
+              opacity: 1,
+              transform: "scale(1)",
               willChange: "transform, opacity",
               backfaceVisibility: "hidden",
             }}
@@ -253,8 +389,9 @@ export default function NewHeroSection() {
           </div>
 
           <div
+            ref={chromeRef}
             className="pointer-events-none absolute bottom-0 left-0 right-0 px-6 pb-7 sm:px-9"
-            style={{ opacity: chromeOpacity }}
+            style={{ opacity: 1 }}
           >
             <div className="mb-3.5 h-px bg-white/55" />
             <div
@@ -268,26 +405,24 @@ export default function NewHeroSection() {
         </div>
 
         {!isMobile &&
-          SIDE_PHOTOS.map((photo) => {
-            const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
+          SIDE_PHOTOS.map((photo, index) => {
             const direction = photo.edge === "left" ? -110 : 110;
             const position = photo.edge === "left" ? { left: photo.offset } : { right: photo.offset };
 
             return (
               <div
                 key={photo.id}
+                ref={(node) => {
+                  sidePhotoRefs.current[index] = node;
+                }}
                 className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
                 style={{
                   ...position,
                   top: photo.top,
                   width: photo.width,
                   height: photo.height,
-                  opacity: photoProgress,
-                  transform: `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(
-                    0.94,
-                    1,
-                    photoProgress,
-                  )})`,
+                  opacity: 0,
+                  transform: `translate3d(${direction}%, 0, 0) scale(0.94)`,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -299,23 +434,20 @@ export default function NewHeroSection() {
 
         {isMobile &&
           [
-            { src: assetPath("/hero/photo-center.webp"), appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
-            { src: assetPath("/hero/photo-kedua.webp"), appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
+            { src: assetPath("/hero/photo-center.webp"), top: "64svh", label: "The Wedding of", labelType: "kicker" },
+            { src: assetPath("/hero/photo-kedua.webp"), top: "82svh", label: COUPLE, labelType: "name" },
           ].map((photo, index) => {
-            const photoProgress = easeOut((progress - photo.appearAt) / 0.35);
-
             return (
               <div
                 key={`${photo.src}-${index}`}
+                ref={(node) => {
+                  mobilePhotoRefs.current[index] = node;
+                }}
                 className="absolute left-6 right-6 h-[16svh] overflow-hidden rounded-[18px] shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
                 style={{
                   top: photo.top,
-                  opacity: photoProgress,
-                  transform: `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(
-                    0.96,
-                    1,
-                    photoProgress,
-                  )}) rotate(${index === 0 ? "-1deg" : "1deg"})`,
+                  opacity: 0,
+                  transform: `translate3d(0, 20px, 0) scale(0.96) rotate(${index === 0 ? "-1deg" : "1deg"})`,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -340,19 +472,20 @@ export default function NewHeroSection() {
               </div>
             );
           })}
-        <ScrollRadarIndicator opacity={clamp(1 - progress / 0.18)} />
+        <ScrollRadarIndicator indicatorRef={scrollRadarRef} />
       </div>
     </section>
   );
 }
 
-function ScrollRadarIndicator({ opacity }: { opacity: number }) {
+function ScrollRadarIndicator({ indicatorRef }: { indicatorRef: RefObject<HTMLDivElement | null> }) {
   return (
     <div
+      ref={indicatorRef}
       className="pointer-events-none absolute bottom-[88px] left-0 right-0 z-[70] mx-auto flex w-fit flex-col items-center gap-2 text-[#2B241D] sm:bottom-[104px]"
       style={{
-        opacity,
-        transform: `translate3d(0, ${lerp(0, 12, 1 - opacity)}px, 0)`,
+        opacity: 1,
+        transform: "translate3d(0, 0, 0)",
         transition: "opacity 180ms ease",
       }}
       aria-hidden="true"
@@ -501,32 +634,43 @@ function ScrollRadarIndicator({ opacity }: { opacity: number }) {
 
 function HeroNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
-  const [scrollHintResetKey, setScrollHintResetKey] = useState(0);
+  const scrollHintTimerRef = useRef(0);
+  const isScrollHintVisibleRef = useRef(false);
+
+  const hideScrollHint = () => {
+    if (!isScrollHintVisibleRef.current) return;
+    isScrollHintVisibleRef.current = false;
+    setShowScrollHint(false);
+  };
+
+  const queueScrollHint = () => {
+    window.clearTimeout(scrollHintTimerRef.current);
+    scrollHintTimerRef.current = window.setTimeout(() => {
+      const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
+      if (nearBottom || isScrollHintVisibleRef.current) return;
+      isScrollHintVisibleRef.current = true;
+      setShowScrollHint(true);
+    }, 3000);
+  };
 
   useEffect(() => {
-    let idleTimer = 0;
-
-    const scheduleHint = () => {
-      setShowScrollHint(false);
-      window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(() => {
-        const nearBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
-        setShowScrollHint(!nearBottom);
-      }, 3000);
+    const handleScroll = () => {
+      hideScrollHint();
+      queueScrollHint();
     };
 
-    scheduleHint();
-    window.addEventListener("scroll", scheduleHint, { passive: true });
+    queueScrollHint();
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.clearTimeout(idleTimer);
-      window.removeEventListener("scroll", scheduleHint);
+      window.clearTimeout(scrollHintTimerRef.current);
+      window.removeEventListener("scroll", handleScroll);
     };
-  }, [scrollHintResetKey]);
+  }, []);
 
   const scrollSection = (direction: -1 | 1) => {
-    setShowScrollHint(false);
-    setScrollHintResetKey((key) => key + 1);
+    hideScrollHint();
+    queueScrollHint();
     const sections = Array.from(document.querySelectorAll<HTMLElement>("main section"));
     if (!sections.length) return;
 
@@ -673,8 +817,8 @@ function HeroNav() {
             <button
               type="button"
               onClick={() => {
-                setShowScrollHint(false);
-                setScrollHintResetKey((key) => key + 1);
+                hideScrollHint();
+                queueScrollHint();
               }}
               className={`absolute bottom-[calc(100%+12px)] right-0 w-[190px] rounded-[14px] border-0 bg-[#2B241D] px-3 py-2 text-center text-[11px] font-semibold leading-snug text-[#FFFCF5] shadow-[0_12px_28px_rgba(43,36,29,0.18)] transition duration-300 sm:w-[220px] sm:text-xs ${
                 showScrollHint ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
@@ -710,12 +854,15 @@ function HeroNav() {
   );
 }
 
-function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile: boolean }) {
-  const eased = Math.pow(clamp(progress), 1.4);
-  const coupleScale = 1 + progress * 0.14;
-  const baseScale = 1;
-  const blurScaleFloor = 1.4;
-  const blurPerScale = 4;
+function HeroParallaxScene({
+  isMobile,
+  coupleLayerRefs,
+  balloonRefs,
+}: {
+  isMobile: boolean;
+  coupleLayerRefs: RefObject<(HTMLDivElement | null)[]>;
+  balloonRefs: RefObject<(HTMLImageElement | null)[]>;
+}) {
   const isTinyMobile = isMobile && typeof window !== "undefined" && window.innerWidth <= 380;
 
   return (
@@ -739,9 +886,12 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
         }
       >
       <div
+        ref={(node) => {
+          coupleLayerRefs.current[0] = node;
+        }}
         className="absolute inset-0"
         style={{
-          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
+          transform: "scale(1)",
           transformOrigin: "50% 100%",
           willChange: "transform",
         }}
@@ -760,14 +910,24 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
         />
       </div>
 
-      {PARALLAX_BALLOONS.slice(0, 4).map((balloon) => (
-        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
+      {PARALLAX_BALLOONS.slice(0, 4).map((balloon, index) => (
+        <ParallaxBalloon
+          key={balloon.id}
+          balloon={balloon}
+          index={index}
+          isMobile={isMobile}
+          isTinyMobile={isTinyMobile}
+          balloonRefs={balloonRefs}
+        />
       ))}
 
       <div
+        ref={(node) => {
+          coupleLayerRefs.current[1] = node;
+        }}
         className="absolute inset-0"
         style={{
-          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
+          transform: "scale(1)",
           transformOrigin: "50% 100%",
           willChange: "transform",
           zIndex: 6,
@@ -786,8 +946,15 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
         />
       </div>
 
-      {PARALLAX_BALLOONS.slice(4).map((balloon) => (
-        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
+      {PARALLAX_BALLOONS.slice(4).map((balloon, index) => (
+        <ParallaxBalloon
+          key={balloon.id}
+          balloon={balloon}
+          index={index + 4}
+          isMobile={isMobile}
+          isTinyMobile={isTinyMobile}
+          balloonRefs={balloonRefs}
+        />
       ))}
       </div>
     </div>
@@ -796,27 +963,19 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
 
 function ParallaxBalloon({
   balloon,
-  progress,
+  index,
   isMobile,
-  blurScaleFloor,
-  blurPerScale,
+  isTinyMobile,
+  balloonRefs,
 }: {
   balloon: (typeof PARALLAX_BALLOONS)[number];
-  progress: number;
+  index: number;
   isMobile: boolean;
-  blurScaleFloor: number;
-  blurPerScale: number;
+  isTinyMobile: boolean;
+  balloonRefs: RefObject<(HTMLImageElement | null)[]>;
 }) {
-  const cfg: {
-    left: string;
-    top: string;
-    width: string;
-    dirX: number;
-    dirY: number;
-    endScale: number;
-    drift: number;
-  } = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
-  if (isMobile && typeof window !== "undefined" && window.innerWidth <= 380) {
+  const cfg: ParallaxConfig = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
+  if (isTinyMobile) {
     if (balloon.id === "big-left") {
       cfg.left = "30%";
       cfg.top = "62%";
@@ -833,14 +992,11 @@ function ParallaxBalloon({
       cfg.width = "40%";
     }
   }
-  const driftBase = isMobile ? 7.8 : 7.2;
-  const x = cfg.dirX * progress * cfg.drift * driftBase;
-  const y = cfg.dirY * progress * cfg.drift * driftBase;
-  const scale = 1 + progress * (cfg.endScale - 1);
-  const blur = Math.max(0, scale - blurScaleFloor) * blurPerScale;
-
   return (
     <Image
+      ref={(node) => {
+        balloonRefs.current[index] = node;
+      }}
       src={balloon.src}
       alt=""
       width={420}
@@ -852,9 +1008,9 @@ function ParallaxBalloon({
         top: cfg.top,
         width: cfg.width,
         zIndex: balloon.zIndex,
-        transform: `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`,
+        transform: "translate3d(0, 0, 0) scale(1)",
         transformOrigin: balloon.id === "right-behind" ? "50% 100%" : "50% 50%",
-        filter: blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none",
+        filter: "none",
         willChange: "transform, filter",
         backfaceVisibility: "hidden",
       }}

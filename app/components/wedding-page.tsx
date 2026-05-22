@@ -31,11 +31,13 @@ function DeferredSection({
   placeholder,
   minHeight,
   background,
+  rootMargin = "480px 0px",
 }: {
   children: ReactNode;
   placeholder: ReactNode;
   minHeight: string;
   background: string;
+  rootMargin?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [shouldMount, setShouldMount] = useState(false);
@@ -50,12 +52,12 @@ function DeferredSection({
         setShouldMount(true);
         observer.disconnect();
       },
-      { root: null, rootMargin: "1600px 0px", threshold: 0 },
+      { root: null, rootMargin, threshold: 0 },
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [shouldMount]);
+  }, [rootMargin, shouldMount]);
 
   return (
     <div ref={ref} style={{ minHeight, background }}>
@@ -73,6 +75,7 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
         <DeferredSection
           minHeight="460vh"
           background="#F7F1E7"
+          rootMargin="360px 0px"
           placeholder={
             <section
               id="our-story"
@@ -93,6 +96,7 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
         <DeferredSection
           minHeight="700vh"
           background="#F7F1E7"
+          rootMargin="480px 0px"
           placeholder={
             <section
               id="gallery-section"
@@ -106,6 +110,7 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
         <DeferredSection
           minHeight="600vh"
           background="#0a1432"
+          rootMargin="480px 0px"
           placeholder={<section id="book-section" aria-hidden="true" style={{ minHeight: "600vh", background: "#0a1432" }} />}
         >
           <BookSection guestName={guestName} />
