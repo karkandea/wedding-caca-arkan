@@ -132,23 +132,41 @@ function lerpCss(from: string, to: string, progress: number) {
 
 export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Refs for direct DOM manipulation
+  const heroContainerRef = useRef<HTMLDivElement>(null);
+  const nameOverlayRef = useRef<HTMLDivElement>(null);
+  const chromeOverlayRef = useRef<HTMLDivElement>(null);
+  const radarIndicatorRef = useRef<HTMLDivElement>(null);
+  const sidePhotosRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const mobilePhotosRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const coupleLayersRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const balloonRefs = useRef<(HTMLImageElement | null)[]>([]);
 
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
     let frameId = 0;
+    let currentIsMobile = window.innerWidth < 720;
 
     const updateDeviceMode = () => {
-      setIsMobile(window.innerWidth < 720);
+      const nextIsMobile = window.innerWidth < 720;
+      if (nextIsMobile !== currentIsMobile) {
+        currentIsMobile = nextIsMobile;
+        setIsMobile(nextIsMobile);
+      }
     };
 
     const updateProgress = () => {
       const rect = section.getBoundingClientRect();
       const total = section.offsetHeight - window.innerHeight;
       const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
-      setProgress(nextProgress);
+      progressRef.current = nextProgress;
+
+      // Direct DOM updates without React re-render
+      updateHeroStyles(nextProgress, currentIsMobile);
     };
 
     const scheduleUpdate = () => {
@@ -165,7 +183,13 @@ export default function NewHeroSection() {
     };
 
     updateDeviceMode();
-    updateProgress();
+    // Set initial styles immediately
+    const rect = section.getBoundingClientRect();
+    const total = section.offsetHeight - window.innerHeight;
+    const initialProgress = total > 0 ? clamp(-rect.top / total) : 0;
+    progressRef.current = initialProgress;
+    updateHeroStyles(initialProgress, currentIsMobile);
+
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", handleResize);
 
@@ -176,26 +200,134 @@ export default function NewHeroSection() {
     };
   }, []);
 
-  const eased = easeInOut(progress);
-  const heroStyle = isMobile
-    ? {
-        left: `${lerp(0, 24, eased)}px`,
-        top: `${lerp(0, 110, eased)}px`,
-        width: `calc(100% - ${lerp(0, 48, eased)}px)`,
-        height: `${lerp(100, 46, eased)}svh`,
-        borderRadius: `${lerp(0, 22, eased)}px`,
-      }
-    : {
-        left: lerpCss("0%", "31%", eased),
-        top: lerpCss("0%", "10%", eased),
-        width: lerpCss("100%", "38%", eased),
-        height: lerpCss("100%", "85%", eased),
-        borderRadius: `${lerp(0, 28, eased)}px`,
-      };
+  const updateHeroStyles = (progress: number, mobile: boolean) => {
+    const eased = easeInOut(progress);
 
-  const nameOpacity = clamp(1 - progress * 1.5);
-  const nameScale = lerp(1, 0.78, easeOut(progress));
-  const chromeOpacity = clamp(1 - progress / 0.22);
+    // Update hero container
+    if (heroContainerRef.current) {
+      if (mobile) {
+        heroContainerRef.current.style.left = `${lerp(0, 24, eased)}px`;
+        heroContainerRef.current.style.top = `${lerp(0, 110, eased)}px`;
+        heroContainerRef.current.style.width = `calc(100% - ${lerp(0, 48, eased)}px)`;
+        heroContainerRef.current.style.height = `${lerp(100, 46, eased)}svh`;
+        heroContainerRef.current.style.borderRadius = `${lerp(0, 22, eased)}px`;
+      } else {
+        heroContainerRef.current.style.left = lerpCss("0%", "31%", eased);
+        heroContainerRef.current.style.top = lerpCss("0%", "10%", eased);
+        heroContainerRef.current.style.width = lerpCss("100%", "38%", eased);
+        heroContainerRef.current.style.height = lerpCss("100%", "85%", eased);
+        heroContainerRef.current.style.borderRadius = `${lerp(0, 28, eased)}px`;
+      }
+    }
+
+    // Update name overlay
+    if (nameOverlayRef.current) {
+      const nameOpacity = clamp(1 - progress * 1.5);
+      const nameScale = lerp(1, 0.78, easeOut(progress));
+      nameOverlayRef.current.style.opacity = String(nameOpacity);
+      nameOverlayRef.current.style.transform = `scale(${nameScale})`;
+    }
+
+    // Update chrome overlay (scroll hint at bottom)
+    if (chromeOverlayRef.current) {
+      const chromeOpacity = clamp(1 - progress / 0.22);
+      chromeOverlayRef.current.style.opacity = String(chromeOpacity);
+    }
+
+    // Update radar indicator
+    if (radarIndicatorRef.current) {
+      const radarOpacity = clamp(1 - progress / 0.18);
+      radarIndicatorRef.current.style.opacity = String(radarOpacity);
+      radarIndicatorRef.current.style.transform = `translate3d(0, ${lerp(0, 12, 1 - radarOpacity)}px, 0)`;
+    }
+
+    // Update side photos (desktop)
+    if (!mobile) {
+      SIDE_PHOTOS.forEach((photo, index) => {
+        const photoRef = sidePhotosRefs.current[index];
+        if (photoRef) {
+          const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
+          const direction = photo.edge === "left" ? -110 : 110;
+          photoRef.style.opacity = String(photoProgress);
+          photoRef.style.transform = `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(0.94, 1, photoProgress)})`;
+        }
+      });
+    }
+
+    // Update mobile photos
+    if (mobile) {
+      [0.45, 0.65].forEach((appearAt, index) => {
+        const photoRef = mobilePhotosRefs.current[index];
+        if (photoRef) {
+          const photoProgress = easeOut((progress - appearAt) / 0.35);
+          photoRef.style.opacity = String(photoProgress);
+          photoRef.style.transform = `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(0.96, 1, photoProgress)}) rotate(${index === 0 ? "-1deg" : "1deg"})`;
+        }
+      });
+    }
+
+    // Update parallax scene
+    updateParallaxScene(progress, mobile);
+  };
+
+  const updateParallaxScene = (progress: number, mobile: boolean) => {
+    const eased = Math.pow(clamp(progress), 1.4);
+    const coupleScale = 1 + progress * 0.14;
+
+    // Update couple layers
+    coupleLayersRefs.current.forEach((layer) => {
+      if (layer) {
+        layer.style.transform = `scale(${coupleScale.toFixed(4)})`;
+      }
+    });
+
+    // Update balloons
+    const blurScaleFloor = 1.4;
+    const blurPerScale = 4;
+    const isTinyMobile = mobile && typeof window !== "undefined" && window.innerWidth <= 380;
+
+    PARALLAX_BALLOONS.forEach((balloon, index) => {
+      const balloonRef = balloonRefs.current[index];
+      if (!balloonRef) return;
+
+      let cfg: {
+        left: string;
+        top: string;
+        width: string;
+        dirX: number;
+        dirY: number;
+        endScale: number;
+        drift: number;
+      } = mobile ? { ...balloon.mobile } : { ...balloon.desktop };
+
+      if (isTinyMobile) {
+        if (balloon.id === "big-left") {
+          cfg.left = "30%" as any;
+          cfg.top = "62%" as any;
+          cfg.width = "20%" as any;
+          cfg.endScale = 4 as any;
+        }
+        if (balloon.id === "close-above") {
+          cfg.left = "-2%" as any;
+          cfg.top = "72%" as any;
+          cfg.width = "30%" as any;
+          cfg.endScale = 3.8;
+        }
+        if (balloon.id === "right-behind") {
+          cfg.width = "40%" as any;
+        }
+      }
+
+      const driftBase = mobile ? 7.8 : 7.2;
+      const x = cfg.dirX * eased * cfg.drift * driftBase;
+      const y = cfg.dirY * eased * cfg.drift * driftBase;
+      const scale = 1 + eased * (cfg.endScale - 1);
+      const blur = Math.max(0, scale - blurScaleFloor) * blurPerScale;
+
+      balloonRef.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`;
+      balloonRef.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
+    });
+  };
 
   return (
     <section
@@ -206,9 +338,9 @@ export default function NewHeroSection() {
       <HeroNav />
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
         <div
+          ref={heroContainerRef}
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
-            ...heroStyle,
             willChange: "left, top, width, height, border-radius",
             backfaceVisibility: "hidden",
           }}
@@ -225,14 +357,17 @@ export default function NewHeroSection() {
               transform: isMobile ? "translate3d(-50%, -50%, 0)" : undefined,
             }}
           >
-            <HeroParallaxScene progress={progress} isMobile={isMobile} />
+            <HeroParallaxScene
+              isMobile={isMobile}
+              coupleLayersRefs={coupleLayersRefs}
+              balloonRefs={balloonRefs}
+            />
           </div>
 
           <div
+            ref={nameOverlayRef}
             className="pointer-events-none absolute inset-0 flex items-center justify-center text-center"
             style={{
-              opacity: nameOpacity,
-              transform: `scale(${nameScale})`,
               willChange: "transform, opacity",
               backfaceVisibility: "hidden",
             }}
@@ -253,8 +388,8 @@ export default function NewHeroSection() {
           </div>
 
           <div
+            ref={chromeOverlayRef}
             className="pointer-events-none absolute bottom-0 left-0 right-0 px-6 pb-7 sm:px-9"
-            style={{ opacity: chromeOpacity }}
           >
             <div className="mb-3.5 h-px bg-white/55" />
             <div
@@ -268,26 +403,21 @@ export default function NewHeroSection() {
         </div>
 
         {!isMobile &&
-          SIDE_PHOTOS.map((photo) => {
-            const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
-            const direction = photo.edge === "left" ? -110 : 110;
+          SIDE_PHOTOS.map((photo, index) => {
             const position = photo.edge === "left" ? { left: photo.offset } : { right: photo.offset };
 
             return (
               <div
                 key={photo.id}
+                ref={(el) => {
+                  sidePhotosRefs.current[index] = el;
+                }}
                 className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
                 style={{
                   ...position,
                   top: photo.top,
                   width: photo.width,
                   height: photo.height,
-                  opacity: photoProgress,
-                  transform: `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(
-                    0.94,
-                    1,
-                    photoProgress,
-                  )})`,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -302,20 +432,15 @@ export default function NewHeroSection() {
             { src: assetPath("/hero/photo-center.webp"), appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
             { src: assetPath("/hero/photo-kedua.webp"), appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
           ].map((photo, index) => {
-            const photoProgress = easeOut((progress - photo.appearAt) / 0.35);
-
             return (
               <div
                 key={`${photo.src}-${index}`}
+                ref={(el) => {
+                  mobilePhotosRefs.current[index] = el;
+                }}
                 className="absolute left-6 right-6 h-[16svh] overflow-hidden rounded-[18px] shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
                 style={{
                   top: photo.top,
-                  opacity: photoProgress,
-                  transform: `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(
-                    0.96,
-                    1,
-                    photoProgress,
-                  )}) rotate(${index === 0 ? "-1deg" : "1deg"})`,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -340,19 +465,18 @@ export default function NewHeroSection() {
               </div>
             );
           })}
-        <ScrollRadarIndicator opacity={clamp(1 - progress / 0.18)} />
+        <ScrollRadarIndicator radarRef={radarIndicatorRef} />
       </div>
     </section>
   );
 }
 
-function ScrollRadarIndicator({ opacity }: { opacity: number }) {
+function ScrollRadarIndicator({ radarRef }: { radarRef: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
+      ref={radarRef}
       className="pointer-events-none absolute bottom-[88px] left-0 right-0 z-[70] mx-auto flex w-fit flex-col items-center gap-2 text-[#2B241D] sm:bottom-[104px]"
       style={{
-        opacity,
-        transform: `translate3d(0, ${lerp(0, 12, 1 - opacity)}px, 0)`,
         transition: "opacity 180ms ease",
       }}
       aria-hidden="true"
@@ -710,12 +834,15 @@ function HeroNav() {
   );
 }
 
-function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile: boolean }) {
-  const eased = Math.pow(clamp(progress), 1.4);
-  const coupleScale = 1 + progress * 0.14;
-  const baseScale = 1;
-  const blurScaleFloor = 1.4;
-  const blurPerScale = 4;
+function HeroParallaxScene({
+  isMobile,
+  coupleLayersRefs,
+  balloonRefs,
+}: {
+  isMobile: boolean;
+  coupleLayersRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
+  balloonRefs: React.MutableRefObject<(HTMLImageElement | null)[]>;
+}) {
   const isTinyMobile = isMobile && typeof window !== "undefined" && window.innerWidth <= 380;
 
   return (
@@ -738,57 +865,75 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
               }
         }
       >
-      <div
-        className="absolute inset-0"
-        style={{
-          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
-          transformOrigin: "50% 100%",
-          willChange: "transform",
-        }}
-      >
-        <ShimmerImage
-          src={assetPath("/hero/couple with bg.webp")}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-          style={{
-            objectPosition: isMobile ? "50% 80%" : "center bottom",
-            zIndex: 1,
+        <div
+          ref={(el) => {
+            coupleLayersRefs.current[0] = el;
           }}
-        />
-      </div>
-
-      {PARALLAX_BALLOONS.slice(0, 4).map((balloon) => (
-        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
-      ))}
-
-      <div
-        className="absolute inset-0"
-        style={{
-          transform: `scale(${(baseScale * coupleScale).toFixed(4)})`,
-          transformOrigin: "50% 100%",
-          willChange: "transform",
-          zIndex: 6,
-        }}
-      >
-        <ShimmerImage
-          src={assetPath("/hero/couple without bg.webp")}
-          alt={COUPLE}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
+          className="absolute inset-0"
           style={{
-            objectPosition: isMobile ? "50% 80%" : "center bottom",
+            transformOrigin: "50% 100%",
+            willChange: "transform",
           }}
-        />
-      </div>
+        >
+          <ShimmerImage
+            src={assetPath("/hero/couple with bg.webp")}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            style={{
+              objectPosition: isMobile ? "50% 80%" : "center bottom",
+              zIndex: 1,
+            }}
+          />
+        </div>
 
-      {PARALLAX_BALLOONS.slice(4).map((balloon) => (
-        <ParallaxBalloon key={balloon.id} balloon={balloon} progress={eased} isMobile={isMobile} blurScaleFloor={blurScaleFloor} blurPerScale={blurPerScale} />
-      ))}
+        {PARALLAX_BALLOONS.slice(0, 4).map((balloon, index) => (
+          <ParallaxBalloon
+            key={balloon.id}
+            balloon={balloon}
+            balloonRef={(el) => {
+              balloonRefs.current[index] = el;
+            }}
+            isMobile={isMobile}
+          />
+        ))}
+
+        <div
+          ref={(el) => {
+            coupleLayersRefs.current[1] = el;
+          }}
+          className="absolute inset-0"
+          style={{
+            transformOrigin: "50% 100%",
+            willChange: "transform",
+            zIndex: 6,
+          }}
+        >
+          <ShimmerImage
+            src={assetPath("/hero/couple without bg.webp")}
+            alt={COUPLE}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            style={{
+              objectPosition: isMobile ? "50% 80%" : "center bottom",
+            }}
+          />
+        </div>
+
+        {PARALLAX_BALLOONS.slice(4).map((balloon, index) => (
+          <ParallaxBalloon
+            key={balloon.id}
+            balloon={balloon}
+            balloonRef={(el) => {
+              balloonRefs.current[index + 4] = el;
+            }}
+            isMobile={isMobile}
+          />
+        ))}
       </div>
     </div>
   );
@@ -796,51 +941,18 @@ function HeroParallaxScene({ progress, isMobile }: { progress: number; isMobile:
 
 function ParallaxBalloon({
   balloon,
-  progress,
+  balloonRef,
   isMobile,
-  blurScaleFloor,
-  blurPerScale,
 }: {
   balloon: (typeof PARALLAX_BALLOONS)[number];
-  progress: number;
+  balloonRef: (el: HTMLImageElement | null) => void;
   isMobile: boolean;
-  blurScaleFloor: number;
-  blurPerScale: number;
 }) {
-  const cfg: {
-    left: string;
-    top: string;
-    width: string;
-    dirX: number;
-    dirY: number;
-    endScale: number;
-    drift: number;
-  } = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
-  if (isMobile && typeof window !== "undefined" && window.innerWidth <= 380) {
-    if (balloon.id === "big-left") {
-      cfg.left = "30%";
-      cfg.top = "62%";
-      cfg.width = "20%";
-      cfg.endScale = 4;
-    }
-    if (balloon.id === "close-above") {
-      cfg.left = "-2%";
-      cfg.top = "72%";
-      cfg.width = "30%";
-      cfg.endScale = 3.8;
-    }
-    if (balloon.id === "right-behind") {
-      cfg.width = "40%";
-    }
-  }
-  const driftBase = isMobile ? 7.8 : 7.2;
-  const x = cfg.dirX * progress * cfg.drift * driftBase;
-  const y = cfg.dirY * progress * cfg.drift * driftBase;
-  const scale = 1 + progress * (cfg.endScale - 1);
-  const blur = Math.max(0, scale - blurScaleFloor) * blurPerScale;
+  const cfg = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
 
   return (
     <Image
+      ref={balloonRef}
       src={balloon.src}
       alt=""
       width={420}
@@ -852,9 +964,7 @@ function ParallaxBalloon({
         top: cfg.top,
         width: cfg.width,
         zIndex: balloon.zIndex,
-        transform: `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`,
         transformOrigin: balloon.id === "right-behind" ? "50% 100%" : "50% 50%",
-        filter: blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none",
         willChange: "transform, filter",
         backfaceVisibility: "hidden",
       }}
