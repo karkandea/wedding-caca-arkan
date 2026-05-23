@@ -137,6 +137,7 @@ export default function NewHeroSection() {
 
   // Refs for direct DOM manipulation
   const heroContainerRef = useRef<HTMLDivElement>(null);
+  const sceneViewportRef = useRef<HTMLDivElement>(null);
   const nameOverlayRef = useRef<HTMLDivElement>(null);
   const chromeOverlayRef = useRef<HTMLDivElement>(null);
   const radarIndicatorRef = useRef<HTMLDivElement>(null);
@@ -150,11 +151,13 @@ export default function NewHeroSection() {
     if (!section) return;
     let frameId = 0;
     let currentIsMobile = window.innerWidth < 720;
+    let currentIsTinyMobile = currentIsMobile && window.innerWidth <= 380;
 
     const updateDeviceMode = () => {
       const nextIsMobile = window.innerWidth < 720;
       if (nextIsMobile !== currentIsMobile) {
         currentIsMobile = nextIsMobile;
+        currentIsTinyMobile = nextIsMobile && window.innerWidth <= 380;
         setIsMobile(nextIsMobile);
       }
     };
@@ -166,7 +169,7 @@ export default function NewHeroSection() {
       progressRef.current = nextProgress;
 
       // Direct DOM updates without React re-render
-      updateHeroStyles(nextProgress, currentIsMobile);
+      updateHeroStyles(nextProgress, currentIsMobile, currentIsTinyMobile);
     };
 
     const scheduleUpdate = () => {
@@ -188,7 +191,7 @@ export default function NewHeroSection() {
     const total = section.offsetHeight - window.innerHeight;
     const initialProgress = total > 0 ? clamp(-rect.top / total) : 0;
     progressRef.current = initialProgress;
-    updateHeroStyles(initialProgress, currentIsMobile);
+    updateHeroStyles(initialProgress, currentIsMobile, currentIsTinyMobile);
 
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", handleResize);
@@ -200,7 +203,7 @@ export default function NewHeroSection() {
     };
   }, []);
 
-  const updateHeroStyles = (progress: number, mobile: boolean) => {
+  const updateHeroStyles = (progress: number, mobile: boolean, isTinyMobile: boolean) => {
     const eased = easeInOut(progress);
 
     // Update hero container
@@ -217,6 +220,23 @@ export default function NewHeroSection() {
         heroContainerRef.current.style.width = lerpCss("100%", "38%", eased);
         heroContainerRef.current.style.height = lerpCss("100%", "85%", eased);
         heroContainerRef.current.style.borderRadius = `${lerp(0, 28, eased)}px`;
+      }
+    }
+
+    // Update scene viewport
+    if (sceneViewportRef.current) {
+      if (mobile) {
+        sceneViewportRef.current.style.inset = "auto";
+        sceneViewportRef.current.style.left = "50%";
+        sceneViewportRef.current.style.top = "50%";
+        sceneViewportRef.current.style.height = "100svh";
+        sceneViewportRef.current.style.transform = "translate3d(-50%, -50%, 0)";
+      } else {
+        sceneViewportRef.current.style.inset = "0";
+        sceneViewportRef.current.style.left = "";
+        sceneViewportRef.current.style.top = "";
+        sceneViewportRef.current.style.height = "100%";
+        sceneViewportRef.current.style.transform = "";
       }
     }
 
@@ -241,8 +261,8 @@ export default function NewHeroSection() {
       radarIndicatorRef.current.style.transform = `translate3d(0, ${lerp(0, 12, 1 - radarOpacity)}px, 0)`;
     }
 
-    // Update side photos (desktop)
-    if (!mobile) {
+    // Update side photos (desktop only, tidak render di mobile)
+    if (!mobile && sidePhotosRefs.current.length > 0) {
       SIDE_PHOTOS.forEach((photo, index) => {
         const photoRef = sidePhotosRefs.current[index];
         if (photoRef) {
@@ -267,10 +287,10 @@ export default function NewHeroSection() {
     }
 
     // Update parallax scene
-    updateParallaxScene(progress, mobile);
+    updateParallaxScene(progress, mobile, isTinyMobile);
   };
 
-  const updateParallaxScene = (progress: number, mobile: boolean) => {
+  const updateParallaxScene = (progress: number, mobile: boolean, isTinyMobile: boolean) => {
     const eased = Math.pow(clamp(progress), 1.4);
     const coupleScale = 1 + progress * 0.14;
 
@@ -284,7 +304,6 @@ export default function NewHeroSection() {
     // Update balloons
     const blurScaleFloor = 1.4;
     const blurPerScale = 4;
-    const isTinyMobile = mobile && typeof window !== "undefined" && window.innerWidth <= 380;
 
     PARALLAX_BALLOONS.forEach((balloon, index) => {
       const balloonRef = balloonRefs.current[index];
@@ -346,15 +365,11 @@ export default function NewHeroSection() {
           }}
         >
           <div
+            ref={sceneViewportRef}
             style={{
               position: "absolute",
-              inset: isMobile ? "auto" : 0,
-              left: isMobile ? "50%" : undefined,
-              top: isMobile ? "50%" : undefined,
               width: "100%",
-              height: isMobile ? "100svh" : "100%",
               overflow: "hidden",
-              transform: isMobile ? "translate3d(-50%, -50%, 0)" : undefined,
             }}
           >
             <HeroParallaxScene
