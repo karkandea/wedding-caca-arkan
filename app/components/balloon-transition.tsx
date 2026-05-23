@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { assetPath } from "../lib/asset-path";
@@ -45,12 +45,22 @@ const random = (min: number, max: number) => min + Math.random() * (max - min);
 export default function BalloonTransition({ onComplete }: BalloonTransitionProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const onCompleteRef = useRef(onComplete);
+  const [shouldLoadGLB, setShouldLoadGLB] = useState(false);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
 
+  // Defer GLB load slightly to let loading screen render
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setShouldLoadGLB(true);
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldLoadGLB) return;
     const mount = mountRef.current;
     if (!mount) return;
 
@@ -171,11 +181,18 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
           return;
         }
 
+        // Detect mobile and low-end devices
+        const isMobile = window.innerWidth < 768;
+        const isLowEnd = navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false;
+        const shouldReduceClones = isMobile || isLowEnd;
+
         const balloonGroup = new THREE.Group();
         const totalWidth = 5;
-        const numCols = 18;
+        const numCols = shouldReduceClones ? 12 : 18;
         const cloneTargets = meshes.flatMap((mesh) => {
-          const cloneCount = Math.random() > 0.5 ? 4 : 3;
+          const cloneCount = shouldReduceClones
+            ? (Math.random() > 0.5 ? 2 : 1)
+            : (Math.random() > 0.5 ? 4 : 3);
           return Array.from({ length: cloneCount }, () => mesh);
         });
         const sortedMeshes = cloneTargets.sort(() => Math.random() - 0.5);
@@ -251,26 +268,51 @@ export default function BalloonTransition({ onComplete }: BalloonTransitionProps
       isDisposed = true;
       window.removeEventListener("resize", handleResize);
       if (frameId) window.cancelAnimationFrame(frameId);
+
+      // Total cleanup Three.js scene
       const disposedGeometries = new Set<THREE.BufferGeometry>();
       const disposedMaterials = new Set<THREE.Material>();
+
       scene.traverse((child) => {
         if (!(child instanceof THREE.Mesh)) return;
-        if (!disposedGeometries.has(child.geometry)) {
+
+        // Dispose geometry
+        if (child.geometry && !disposedGeometries.has(child.geometry)) {
           child.geometry.dispose();
           disposedGeometries.add(child.geometry);
         }
 
+        // Dispose materials
         const materials = Array.isArray(child.material) ? child.material : [child.material];
         materials.forEach((material) => {
           if (disposedMaterials.has(material)) return;
           material.dispose();
           disposedMaterials.add(material);
         });
+
+        // Remove from parent
+        child.parent?.remove(child);
       });
+
+      // Clear scene
+      while (scene.children.length > 0) {
+        scene.remove(scene.children[0]);
+      }
+
+      // Clear animations array
+      animations.length = 0;
+
+      // Dispose renderer and remove canvas
       renderer.dispose();
+      renderer.forceContextLoss();
+      if (renderer.domElement.parentNode) {
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
+      }
+
+      // Clear mount container
       mount.replaceChildren();
     };
-  }, []);
+  }, [shouldLoadGLB]);
 
   return (
     <div
