@@ -203,6 +203,18 @@ export default function NewHeroSection() {
     };
   }, []);
 
+  // Force update mobile photos after isMobile changes
+  useEffect(() => {
+    if (isMobile && sectionRef.current) {
+      const section = sectionRef.current;
+      const rect = section.getBoundingClientRect();
+      const total = section.offsetHeight - window.innerHeight;
+      const currentProgress = total > 0 ? clamp(-rect.top / total) : 0;
+      const isTinyMobile = window.innerWidth <= 380;
+      updateHeroStyles(currentProgress, isMobile, isTinyMobile);
+    }
+  }, [isMobile]);
+
   const updateHeroStyles = (progress: number, mobile: boolean, isTinyMobile: boolean) => {
     const eased = easeInOut(progress);
 
@@ -427,7 +439,7 @@ export default function NewHeroSection() {
                 ref={(el) => {
                   sidePhotosRefs.current[index] = el;
                 }}
-                className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
+                className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)] max-[719px]:hidden"
                 style={{
                   ...position,
                   top: photo.top,
