@@ -139,11 +139,8 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     camera.position.set(0, 9, 9);
     camera.lookAt(0, 0, 0);
 
-    const isMobileDevice = window.innerWidth < 768;
-    const renderer = new THREE.WebGLRenderer({ antialias: !isMobileDevice, alpha: false });
-    // Lower pixel ratio on mobile for better performance
-    const targetPixelRatio = isMobileDevice ? 1 : Math.min(window.devicePixelRatio, 2);
-    renderer.setPixelRatio(targetPixelRatio);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
