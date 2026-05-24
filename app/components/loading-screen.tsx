@@ -1,10 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
-
-const BalloonTransition = dynamic(() => import("./balloon-transition"), { ssr: false });
 
 const HERO_ASSETS = [assetPath("/hero/photo lain 1.webp"), assetPath("/hero/photo lain 2.webp"), assetPath("/hero/photo-center.webp")];
 
@@ -21,9 +18,7 @@ export default function LoadingScreen() {
   const [isDone, setIsDone] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
-  const [canRunBalloonTransition, setCanRunBalloonTransition] = useState(false);
   const hasFinishedRef = useRef(false);
-  const canRunBalloonTransitionRef = useRef(false);
   const isMobileRef = useRef(false);
   const restoreScrollLockRef = useRef<(() => void) | null>(null);
   const hasUnlockedScrollRef = useRef(false);
@@ -64,8 +59,6 @@ export default function LoadingScreen() {
     const updateTransitionMode = () => {
       const isMobile = window.matchMedia("(max-width: 767px)").matches;
       isMobileRef.current = isMobile;
-      canRunBalloonTransitionRef.current = true;
-      setCanRunBalloonTransition(true);
     };
 
     const finishLoading = () => {
@@ -81,12 +74,10 @@ export default function LoadingScreen() {
         window.dispatchEvent(new CustomEvent("wedding-loading-complete"));
         window.setTimeout(() => {
           if (isMounted) setIsRevealing(true);
-          if (!canRunBalloonTransitionRef.current) {
-            window.setTimeout(() => {
-              if (isMounted) setIsHidden(true);
-            }, 520);
-          }
-        }, canRunBalloonTransitionRef.current ? 1150 : 180);
+          window.setTimeout(() => {
+            if (isMounted) setIsHidden(true);
+          }, 520);
+        }, 180);
       }, remainingVisibleMs);
     };
 
@@ -133,11 +124,6 @@ export default function LoadingScreen() {
   }, [isHidden]);
 
   if (isHidden) return null;
-
-  const completeTransition = () => {
-    restoreScrollLockRef.current?.();
-    setIsHidden(true);
-  };
 
   return (
     <div
@@ -214,7 +200,6 @@ export default function LoadingScreen() {
         }`}
       </style>
       </div>
-      {isDone && canRunBalloonTransition && <BalloonTransition onComplete={completeTransition} />}
     </div>
   );
 }
