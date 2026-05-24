@@ -372,6 +372,11 @@ export default function NewHeroSection() {
           ref={heroContainerRef}
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            borderRadius: 0,
             willChange: "left, top, width, height, border-radius",
             backfaceVisibility: "hidden",
           }}
