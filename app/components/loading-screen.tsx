@@ -6,14 +6,15 @@ import { assetPath } from "../lib/asset-path";
 
 const BalloonTransition = dynamic(() => import("./balloon-transition"), { ssr: false });
 
-const HERO_ASSETS = [assetPath("/hero/photo lain 1.webp"), assetPath("/hero/photo lain 2.webp"), assetPath("/hero/photo-center.webp")];
+const HERO_ASSETS = [assetPath("/hero/couple without bg.webp")]; // Only preload the topmost/LCP image
 
 async function preloadAsset(src: string) {
-  try {
-    await fetch(src, { cache: "force-cache" });
-  } catch {
-    // Failed preloads should not trap visitors on the loading screen.
-  }
+  return new Promise<void>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve(); // Don't block on error
+    img.src = src;
+  });
 }
 
 export default function LoadingScreen() {
@@ -72,7 +73,7 @@ export default function LoadingScreen() {
       if (!isMounted || hasFinishedRef.current) return;
       hasFinishedRef.current = true;
       restoreScrollLockRef.current?.();
-      const minimumVisibleMs = isMobileRef.current ? 1200 : 700;
+      const minimumVisibleMs = 0; // Performance optimization - no artificial delay
       const remainingVisibleMs = Math.max(0, minimumVisibleMs - (performance.now() - startedAt));
 
       window.setTimeout(() => {
@@ -86,7 +87,7 @@ export default function LoadingScreen() {
               if (isMounted) setIsHidden(true);
             }, 520);
           }
-        }, canRunBalloonTransitionRef.current ? 1150 : 180);
+        }, 0); // Immediate transition for better LCP
       }, remainingVisibleMs);
     };
 

@@ -1,14 +1,23 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { memo, type ReactNode, useEffect, useRef, useState } from "react";
 import ImageSequenceSection from "./image-sequence-section";
 import LoadingScreen from "./loading-screen";
 import { assetPath } from "../lib/asset-path";
 
-const OurStorySection = dynamic(() => import("./our-story-section"), { ssr: false });
-const Section3Video = dynamic(() => import("./section-3-video"), { ssr: false });
-const BookSection = dynamic(() => import("./book-section"), { ssr: false });
+const OurStorySection = dynamic(() => import("./our-story-section"), {
+  ssr: false,
+  loading: () => <div style={{ minHeight: "460vh", background: "#F7F1E7" }} />,
+});
+const Section3Video = dynamic(() => import("./section-3-video"), {
+  ssr: false,
+  loading: () => <div style={{ minHeight: "700vh", background: "#F7F1E7" }} />,
+});
+const BookSection = dynamic(() => import("./book-section"), {
+  ssr: false,
+  loading: () => <div style={{ minHeight: "600vh", background: "#0a1432" }} />,
+});
 
 const storyPlaceholderBackground = `
   linear-gradient(
@@ -26,7 +35,7 @@ type WeddingPageProps = {
   guestName?: string;
 };
 
-function DeferredSection({
+const DeferredSection = memo(function DeferredSection({
   children,
   placeholder,
   minHeight,
@@ -50,7 +59,7 @@ function DeferredSection({
         setShouldMount(true);
         observer.disconnect();
       },
-      { root: null, rootMargin: "1600px 0px", threshold: 0 },
+      { root: null, rootMargin: "400px 0px", threshold: 0 },
     );
 
     observer.observe(node);
@@ -62,7 +71,7 @@ function DeferredSection({
       {shouldMount ? children : placeholder}
     </div>
   );
-}
+});
 
 export default function WeddingPage({ guestName }: WeddingPageProps) {
   return (

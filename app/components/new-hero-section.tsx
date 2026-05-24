@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
 import MusicPlayer from "./music-player";
 import { ShimmerImage } from "./shimmer-image";
@@ -185,6 +185,8 @@ export default function NewHeroSection() {
       scheduleUpdate();
     };
 
+    // Set initial isMobile state on mount
+    setIsMobile(currentIsMobile);
     updateDeviceMode();
     // Set initial styles immediately
     const rect = section.getBoundingClientRect();
@@ -353,6 +355,7 @@ export default function NewHeroSection() {
       ref={sectionRef}
       className="relative h-[300vh] w-full bg-[#F7F1E7]"
       id="new-hero-section"
+      style={{ contain: "layout" }}
     >
       <HeroNav />
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
@@ -427,12 +430,13 @@ export default function NewHeroSection() {
                 ref={(el) => {
                   sidePhotosRefs.current[index] = el;
                 }}
-                className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
+                className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)] max-[719px]:!hidden"
                 style={{
                   ...position,
                   top: photo.top,
                   width: photo.width,
                   height: photo.height,
+                  opacity: 0,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -456,6 +460,7 @@ export default function NewHeroSection() {
                 className="absolute left-6 right-6 h-[16svh] overflow-hidden rounded-[18px] shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
                 style={{
                   top: photo.top,
+                  opacity: 0,
                   willChange: "transform, opacity",
                   backfaceVisibility: "hidden",
                 }}
@@ -486,12 +491,14 @@ export default function NewHeroSection() {
   );
 }
 
-function ScrollRadarIndicator({ radarRef }: { radarRef: React.RefObject<HTMLDivElement | null> }) {
+const ScrollRadarIndicator = memo(function ScrollRadarIndicator({ radarRef }: { radarRef: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div
       ref={radarRef}
       className="pointer-events-none absolute bottom-[88px] left-0 right-0 z-[70] mx-auto flex w-fit flex-col items-center gap-2 text-[#2B241D] sm:bottom-[104px]"
       style={{
+        opacity: 1,
+        transform: "translate3d(0, 0, 0)",
         transition: "opacity 180ms ease",
       }}
       aria-hidden="true"
@@ -636,9 +643,9 @@ function ScrollRadarIndicator({ radarRef }: { radarRef: React.RefObject<HTMLDivE
       `}</style>
     </div>
   );
-}
+});
 
-function HeroNav() {
+const HeroNav = memo(function HeroNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
   const [scrollHintResetKey, setScrollHintResetKey] = useState(0);
 
@@ -847,9 +854,9 @@ function HeroNav() {
       </div>
     </nav>
   );
-}
+});
 
-function HeroParallaxScene({
+const HeroParallaxScene = memo(function HeroParallaxScene({
   isMobile,
   coupleLayersRefs,
   balloonRefs,
@@ -895,6 +902,7 @@ function HeroParallaxScene({
             alt=""
             fill
             priority
+            fetchPriority="high"
             sizes="100vw"
             className="object-cover"
             style={{
@@ -931,6 +939,7 @@ function HeroParallaxScene({
             alt={COUPLE}
             fill
             priority
+            fetchPriority="high"
             sizes="100vw"
             className="object-cover"
             style={{
@@ -952,9 +961,9 @@ function HeroParallaxScene({
       </div>
     </div>
   );
-}
+});
 
-function ParallaxBalloon({
+const ParallaxBalloon = memo(function ParallaxBalloon({
   balloon,
   balloonRef,
   isMobile,
@@ -972,7 +981,9 @@ function ParallaxBalloon({
       alt=""
       width={420}
       height={420}
-      sizes={cfg.width}
+      sizes={`(max-width: 720px) ${cfg.width}, ${cfg.width}`}
+      loading="lazy"
+      quality={85}
       className="pointer-events-none absolute h-auto select-none"
       style={{
         left: cfg.left,
@@ -985,4 +996,4 @@ function ParallaxBalloon({
       }}
     />
   );
-}
+});

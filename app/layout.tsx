@@ -34,6 +34,22 @@ export default function RootLayout({
       lang="en"
       className={`${cyrene.variable} ${dinAlternate.variable} h-full antialiased`}
     >
+      <head>
+        <link
+          rel="preload"
+          href="/salsaarkan/hero/couple with bg.webp"
+          as="image"
+          type="image/webp"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          href="/salsaarkan/hero/couple without bg.webp"
+          as="image"
+          type="image/webp"
+          fetchPriority="high"
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
       </body>
