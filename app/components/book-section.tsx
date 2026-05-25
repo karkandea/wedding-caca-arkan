@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -106,6 +106,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
   const canvasRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef(0);
+  const [bookReady, setBookReady] = useState(false);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -294,11 +295,13 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
     let modelsLoaded = false;
+    let disposed = false;
     const loadModels = () => {
       if (modelsLoaded) return;
       modelsLoaded = true;
 
       loader.load(assetPath("/baloon.glb"), (gltf) => {
+        if (disposed) return;
         const source = gltf.scene;
         source.updateMatrixWorld(true);
         const sourceBox = new THREE.Box3().setFromObject(source);
@@ -351,6 +354,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       });
 
       loader.load(assetPath("/my wedding book copy 2.glb"), (gltf) => {
+        if (disposed) return;
         const book = gltf.scene;
         book.traverse((node) => {
           if (!(node instanceof THREE.Mesh)) return;
@@ -403,6 +407,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
           action.time = 0;
           mixer.update(0);
         }
+        setBookReady(true);
       });
     };
 
@@ -602,6 +607,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     window.addEventListener("resize", resize);
 
     return () => {
+      disposed = true;
       loadObserver.disconnect();
       renderObserver.disconnect();
       window.removeEventListener("scroll", onScroll);
@@ -647,6 +653,9 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
           className="absolute inset-0"
           aria-hidden="true"
         />
+        <div className={`book-load-overlay ${bookReady ? "book-load-overlay--ready" : ""}`} aria-hidden="true">
+          <div className="book-load-skeleton" />
+        </div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_64%,rgba(232,238,255,0.08),transparent_34%),linear-gradient(180deg,rgba(10,20,50,0)_0%,rgba(10,20,50,0.18)_62%,rgba(10,20,50,0.78)_100%)]" />
         <div
           ref={overlayRef}

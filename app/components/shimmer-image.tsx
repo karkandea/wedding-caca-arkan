@@ -5,22 +5,24 @@ import { type ImgHTMLAttributes, type SourceHTMLAttributes, useState } from "rea
 
 type ShimmerImageProps = ImageProps & {
   shimmerClassName?: string;
+  showShimmer?: boolean;
 };
 
-export function ShimmerImage({ className, shimmerClassName, onLoad, ...props }: ShimmerImageProps) {
+export function ShimmerImage({ className, shimmerClassName, showShimmer = true, onLoad, alt = "", ...props }: ShimmerImageProps) {
   const [loaded, setLoaded] = useState(false);
 
   return (
     <>
       <Image
         {...props}
+        alt={alt}
         className={className}
         onLoad={(event) => {
           setLoaded(true);
           onLoad?.(event);
         }}
       />
-      {!loaded && <span className={`image-load-shimmer ${shimmerClassName ?? ""}`} aria-hidden="true" />}
+      {showShimmer && !loaded && <span className={`image-load-shimmer ${shimmerClassName ?? ""}`} aria-hidden="true" />}
     </>
   );
 }
@@ -30,7 +32,7 @@ type ShimmerPictureProps = ImgHTMLAttributes<HTMLImageElement> & {
   shimmerClassName?: string;
 };
 
-export function ShimmerPicture({ sources = [], shimmerClassName, onLoad, ...props }: ShimmerPictureProps) {
+export function ShimmerPicture({ sources = [], shimmerClassName, onLoad, alt = "", ...props }: ShimmerPictureProps) {
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -41,6 +43,7 @@ export function ShimmerPicture({ sources = [], shimmerClassName, onLoad, ...prop
         ))}
         <img
           {...props}
+          alt={alt}
           onLoad={(event) => {
             setLoaded(true);
             onLoad?.(event);

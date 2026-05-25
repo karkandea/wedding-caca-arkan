@@ -2,7 +2,7 @@
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
 import MusicPlayer from "./music-player";
 import { ShimmerImage } from "./shimmer-image";
@@ -119,6 +119,16 @@ const easeInOut = (progress: number) => {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 };
 
+type ParallaxConfig = {
+  left: string;
+  top: string;
+  width: string;
+  dirX: number;
+  dirY: number;
+  endScale: number;
+  drift: number;
+};
+
 function lerpCss(from: string, to: string, progress: number) {
   const fromMatch = from.match(/^(-?[\d.]+)(.*)$/);
   const toMatch = to.match(/^(-?[\d.]+)(.*)$/);
@@ -133,7 +143,6 @@ function lerpCss(from: string, to: string, progress: number) {
 export default function NewHeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Refs for direct DOM manipulation
   const heroContainerRef = useRef<HTMLDivElement>(null);
@@ -146,153 +155,15 @@ export default function NewHeroSection() {
   const coupleLayersRefs = useRef<(HTMLDivElement | null)[]>([]);
   const balloonRefs = useRef<(HTMLImageElement | null)[]>([]);
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    let frameId = 0;
-    let currentIsMobile = window.innerWidth < 720;
-    let currentIsTinyMobile = currentIsMobile && window.innerWidth <= 380;
-
-    const updateDeviceMode = () => {
-      const nextIsMobile = window.innerWidth < 720;
-      if (nextIsMobile !== currentIsMobile) {
-        currentIsMobile = nextIsMobile;
-        currentIsTinyMobile = nextIsMobile && window.innerWidth <= 380;
-        setIsMobile(nextIsMobile);
-      }
-    };
-
-    const updateProgress = () => {
-      const rect = section.getBoundingClientRect();
-      const total = section.offsetHeight - window.innerHeight;
-      const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
-      progressRef.current = nextProgress;
-
-      // Direct DOM updates without React re-render
-      updateHeroStyles(nextProgress, currentIsMobile, currentIsTinyMobile);
-    };
-
-    const scheduleUpdate = () => {
-      if (frameId) return;
-      frameId = window.requestAnimationFrame(() => {
-        frameId = 0;
-        updateProgress();
-      });
-    };
-
-    const handleResize = () => {
-      updateDeviceMode();
-      scheduleUpdate();
-    };
-
-    // Set initial isMobile state on mount
-    setIsMobile(currentIsMobile);
-    updateDeviceMode();
-    // Set initial styles immediately
-    const rect = section.getBoundingClientRect();
-    const total = section.offsetHeight - window.innerHeight;
-    const initialProgress = total > 0 ? clamp(-rect.top / total) : 0;
-    progressRef.current = initialProgress;
-    updateHeroStyles(initialProgress, currentIsMobile, currentIsTinyMobile);
-
-    window.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("scroll", scheduleUpdate);
-      window.removeEventListener("resize", handleResize);
-      if (frameId) window.cancelAnimationFrame(frameId);
-    };
+  const setCoupleLayerRef = useCallback((index: number, element: HTMLDivElement | null) => {
+    coupleLayersRefs.current[index] = element;
   }, []);
 
-  const updateHeroStyles = (progress: number, mobile: boolean, isTinyMobile: boolean) => {
-    const eased = easeInOut(progress);
+  const setBalloonRef = useCallback((index: number, element: HTMLImageElement | null) => {
+    balloonRefs.current[index] = element;
+  }, []);
 
-    // Update hero container
-    if (heroContainerRef.current) {
-      if (mobile) {
-        heroContainerRef.current.style.left = `${lerp(0, 24, eased)}px`;
-        heroContainerRef.current.style.top = `${lerp(0, 110, eased)}px`;
-        heroContainerRef.current.style.width = `calc(100% - ${lerp(0, 48, eased)}px)`;
-        heroContainerRef.current.style.height = `${lerp(100, 46, eased)}svh`;
-        heroContainerRef.current.style.borderRadius = `${lerp(0, 22, eased)}px`;
-      } else {
-        heroContainerRef.current.style.left = lerpCss("0%", "31%", eased);
-        heroContainerRef.current.style.top = lerpCss("0%", "10%", eased);
-        heroContainerRef.current.style.width = lerpCss("100%", "38%", eased);
-        heroContainerRef.current.style.height = lerpCss("100%", "85%", eased);
-        heroContainerRef.current.style.borderRadius = `${lerp(0, 28, eased)}px`;
-      }
-    }
-
-    // Update scene viewport
-    if (sceneViewportRef.current) {
-      if (mobile) {
-        sceneViewportRef.current.style.inset = "auto";
-        sceneViewportRef.current.style.left = "50%";
-        sceneViewportRef.current.style.top = "50%";
-        sceneViewportRef.current.style.height = "100svh";
-        sceneViewportRef.current.style.transform = "translate3d(-50%, -50%, 0)";
-      } else {
-        sceneViewportRef.current.style.inset = "0";
-        sceneViewportRef.current.style.left = "";
-        sceneViewportRef.current.style.top = "";
-        sceneViewportRef.current.style.height = "100%";
-        sceneViewportRef.current.style.transform = "";
-      }
-    }
-
-    // Update name overlay
-    if (nameOverlayRef.current) {
-      const nameOpacity = clamp(1 - progress * 1.5);
-      const nameScale = lerp(1, 0.78, easeOut(progress));
-      nameOverlayRef.current.style.opacity = String(nameOpacity);
-      nameOverlayRef.current.style.transform = `scale(${nameScale})`;
-    }
-
-    // Update chrome overlay (scroll hint at bottom)
-    if (chromeOverlayRef.current) {
-      const chromeOpacity = clamp(1 - progress / 0.22);
-      chromeOverlayRef.current.style.opacity = String(chromeOpacity);
-    }
-
-    // Update radar indicator
-    if (radarIndicatorRef.current) {
-      const radarOpacity = clamp(1 - progress / 0.18);
-      radarIndicatorRef.current.style.opacity = String(radarOpacity);
-      radarIndicatorRef.current.style.transform = `translate3d(0, ${lerp(0, 12, 1 - radarOpacity)}px, 0)`;
-    }
-
-    // Update side photos (desktop only, tidak render di mobile)
-    if (!mobile && sidePhotosRefs.current.length > 0) {
-      SIDE_PHOTOS.forEach((photo, index) => {
-        const photoRef = sidePhotosRefs.current[index];
-        if (photoRef) {
-          const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
-          const direction = photo.edge === "left" ? -110 : 110;
-          photoRef.style.opacity = String(photoProgress);
-          photoRef.style.transform = `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(0.94, 1, photoProgress)})`;
-        }
-      });
-    }
-
-    // Update mobile photos
-    if (mobile) {
-      [0.45, 0.65].forEach((appearAt, index) => {
-        const photoRef = mobilePhotosRefs.current[index];
-        if (photoRef) {
-          const photoProgress = easeOut((progress - appearAt) / 0.35);
-          photoRef.style.opacity = String(photoProgress);
-          photoRef.style.transform = `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(0.96, 1, photoProgress)}) rotate(${index === 0 ? "-1deg" : "1deg"})`;
-        }
-      });
-    }
-
-    // Update parallax scene
-    updateParallaxScene(progress, mobile, isTinyMobile);
-  };
-
-  const updateParallaxScene = (progress: number, mobile: boolean, isTinyMobile: boolean) => {
+  const updateParallaxScene = useCallback((progress: number, mobile: boolean, isTinyMobile: boolean) => {
     const eased = Math.pow(clamp(progress), 1.4);
     const coupleScale = 1 + progress * 0.14;
 
@@ -311,31 +182,23 @@ export default function NewHeroSection() {
       const balloonRef = balloonRefs.current[index];
       if (!balloonRef) return;
 
-      let cfg: {
-        left: string;
-        top: string;
-        width: string;
-        dirX: number;
-        dirY: number;
-        endScale: number;
-        drift: number;
-      } = mobile ? { ...balloon.mobile } : { ...balloon.desktop };
+      const cfg: ParallaxConfig = mobile ? { ...balloon.mobile } : { ...balloon.desktop };
 
       if (isTinyMobile) {
         if (balloon.id === "big-left") {
-          cfg.left = "30%" as any;
-          cfg.top = "62%" as any;
-          cfg.width = "20%" as any;
-          cfg.endScale = 4 as any;
+          cfg.left = "30%";
+          cfg.top = "62%";
+          cfg.width = "20%";
+          cfg.endScale = 4;
         }
         if (balloon.id === "close-above") {
-          cfg.left = "-2%" as any;
-          cfg.top = "72%" as any;
-          cfg.width = "30%" as any;
+          cfg.left = "-2%";
+          cfg.top = "72%";
+          cfg.width = "30%";
           cfg.endScale = 3.8;
         }
         if (balloon.id === "right-behind") {
-          cfg.width = "40%" as any;
+          cfg.width = "40%";
         }
       }
 
@@ -348,7 +211,141 @@ export default function NewHeroSection() {
       balloonRef.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${scale.toFixed(3)})`;
       balloonRef.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : "none";
     });
-  };
+  }, []);
+
+  const updateHeroStyles = useCallback(
+    (progress: number, mobile: boolean, isTinyMobile: boolean) => {
+      const eased = easeInOut(progress);
+
+      // Direct DOM updates avoid React re-rendering during scroll.
+      if (heroContainerRef.current) {
+        if (mobile) {
+          heroContainerRef.current.style.left = `${lerp(0, 24, eased)}px`;
+          heroContainerRef.current.style.top = `${lerp(0, 110, eased)}px`;
+          heroContainerRef.current.style.width = `calc(100% - ${lerp(0, 48, eased)}px)`;
+          heroContainerRef.current.style.height = `${lerp(100, 46, eased)}svh`;
+          heroContainerRef.current.style.borderRadius = `${lerp(0, 22, eased)}px`;
+        } else {
+          heroContainerRef.current.style.left = lerpCss("0%", "31%", eased);
+          heroContainerRef.current.style.top = lerpCss("0%", "10%", eased);
+          heroContainerRef.current.style.width = lerpCss("100%", "38%", eased);
+          heroContainerRef.current.style.height = lerpCss("100%", "85%", eased);
+          heroContainerRef.current.style.borderRadius = `${lerp(0, 28, eased)}px`;
+        }
+      }
+
+      if (sceneViewportRef.current) {
+        if (mobile) {
+          sceneViewportRef.current.style.inset = "auto";
+          sceneViewportRef.current.style.left = "50%";
+          sceneViewportRef.current.style.top = "50%";
+          sceneViewportRef.current.style.height = "100svh";
+          sceneViewportRef.current.style.transform = "translate3d(-50%, -50%, 0)";
+        } else {
+          sceneViewportRef.current.style.inset = "0";
+          sceneViewportRef.current.style.left = "";
+          sceneViewportRef.current.style.top = "";
+          sceneViewportRef.current.style.height = "100%";
+          sceneViewportRef.current.style.transform = "";
+        }
+      }
+
+      if (nameOverlayRef.current) {
+        const nameOpacity = clamp(1 - progress * 1.5);
+        const nameScale = lerp(1, 0.78, easeOut(progress));
+        nameOverlayRef.current.style.opacity = String(nameOpacity);
+        nameOverlayRef.current.style.transform = `scale(${nameScale})`;
+      }
+
+      if (chromeOverlayRef.current) {
+        const chromeOpacity = clamp(1 - progress / 0.22);
+        chromeOverlayRef.current.style.opacity = String(chromeOpacity);
+      }
+
+      if (radarIndicatorRef.current) {
+        const radarOpacity = clamp(1 - progress / 0.18);
+        radarIndicatorRef.current.style.opacity = String(radarOpacity);
+        radarIndicatorRef.current.style.transform = `translate3d(0, ${lerp(0, 12, 1 - radarOpacity)}px, 0)`;
+      }
+
+      if (!mobile && sidePhotosRefs.current.length > 0) {
+        SIDE_PHOTOS.forEach((photo, index) => {
+          const photoRef = sidePhotosRefs.current[index];
+          if (photoRef) {
+            const photoProgress = easeOut((progress - photo.appearAt) / (1 - photo.appearAt));
+            const direction = photo.edge === "left" ? -110 : 110;
+            photoRef.style.opacity = String(photoProgress);
+            photoRef.style.transform = `translate3d(${lerp(direction, 0, photoProgress)}%, 0, 0) scale(${lerp(0.94, 1, photoProgress)})`;
+          }
+        });
+      }
+
+      if (mobile) {
+        [0.45, 0.65].forEach((appearAt, index) => {
+          const photoRef = mobilePhotosRefs.current[index];
+          if (photoRef) {
+            const photoProgress = easeOut((progress - appearAt) / 0.35);
+            photoRef.style.opacity = String(photoProgress);
+            photoRef.style.transform = `translate3d(0, ${lerp(20, 0, photoProgress)}px, 0) scale(${lerp(0.96, 1, photoProgress)}) rotate(${index === 0 ? "-1deg" : "1deg"})`;
+          }
+        });
+      }
+
+      updateParallaxScene(progress, mobile, isTinyMobile);
+    },
+    [updateParallaxScene],
+  );
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    let frameId = 0;
+    let currentIsMobile = window.innerWidth < 720;
+    let currentIsTinyMobile = currentIsMobile && window.innerWidth <= 380;
+
+    const updateDeviceMode = () => {
+      const nextIsMobile = window.innerWidth < 720;
+      currentIsMobile = nextIsMobile;
+      currentIsTinyMobile = nextIsMobile && window.innerWidth <= 380;
+    };
+
+    const updateProgress = () => {
+      const rect = section.getBoundingClientRect();
+      const total = section.offsetHeight - window.innerHeight;
+      const nextProgress = total > 0 ? clamp(-rect.top / total) : 0;
+      progressRef.current = nextProgress;
+      updateHeroStyles(nextProgress, currentIsMobile, currentIsTinyMobile);
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0;
+        updateProgress();
+      });
+    };
+
+    const handleResize = () => {
+      updateDeviceMode();
+      scheduleUpdate();
+    };
+
+    updateDeviceMode();
+    const rect = section.getBoundingClientRect();
+    const total = section.offsetHeight - window.innerHeight;
+    const initialProgress = total > 0 ? clamp(-rect.top / total) : 0;
+    progressRef.current = initialProgress;
+    updateHeroStyles(initialProgress, currentIsMobile, currentIsTinyMobile);
+
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", handleResize);
+      if (frameId) window.cancelAnimationFrame(frameId);
+    };
+  }, [updateHeroStyles]);
 
   return (
     <section
@@ -363,22 +360,32 @@ export default function NewHeroSection() {
           ref={heroContainerRef}
           className="absolute overflow-hidden shadow-[0_20px_50px_rgba(43,36,29,0.18)]"
           style={{
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            borderRadius: 0,
             willChange: "left, top, width, height, border-radius",
             backfaceVisibility: "hidden",
           }}
         >
           <div
             ref={sceneViewportRef}
+            className="hero-scene-viewport"
             style={{
               position: "absolute",
+              inset: "auto",
+              left: "50%",
+              top: "50%",
               width: "100%",
+              height: "100svh",
               overflow: "hidden",
+              transform: "translate3d(-50%, -50%, 0)",
             }}
           >
             <HeroParallaxScene
-              isMobile={isMobile}
-              coupleLayersRefs={coupleLayersRefs}
-              balloonRefs={balloonRefs}
+              setCoupleLayerRef={setCoupleLayerRef}
+              setBalloonRef={setBalloonRef}
             />
           </div>
 
@@ -391,12 +398,11 @@ export default function NewHeroSection() {
             }}
           >
             <h1
-              className="m-0 whitespace-nowrap text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.22)]"
+              className="m-0 whitespace-nowrap text-[clamp(80px,13vw,220px)] text-white drop-shadow-[0_2px_32px_rgba(0,0,0,0.22)] max-[719px]:text-[clamp(54px,16vw,88px)]"
               style={{
-                fontFamily: "serif",
+                fontFamily: "Georgia, 'Times New Roman', serif",
                 fontStyle: "italic",
                 fontWeight: 500,
-                fontSize: isMobile ? "clamp(54px, 16vw, 88px)" : "clamp(80px, 13vw, 220px)",
                 lineHeight: 0.95,
                 letterSpacing: "-0.01em",
               }}
@@ -420,71 +426,69 @@ export default function NewHeroSection() {
           </div>
         </div>
 
-        {!isMobile &&
-          SIDE_PHOTOS.map((photo, index) => {
-            const position = photo.edge === "left" ? { left: photo.offset } : { right: photo.offset };
+        {SIDE_PHOTOS.map((photo, index) => {
+          const position = photo.edge === "left" ? { left: photo.offset } : { right: photo.offset };
 
-            return (
-              <div
-                key={photo.id}
-                ref={(el) => {
-                  sidePhotosRefs.current[index] = el;
-                }}
-                className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)] max-[719px]:!hidden"
-                style={{
-                  ...position,
-                  top: photo.top,
-                  width: photo.width,
-                  height: photo.height,
-                  opacity: 0,
-                  willChange: "transform, opacity",
-                  backfaceVisibility: "hidden",
-                }}
-              >
-                <ShimmerImage src={photo.src} alt="" fill sizes="30vw" className="object-cover" />
-              </div>
-            );
-          })}
+          return (
+            <div
+              key={photo.id}
+              ref={(el) => {
+                sidePhotosRefs.current[index] = el;
+              }}
+              className="absolute overflow-hidden rounded-3xl shadow-[0_12px_32px_rgba(43,36,29,0.16)] max-[719px]:!hidden"
+              style={{
+                ...position,
+                top: photo.top,
+                width: photo.width,
+                height: photo.height,
+                opacity: 0,
+                willChange: "transform, opacity",
+                backfaceVisibility: "hidden",
+              }}
+            >
+              <ShimmerImage src={photo.src} alt="" fill sizes="30vw" className="object-cover" />
+            </div>
+          );
+        })}
 
-        {isMobile &&
-          [
-            { src: assetPath("/hero/photo-center.webp"), appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
-            { src: assetPath("/hero/photo-kedua.webp"), appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
-          ].map((photo, index) => {
-            return (
-              <div
-                key={`${photo.src}-${index}`}
-                ref={(el) => {
-                  mobilePhotosRefs.current[index] = el;
-                }}
-                className="absolute left-6 right-6 h-[16svh] overflow-hidden rounded-[18px] shadow-[0_12px_32px_rgba(43,36,29,0.16)]"
-                style={{
-                  top: photo.top,
-                  opacity: 0,
-                  willChange: "transform, opacity",
-                  backfaceVisibility: "hidden",
-                }}
-              >
-                <ShimmerImage src={photo.src} alt="" fill sizes="calc(100vw - 48px)" className="object-cover" />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center">
-                  <span
-                    className="text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.38)]"
-                    style={{
-                      fontFamily: photo.labelType === "name" ? "serif" : "var(--font-din-alternate)",
-                      fontStyle: photo.labelType === "name" ? "italic" : "normal",
-                      fontWeight: photo.labelType === "name" ? 500 : 400,
-                      fontSize: photo.labelType === "name" ? "clamp(28px, 8.5vw, 42px)" : "clamp(13px, 4vw, 18px)",
-                      lineHeight: photo.labelType === "name" ? 0.95 : 1,
-                      letterSpacing: photo.labelType === "name" ? "-0.01em" : "0.24em",
-                      textTransform: photo.labelType === "name" ? "none" : "uppercase",
-                    }}
-                  >
-                    {photo.label}
-                  </span>
-                </div>
+        {[
+          { src: assetPath("/hero/photo-center.webp"), appearAt: 0.45, top: "64svh", label: "The Wedding of", labelType: "kicker" },
+          { src: assetPath("/hero/photo-kedua.webp"), appearAt: 0.65, top: "82svh", label: COUPLE, labelType: "name" },
+        ].map((photo, index) => {
+          return (
+            <div
+              key={`${photo.src}-${index}`}
+              ref={(el) => {
+                mobilePhotosRefs.current[index] = el;
+              }}
+              className="absolute left-6 right-6 hidden h-[16svh] overflow-hidden rounded-[18px] shadow-[0_12px_32px_rgba(43,36,29,0.16)] max-[719px]:block"
+              style={{
+                top: photo.top,
+                opacity: 0,
+                willChange: "transform, opacity",
+                backfaceVisibility: "hidden",
+              }}
+            >
+              <ShimmerImage src={photo.src} alt="" fill sizes="calc(100vw - 48px)" className="object-cover" />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center">
+                <span
+                  className="text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.38)]"
+                  style={{
+                    fontFamily: photo.labelType === "name" ? "serif" : "var(--font-din-alternate)",
+                    fontStyle: photo.labelType === "name" ? "italic" : "normal",
+                    fontWeight: photo.labelType === "name" ? 500 : 400,
+                    fontSize: photo.labelType === "name" ? "clamp(28px, 8.5vw, 42px)" : "clamp(13px, 4vw, 18px)",
+                    lineHeight: photo.labelType === "name" ? 0.95 : 1,
+                    letterSpacing: photo.labelType === "name" ? "-0.01em" : "0.24em",
+                    textTransform: photo.labelType === "name" ? "none" : "uppercase",
+                  }}
+                >
+                  {photo.label}
+                </span>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
         <ScrollRadarIndicator radarRef={radarIndicatorRef} />
       </div>
     </section>
@@ -519,128 +523,6 @@ const ScrollRadarIndicator = memo(function ScrollRadarIndicator({ radarRef }: { 
       >
         Scroll pelan
       </p>
-      <style jsx>{`
-        .scroll-radar {
-          position: relative;
-          display: grid;
-          width: 58px;
-          height: 58px;
-          place-items: center;
-        }
-
-        .scroll-radar span {
-          position: absolute;
-          inset: 0;
-          border: 1px solid rgba(43, 36, 29, 0.28);
-          border-radius: 999px;
-          animation: scroll-radar-pulse 2.4s ease-out infinite;
-          background: rgba(255, 252, 245, 0.16);
-          box-shadow: 0 10px 28px rgba(43, 36, 29, 0.08);
-        }
-
-        .scroll-radar span:nth-child(2) {
-          animation-delay: 0.55s;
-        }
-
-        .scroll-radar span:nth-child(3) {
-          animation-delay: 1.1s;
-        }
-
-        .scroll-radar-arrows {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0;
-          filter: drop-shadow(0 4px 10px rgba(43, 36, 29, 0.16));
-        }
-
-        :global(.scroll-radar-arrow) {
-          display: block;
-          margin-top: -9px;
-          color: #2b241d;
-          animation-duration: 1.55s;
-          animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-          animation-iteration-count: infinite;
-          will-change: transform, opacity;
-        }
-
-        :global(.scroll-radar-arrow-top) {
-          margin-top: 0;
-          animation-name: scroll-arrow-walk-top;
-          animation-delay: 0s;
-        }
-
-        :global(.scroll-radar-arrow-middle) {
-          animation-name: scroll-arrow-walk-middle;
-          animation-delay: 0.18s;
-        }
-
-        :global(.scroll-radar-arrow-bottom) {
-          animation-name: scroll-arrow-walk-bottom;
-          animation-delay: 0.36s;
-        }
-
-        @keyframes scroll-radar-pulse {
-          0% {
-            opacity: 0;
-            transform: scale(0.42);
-          }
-          22% {
-            opacity: 0.85;
-          }
-          100% {
-            opacity: 0;
-            transform: scale(1.25);
-          }
-        }
-
-        @keyframes scroll-arrow-walk-top {
-          0% {
-            opacity: 0.18;
-            transform: translate3d(0, -8px, 0);
-          }
-          48% {
-            opacity: 0.42;
-            transform: translate3d(0, 1px, 0);
-          }
-          100% {
-            opacity: 0.16;
-            transform: translate3d(0, 12px, 0);
-          }
-        }
-
-        @keyframes scroll-arrow-walk-middle {
-          0% {
-            opacity: 0.5;
-            transform: translate3d(0, -8px, 0);
-          }
-          45% {
-            opacity: 1;
-            transform: translate3d(0, 2px, 0);
-          }
-          100% {
-            opacity: 0.42;
-            transform: translate3d(0, 14px, 0);
-          }
-        }
-
-        @keyframes scroll-arrow-walk-bottom {
-          0% {
-            opacity: 0.14;
-            transform: translate3d(0, -8px, 0);
-          }
-          48% {
-            opacity: 0.5;
-            transform: translate3d(0, 2px, 0);
-          }
-          100% {
-            opacity: 0.12;
-            transform: translate3d(0, 14px, 0);
-          }
-        }
-      `}</style>
     </div>
   );
 });
@@ -857,39 +739,29 @@ const HeroNav = memo(function HeroNav() {
 });
 
 const HeroParallaxScene = memo(function HeroParallaxScene({
-  isMobile,
-  coupleLayersRefs,
-  balloonRefs,
+  setCoupleLayerRef,
+  setBalloonRef,
 }: {
-  isMobile: boolean;
-  coupleLayersRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
-  balloonRefs: React.MutableRefObject<(HTMLImageElement | null)[]>;
+  setCoupleLayerRef: (index: number, element: HTMLDivElement | null) => void;
+  setBalloonRef: (index: number, element: HTMLImageElement | null) => void;
 }) {
-  const isTinyMobile = isMobile && typeof window !== "undefined" && window.innerWidth <= 380;
-
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#E8E8E6]">
       <div
-        className="absolute overflow-visible"
-        style={
-          isMobile
-            ? {
-                left: "50%",
-                top: "50%",
-                width: "100%",
-                maxWidth: "640px",
-                maxHeight: isTinyMobile ? "72vh" : "78vh",
-                aspectRatio: "1 / 1.07",
-                transform: "translate(-50%, -50%)",
-              }
-            : {
-                inset: 0,
-              }
-        }
+        className="hero-scene-frame absolute overflow-visible"
+        style={{
+          left: "50%",
+          top: "50%",
+          width: "100%",
+          maxWidth: "640px",
+          maxHeight: "78vh",
+          aspectRatio: "1 / 1.07",
+          transform: "translate(-50%, -50%)",
+        }}
       >
         <div
           ref={(el) => {
-            coupleLayersRefs.current[0] = el;
+            setCoupleLayerRef(0, el);
           }}
           className="absolute inset-0"
           style={{
@@ -901,12 +773,11 @@ const HeroParallaxScene = memo(function HeroParallaxScene({
             src={assetPath("/hero/couple with bg.webp")}
             alt=""
             fill
-            priority
-            fetchPriority="high"
+            loading="eager"
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-[50%_80%] min-[720px]:object-bottom"
+            showShimmer={false}
             style={{
-              objectPosition: isMobile ? "50% 80%" : "center bottom",
               zIndex: 1,
             }}
           />
@@ -917,15 +788,14 @@ const HeroParallaxScene = memo(function HeroParallaxScene({
             key={balloon.id}
             balloon={balloon}
             balloonRef={(el) => {
-              balloonRefs.current[index] = el;
+              setBalloonRef(index, el);
             }}
-            isMobile={isMobile}
           />
         ))}
 
         <div
           ref={(el) => {
-            coupleLayersRefs.current[1] = el;
+            setCoupleLayerRef(1, el);
           }}
           className="absolute inset-0"
           style={{
@@ -938,13 +808,11 @@ const HeroParallaxScene = memo(function HeroParallaxScene({
             src={assetPath("/hero/couple without bg.webp")}
             alt={COUPLE}
             fill
-            priority
+            loading="eager"
             fetchPriority="high"
             sizes="100vw"
-            className="object-cover"
-            style={{
-              objectPosition: isMobile ? "50% 80%" : "center bottom",
-            }}
+            className="object-cover object-[50%_80%] min-[720px]:object-bottom"
+            showShimmer={false}
           />
         </div>
 
@@ -953,9 +821,8 @@ const HeroParallaxScene = memo(function HeroParallaxScene({
             key={balloon.id}
             balloon={balloon}
             balloonRef={(el) => {
-              balloonRefs.current[index + 4] = el;
+              setBalloonRef(index + 4, el);
             }}
-            isMobile={isMobile}
           />
         ))}
       </div>
@@ -966,13 +833,12 @@ const HeroParallaxScene = memo(function HeroParallaxScene({
 const ParallaxBalloon = memo(function ParallaxBalloon({
   balloon,
   balloonRef,
-  isMobile,
 }: {
   balloon: (typeof PARALLAX_BALLOONS)[number];
   balloonRef: (el: HTMLImageElement | null) => void;
-  isMobile: boolean;
 }) {
-  const cfg = isMobile ? { ...balloon.mobile } : { ...balloon.desktop };
+  const cfg = balloon.desktop;
+  const mobileCfg = balloon.mobile;
 
   return (
     <Image
@@ -984,16 +850,19 @@ const ParallaxBalloon = memo(function ParallaxBalloon({
       sizes={`(max-width: 720px) ${cfg.width}, ${cfg.width}`}
       loading="lazy"
       quality={85}
-      className="pointer-events-none absolute h-auto select-none"
+      className="hero-balloon pointer-events-none absolute h-auto select-none"
       style={{
         left: cfg.left,
         top: cfg.top,
         width: cfg.width,
+        "--mobile-left": mobileCfg.left,
+        "--mobile-top": mobileCfg.top,
+        "--mobile-width": mobileCfg.width,
         zIndex: balloon.zIndex,
         transformOrigin: balloon.id === "right-behind" ? "50% 100%" : "50% 50%",
         willChange: "transform, filter",
         backfaceVisibility: "hidden",
-      }}
+      } as CSSProperties}
     />
   );
 });

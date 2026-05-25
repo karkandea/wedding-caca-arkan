@@ -5,13 +5,18 @@ import "./globals.css";
 const cyrene = localFont({
   src: "../public/assets/cyrene-regular.woff2",
   variable: "--font-cyrene",
-  display: "swap",
+  display: "optional",
+  preload: false,
+  fallback: ["Georgia", "Times New Roman", "serif"],
+  adjustFontFallback: "Times New Roman",
 });
 
 const dinAlternate = localFont({
   src: "../public/assets/din-alternate-bold.woff2",
   variable: "--font-din-alternate",
-  display: "swap",
+  display: "optional",
+  fallback: ["Arial", "Helvetica", "sans-serif"],
+  adjustFontFallback: "Arial",
 });
 
 export const metadata: Metadata = {
@@ -34,22 +39,6 @@ export default function RootLayout({
       lang="en"
       className={`${cyrene.variable} ${dinAlternate.variable} h-full antialiased`}
     >
-      <head>
-        <link
-          rel="preload"
-          href="/salsaarkan/hero/couple with bg.webp"
-          as="image"
-          type="image/webp"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          href="/salsaarkan/hero/couple without bg.webp"
-          as="image"
-          type="image/webp"
-          fetchPriority="high"
-        />
-      </head>
       <body className="min-h-full flex flex-col">
         {children}
       </body>

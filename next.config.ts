@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
   },
   reactStrictMode: true,
+  devIndicators: false,
   poweredByHeader: false,
   compress: true,
   experimental: {
