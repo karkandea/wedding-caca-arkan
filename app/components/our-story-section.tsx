@@ -568,7 +568,7 @@ export default function OurStorySection() {
             position: relative;
             isolation: isolate;
             overflow: visible;
-            padding: 12vh 0 4vh;
+            padding: 12vh 0 0;
             background-color: var(--story-sky);
             background-image:
               linear-gradient(
@@ -1039,13 +1039,13 @@ export default function OurStorySection() {
           .closer {
             position: relative;
             z-index: 2;
-            padding: 18vh 24px 0;
-            color: #0c4dbe;
+            padding: 8vh 24px 0;
+            color: #7D241C;
             text-align: center;
           }
 
           .glyph {
-            color: #0c4dbe;
+            color: #A94724;
             font-family: var(--font-cyrene);
             font-style: italic;
             font-size: 64px;
@@ -1055,6 +1055,7 @@ export default function OurStorySection() {
           .closer p {
             max-width: 480px;
             margin: 18px auto 0;
+            color: #7D241C;
             font-family: var(--font-cyrene);
             font-style: italic;
             line-height: 1.7;
@@ -1062,7 +1063,7 @@ export default function OurStorySection() {
 
           .sign {
             margin-top: 24px;
-            color: #0c4dbe;
+            color: #A94724;
             font-family: var(--font-din-alternate);
             font-size: 11px;
             letter-spacing: 0.5em;
@@ -1191,6 +1192,7 @@ export default function OurStorySection() {
             }
             .place::before,
             .card.right .place::after { width: 12px; }
+            .closer { padding: 4vh 24px 0; }
             .progress { display: none; }
           }
 
@@ -1206,6 +1208,7 @@ export default function OurStorySection() {
             .chapter,
             .date,
             .place { font-size: 9px; font-weight: 700; }
+            .closer { padding-top: 3vh; }
           }
         `}
       </style>

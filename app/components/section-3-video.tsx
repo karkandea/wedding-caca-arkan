@@ -337,15 +337,18 @@ export default function Section3Video() {
 
   const photos = useMemo(() => PHOTOS, []);
   const sectionScroll = scrollState.scrollY - scrollState.sectionTop;
-  const introHeight = scrollState.viewportHeight;
+  const isMobile = scrollState.viewportWidth < 768;
+  const introHeight = scrollState.viewportHeight * (isMobile ? 0 : 0.35);
   const stickyStart = introHeight * GALLERY_STICKY_DELAY;
   const stickyRange = scrollState.sectionHeight - scrollState.viewportHeight - stickyStart;
   const stickyProgress = clamp((sectionScroll - stickyStart) / stickyRange);
-  const introProgress = clamp(sectionScroll / (scrollState.viewportHeight * 0.95));
-  const headingEnter = ease(clamp((introProgress - 0.2) / 0.7));
-  const headingScale = lerp(1, 0.86, easeInOut(stickyProgress));
-  const headingTop = lerp(18, 6, easeInOut(stickyProgress));
-  const isMobile = scrollState.viewportWidth < 768;
+  const visualProgress = isMobile ? clamp(stickyProgress + 0.08) : stickyProgress;
+  const introProgress = isMobile ? 1 : clamp(sectionScroll / (scrollState.viewportHeight * 0.95));
+  const headingEnterStart = isMobile ? 0.04 : 0.2;
+  const headingEnterRange = isMobile ? 0.42 : 0.7;
+  const headingEnter = isMobile ? 1 : ease(clamp((introProgress - headingEnterStart) / headingEnterRange));
+  const headingScale = lerp(1, 0.86, easeInOut(visualProgress));
+  const headingTop = lerp(isMobile ? 5 : 18, isMobile ? 4 : 6, easeInOut(visualProgress));
   const polaroidWidth = isMobile ? 220 : 280;
   const activeDotIndex = Math.min(PHOTOS.length - 1, Math.max(0, Math.floor(stickyProgress * PHOTOS.length)));
 
@@ -356,7 +359,7 @@ export default function Section3Video() {
       ref={sectionRef}
       style={{
         position: "relative",
-        height: "calc(100vh + 500vh + 100vh)",
+        height: isMobile ? "calc(535vh + 100vh)" : "calc(35vh + 500vh + 100vh)",
         width: "100%",
         overflow: "visible",
         backgroundColor: "#F7F1E7",
@@ -379,7 +382,7 @@ export default function Section3Video() {
             top: "32vh",
             left: 0,
             right: 0,
-            display: "flex",
+            display: isMobile ? "none" : "flex",
             justifyContent: "center",
             opacity: clamp(1 - introProgress / 0.4),
             transform: `translateY(${-introProgress * 30}px)`,
@@ -424,7 +427,7 @@ export default function Section3Video() {
             right: 0,
             display: "flex",
             justifyContent: "center",
-            paddingTop: isMobile ? `${Math.max(7, headingTop)}vh` : `${headingTop}vh`,
+            paddingTop: isMobile ? `${headingTop}vh` : `${headingTop}vh`,
             pointerEvents: "none",
             zIndex: 10,
           }}
@@ -456,12 +459,12 @@ export default function Section3Video() {
             left: "50%",
             top: isMobile ? "38%" : "47%",
             transform: "translate(-50%, -50%)",
-            opacity: clamp((introProgress - 0.32) / 0.28),
+            opacity: isMobile ? 1 : clamp((introProgress - 0.32) / 0.28),
             zIndex: 20,
           }}
         >
           <PolaroidStack
-            progress={stickyProgress}
+            progress={visualProgress}
             photos={photos}
             width={polaroidWidth}
             viewportHeight={scrollState.viewportHeight}

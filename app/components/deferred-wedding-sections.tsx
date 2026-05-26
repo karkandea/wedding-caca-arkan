@@ -9,7 +9,7 @@ const OurStorySection = dynamic(() => import("./our-story-section"), {
 });
 const Section3Video = dynamic(() => import("./section-3-video"), {
   ssr: false,
-  loading: () => <div style={{ minHeight: "700vh", background: "#F7F1E7" }} />,
+  loading: () => <div style={{ minHeight: "635vh", background: "#F7F1E7" }} />,
 });
 const BookSection = dynamic(() => import("./book-section"), {
   ssr: false,
@@ -57,7 +57,7 @@ const DeferredSection = memo(function DeferredSection({
   }, [rootMargin, shouldMount]);
 
   return (
-    <div ref={ref} style={{ minHeight, background }}>
+    <div ref={ref} style={{ minHeight: shouldMount ? undefined : minHeight, background }}>
       {shouldMount ? children : placeholder}
     </div>
   );
@@ -83,14 +83,36 @@ export default function DeferredWeddingSections({ guestName }: { guestName?: str
         <OurStorySection />
       </DeferredSection>
       <DeferredSection
-        minHeight="700vh"
+        minHeight="635vh"
         background="#F7F1E7"
+        rootMargin="1200px 0px"
         placeholder={
           <section
             id="gallery-section"
             aria-hidden="true"
-            style={{ minHeight: "700vh", background: "#F7F1E7" }}
-          />
+            style={{ minHeight: "635vh", background: "#F7F1E7" }}
+          >
+            <div
+              style={{
+                position: "sticky",
+                top: 0,
+                display: "flex",
+                height: "100svh",
+                alignItems: "flex-start",
+                justifyContent: "center",
+                paddingTop: "5vh",
+                color: "#ffffff",
+                background:
+                  "linear-gradient(to bottom, #F7F1E7 0%, rgba(247,241,231,0.88) 18%, oklch(0.92 0.008 76) 54%)",
+                fontFamily: "var(--font-cyrene)",
+                fontSize: "clamp(56px, 17vw, 96px)",
+                lineHeight: 0.88,
+                textShadow: "0 18px 50px rgba(0,0,0,0.28)",
+              }}
+            >
+              Us
+            </div>
+          </section>
         }
       >
         <Section3Video />

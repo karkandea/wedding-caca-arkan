@@ -9,6 +9,7 @@ const TRACK_SRC = assetPath("/Grandma's Home.mp3");
 const TRACK_START_TIME_SECONDS = 110;
 const TARGET_VOLUME = 0.58;
 const FADE_IN_DURATION_MS = 4500;
+const AUTOPLAY_START_DELAY_MS = 1600;
 
 type MusicPlayerProps = {
   variant?: "floating" | "nav";
@@ -111,8 +112,10 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
     audio.addEventListener("canplaythrough", playAfterLoading, { once: true });
     audio.addEventListener("play", syncState);
     audio.addEventListener("pause", syncState);
+    const deferredAutoplayTimer = window.setTimeout(queuePlayAttempts, AUTOPLAY_START_DELAY_MS);
 
     return () => {
+      window.clearTimeout(deferredAutoplayTimer);
       retryTimersRef.current.forEach((timer) => window.clearTimeout(timer));
       window.removeEventListener("pointerdown", unlockAudio);
       window.removeEventListener("touchstart", unlockAudio);

@@ -88,7 +88,7 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
 
       if (isInsideGallery) {
         const photoCount = Number(gallerySection.dataset.galleryPhotoCount) || 4;
-        const stickyStart = window.innerHeight * 0.35;
+        const stickyStart = window.innerWidth < 768 ? 0 : window.innerHeight * 0.35;
         const stickyRange = gallerySection.offsetHeight - window.innerHeight - stickyStart;
         const sectionScroll = window.scrollY - galleryTop;
         const galleryProgress = stickyRange > 0 ? clamp((sectionScroll - stickyStart) / stickyRange) : 0;
