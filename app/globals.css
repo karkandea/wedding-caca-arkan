@@ -135,8 +135,8 @@ section {
   justify-content: center;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 45%, rgba(248, 239, 226, 0.1), transparent 34%),
-    linear-gradient(180deg, rgba(10, 20, 50, 0.28), rgba(10, 20, 50, 0.72));
+    radial-gradient(circle at 50% 45%, rgba(255, 210, 140, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(196, 106, 45, 0.22), rgba(125, 36, 28, 0.7));
   opacity: 1;
   transition: opacity 420ms ease;
 }
@@ -152,8 +152,8 @@ section {
   overflow: hidden;
   border-radius: 18px;
   background:
-    linear-gradient(90deg, rgba(248, 239, 226, 0.18), rgba(248, 239, 226, 0.32) 48%, rgba(248, 239, 226, 0.18)),
-    linear-gradient(135deg, rgba(23, 42, 86, 0.88), rgba(72, 112, 173, 0.5));
+    linear-gradient(90deg, rgba(232, 197, 158, 0.18), rgba(243, 214, 179, 0.34) 48%, rgba(232, 197, 158, 0.18)),
+    linear-gradient(135deg, rgba(125, 36, 28, 0.9), rgba(196, 106, 45, 0.56));
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.28),
     inset 0 0 0 1px rgba(248, 239, 226, 0.18);
@@ -166,15 +166,15 @@ section {
   top: 16%;
   bottom: 16%;
   width: 1px;
-  background: rgba(248, 239, 226, 0.32);
-  box-shadow: 0 0 18px rgba(248, 239, 226, 0.26);
+  background: rgba(232, 197, 158, 0.34);
+  box-shadow: 0 0 18px rgba(217, 163, 95, 0.28);
 }
 
 .book-load-skeleton::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.24) 47%, transparent 62%);
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 210, 140, 0.24) 47%, transparent 62%);
   transform: translateX(-100%);
   animation: book-load-shimmer 1.45s linear infinite;
 }

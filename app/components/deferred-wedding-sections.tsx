@@ -13,7 +13,14 @@ const Section3Video = dynamic(() => import("./section-3-video"), {
 });
 const BookSection = dynamic(() => import("./book-section"), {
   ssr: false,
-  loading: () => <div style={{ minHeight: "600vh", background: "#0a1432" }} />,
+  loading: () => (
+    <div
+      style={{
+        minHeight: "600vh",
+        background: "linear-gradient(180deg, #C46A2D 0%, #A94724 35%, #7D241C 100%)",
+      }}
+    />
+  ),
 });
 
 const DeferredSection = memo(function DeferredSection({
@@ -90,10 +97,15 @@ export default function DeferredWeddingSections({ guestName }: { guestName?: str
       </DeferredSection>
       <DeferredSection
         minHeight="600vh"
-        background="#0a1432"
+        background="linear-gradient(180deg, #C46A2D 0%, #A94724 35%, #7D241C 100%)"
         rootMargin="0px 0px"
         placeholder={
-          <section id="book-section" aria-hidden="true" className="relative min-h-[600vh] bg-[#0a1432]">
+          <section
+            id="book-section"
+            aria-hidden="true"
+            className="relative min-h-[600vh] bg-[#7D241C]"
+            style={{ background: "linear-gradient(180deg, #C46A2D 0%, #A94724 35%, #7D241C 100%)" }}
+          >
             <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden">
               <div className="book-load-skeleton" />
             </div>

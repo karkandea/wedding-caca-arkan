@@ -57,6 +57,7 @@ const CLOUD_TRAVEL = 10;
 const CLOUD_BLUR_PX = 28;
 const DOF_FAR = 4;
 const DOF_NEAR = 0.3;
+const BOOK_SKY_GRADIENT = "linear-gradient(180deg, #C46A2D 0%, #A94724 35%, #7D241C 100%)";
 
 type BalloonConfig = {
   x: number;
@@ -121,20 +122,23 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     const skyCtx = skyCanvas.getContext("2d");
     if (skyCtx) {
       const skyGrad = skyCtx.createLinearGradient(0, 0, 0, 1024);
-      skyGrad.addColorStop(0, "#0a1432");
-      skyGrad.addColorStop(0.22, "#152a55");
-      skyGrad.addColorStop(0.45, "#1f4078");
-      skyGrad.addColorStop(0.65, "#2e5598");
-      skyGrad.addColorStop(0.85, "#4870ad");
-      skyGrad.addColorStop(1, "#1f4078");
+      skyGrad.addColorStop(0, "#C46A2D");
+      skyGrad.addColorStop(0.35, "#A94724");
+      skyGrad.addColorStop(1, "#7D241C");
       skyCtx.fillStyle = skyGrad;
+      skyCtx.fillRect(0, 0, 32, 1024);
+
+      const glow = skyCtx.createRadialGradient(16, 420, 0, 16, 420, 520);
+      glow.addColorStop(0, "rgba(255, 210, 140, 0.35)");
+      glow.addColorStop(0.55, "rgba(255, 210, 140, 0)");
+      skyCtx.fillStyle = glow;
       skyCtx.fillRect(0, 0, 32, 1024);
     }
     const skyTexture = new THREE.CanvasTexture(skyCanvas);
     skyTexture.colorSpace = THREE.SRGBColorSpace;
     skyTexture.mapping = THREE.EquirectangularReflectionMapping;
     scene.background = skyTexture;
-    scene.fog = new THREE.Fog(0x2e5598, 16, 70);
+    scene.fog = new THREE.Fog(0x7d241c, 16, 70);
 
     const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
     camera.position.set(0, 9, 9);
@@ -172,7 +176,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     keyLight.shadow.camera.bottom = -8;
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight("#8fb7ff", 0.75);
+    const rimLight = new THREE.DirectionalLight("#D9A35F", 0.72);
     rimLight.position.set(-5, 3, -4);
     scene.add(rimLight);
 
@@ -237,6 +241,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       const blurGeometry = new THREE.PlaneGeometry(config.width, config.height);
       const sharpMat = new THREE.MeshBasicMaterial({
         map: sharpTexture,
+        color: "#E8C59E",
         transparent: true,
         opacity: 0,
         depthWrite: false,
@@ -245,6 +250,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       });
       const blurMat = new THREE.MeshBasicMaterial({
         map: blurTexture,
+        color: "#F3D6B3",
         transparent: true,
         opacity: 0,
         depthWrite: false,
@@ -644,7 +650,8 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     <section
       id="book-section"
       ref={sectionRef}
-      className="relative h-[600vh] overflow-visible bg-[#0a1432]"
+      className="relative h-[600vh] overflow-visible bg-[#7D241C]"
+      style={{ background: BOOK_SKY_GRADIENT }}
       aria-label="Adventure book"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden">
@@ -656,7 +663,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
         <div className={`book-load-overlay ${bookReady ? "book-load-overlay--ready" : ""}`} aria-hidden="true">
           <div className="book-load-skeleton" />
         </div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_64%,rgba(232,238,255,0.08),transparent_34%),linear-gradient(180deg,rgba(10,20,50,0)_0%,rgba(10,20,50,0.18)_62%,rgba(10,20,50,0.78)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_54%,rgba(255,210,140,0.18),transparent_34%),linear-gradient(180deg,rgba(196,106,45,0)_0%,rgba(169,71,36,0.16)_58%,rgba(125,36,28,0.78)_100%)]" />
         <div
           ref={overlayRef}
           className="absolute left-1/2 top-[50%] z-10 flex w-[min(500px,calc(100%-72px))] flex-col items-center text-center opacity-0 max-sm:top-[48%] max-sm:w-[min(340px,calc(100%-56px))]"
