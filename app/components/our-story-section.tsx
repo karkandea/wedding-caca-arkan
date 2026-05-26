@@ -580,10 +580,11 @@ export default function OurStorySection() {
               ),
               linear-gradient(
                 to bottom,
-                #F7F1E7 0%,
-                rgba(247,241,231,0.82) 4%,
-                rgba(247,241,231,0.2) 11%,
-                rgba(12,77,190,0) 20%
+                rgba(125,36,28,0.96) 0%,
+                rgba(125,36,28,0.88) 9%,
+                rgba(125,36,28,0.64) 20%,
+                rgba(169,71,36,0.34) 34%,
+                rgba(12,77,190,0) 52%
               ),
               linear-gradient(rgba(6,24,58,0.26), rgba(6,24,58,0.32)),
               radial-gradient(ellipse at 50% 110%, rgba(253,250,243,0.28) 0%, rgba(253,250,243,0) 55%),
@@ -593,6 +594,18 @@ export default function OurStorySection() {
             background-position: center top;
             background-repeat: no-repeat;
             color: var(--story-ink);
+          }
+
+          .our-story-section::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: 0;
+            right: 0;
+            z-index: 3;
+            height: 4px;
+            background: #7D241C;
+            pointer-events: none;
           }
 
           .story-sky {

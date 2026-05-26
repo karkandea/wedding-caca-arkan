@@ -283,6 +283,9 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
     let mixer: THREE.AnimationMixer | null = null;
     let action: THREE.AnimationAction | null = null;
     let bookModel: THREE.Group | null = null;
+    let manualBookCoverHinge: THREE.Object3D | null = null;
+    const manualCoverClosedQuaternion = new THREE.Quaternion();
+    const manualCoverOpenQuaternion = new THREE.Quaternion();
     let frameId = 0;
     let scrollFrameId = 0;
     let currentCamera = {
@@ -388,6 +391,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
         bookRoot.add(book);
 
         mixer = new THREE.AnimationMixer(book);
+        const hingeNode = book.getObjectByName("BookCover_Hinge");
         const clip =
           THREE.AnimationClip.findByName(gltf.animations, "BookCover_HingeAction") ??
           gltf.animations[0];
@@ -412,6 +416,12 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
           action.paused = true;
           action.time = 0;
           mixer.update(0);
+        } else if (hingeNode) {
+          manualBookCoverHinge = hingeNode;
+          manualCoverClosedQuaternion.copy(hingeNode.quaternion);
+          manualCoverOpenQuaternion
+            .copy(manualCoverClosedQuaternion)
+            .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(170)));
         }
         setBookReady(true);
       });
@@ -558,6 +568,8 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
       if (action && mixer) {
         action.time = openProgress * action.getClip().duration;
         mixer.update(0);
+      } else if (manualBookCoverHinge) {
+        manualBookCoverHinge.quaternion.copy(manualCoverClosedQuaternion).slerp(manualCoverOpenQuaternion, openProgress);
       }
 
       if (overlayRef.current) {
