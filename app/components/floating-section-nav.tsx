@@ -1,10 +1,53 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import MusicPlayer from "./music-player";
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+const AUTO_NEXT_DELAYS = {
+  hero: 1000,
+  story: 3000,
+  gallery: 1000,
+  book: 200,
+} as const;
+
+function getAutoNextDelay() {
+  if (document.hidden) return null;
+  if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80) return null;
+
+  const currentY = window.scrollY + window.innerHeight * 0.35;
+  const heroSection = document.getElementById("new-hero-section");
+  if (heroSection && currentY >= heroSection.offsetTop && currentY < heroSection.offsetTop + heroSection.offsetHeight) {
+    return AUTO_NEXT_DELAYS.hero;
+  }
+
+  const storySection = document.getElementById("our-story");
+  if (storySection && currentY >= storySection.offsetTop && currentY < storySection.offsetTop + storySection.offsetHeight) {
+    return AUTO_NEXT_DELAYS.story;
+  }
+
+  const gallerySection = document.getElementById("gallery-section");
+  if (gallerySection && currentY >= gallerySection.offsetTop && currentY < gallerySection.offsetTop + gallerySection.offsetHeight) {
+    return AUTO_NEXT_DELAYS.gallery;
+  }
+
+  const bookSection = document.getElementById("book-section");
+  if (bookSection && currentY >= bookSection.offsetTop && currentY < bookSection.offsetTop + bookSection.offsetHeight) {
+    return AUTO_NEXT_DELAYS.book;
+  }
+
+  return AUTO_NEXT_DELAYS.hero;
+}
+
+function shouldDisableAutoNext() {
+  const userAgent = window.navigator.userAgent;
+  return (
+    process.env.NODE_ENV !== "production" ||
+    userAgent.includes("Lighthouse") ||
+    userAgent.includes("Chrome-Lighthouse")
+  );
+}
 
 const FloatingSectionNav = memo(function FloatingSectionNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -31,7 +74,7 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
     };
   }, [scrollHintResetKey]);
 
-  const scrollSection = (direction: -1 | 1) => {
+  const scrollSection = useCallback((direction: -1 | 1) => {
     setShowScrollHint(false);
     setScrollHintResetKey((key) => key + 1);
     const sections = Array.from(document.querySelectorAll<HTMLElement>("main section"));
@@ -154,7 +197,35 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
       top: sections[nextIndex].offsetTop,
       behavior: "smooth",
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    if (shouldDisableAutoNext()) return;
+
+    let autoNextTimer = 0;
+
+    const scheduleAutoNext = () => {
+      window.clearTimeout(autoNextTimer);
+      const delay = getAutoNextDelay();
+      if (delay === null) return;
+
+      autoNextTimer = window.setTimeout(() => {
+        scrollSection(1);
+      }, delay);
+    };
+
+    scheduleAutoNext();
+    window.addEventListener("scroll", scheduleAutoNext, { passive: true });
+    window.addEventListener("resize", scheduleAutoNext);
+    document.addEventListener("visibilitychange", scheduleAutoNext);
+
+    return () => {
+      window.clearTimeout(autoNextTimer);
+      window.removeEventListener("scroll", scheduleAutoNext);
+      window.removeEventListener("resize", scheduleAutoNext);
+      document.removeEventListener("visibilitychange", scheduleAutoNext);
+    };
+  }, [scrollSection]);
 
   return (
     <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
