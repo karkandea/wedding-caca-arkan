@@ -6,7 +6,7 @@ import MusicPlayer from "./music-player";
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const AUTO_NEXT_DELAYS = {
-  hero: 1000,
+  hero: 5000,
   story: 3000,
   gallery: 1000,
   book: 200,

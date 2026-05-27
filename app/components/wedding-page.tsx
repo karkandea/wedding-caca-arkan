@@ -1,5 +1,5 @@
 import DeferredWeddingSections from "./deferred-wedding-sections";
-import FloatingSectionNav from "./floating-section-nav";
+import FloatingSectionNavLoader from "./floating-section-nav-loader";
 import NewHeroSection from "./new-hero-section";
 import ScrollToHeroOnLoad from "./scroll-to-hero-on-load";
 
@@ -11,7 +11,7 @@ export default function WeddingPage({ guestName }: WeddingPageProps) {
   return (
     <>
       <ScrollToHeroOnLoad />
-      <FloatingSectionNav />
+      <FloatingSectionNavLoader />
       <main className="flex flex-1 flex-col">
         <NewHeroSection />
         <DeferredWeddingSections guestName={guestName} />

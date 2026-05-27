@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { assetPath } from "../lib/asset-path";
 
-const TRACK_SRC = assetPath("/Grandma's Home.mp3");
+const TRACK_SRC = assetPath("/Grandma's Home Final.mp3");
 const TRACK_START_TIME_SECONDS = 0;
 const TARGET_VOLUME = 0.58;
 const FADE_IN_DURATION_MS = 4500;

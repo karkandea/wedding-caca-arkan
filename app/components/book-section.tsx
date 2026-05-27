@@ -681,7 +681,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
           className="absolute left-1/2 top-[50%] z-10 flex w-[min(500px,calc(100%-72px))] flex-col items-center text-center opacity-0 max-sm:top-[48%] max-sm:w-[min(340px,calc(100%-56px))]"
           style={{ pointerEvents: "none" }}
         >
-          <div className="text-[#F8EFE2] drop-shadow-[0_14px_32px_rgba(0,0,0,0.42)]">
+          <div className="text-[#5F1B16] drop-shadow-[0_10px_26px_rgba(248,239,226,0.28)]">
             <div
               className="text-[clamp(22px,3.4vw,42px)] leading-[1.25] tracking-[0.18em] max-sm:text-[clamp(18px,6vw,28px)]"
               style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 400 }}
