@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
+const SITE_TITLE = "Wedding of Salsa & Arkan";
+const SITE_DESCRIPTION = "Kami mengundang Anda untuk hadir di hari istimewa kami - 21 Juni 2026, Padang";
+const SITE_URL = "https://wedding.dualangka.com/salsaarkan/";
+const PREVIEW_IMAGE = "/salsaarkan/image.png";
+
 const cyrene = localFont({
   src: "../public/assets/cyrene-regular.woff2",
   variable: "--font-cyrene",
@@ -20,8 +25,28 @@ const dinAlternate = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Wedding Caca Arka",
-  description: "Wedding site with a polaroid-style animated preloader.",
+  metadataBase: new URL("https://wedding.dualangka.com"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_TITLE,
+    images: [
+      {
+        url: PREVIEW_IMAGE,
+        alt: SITE_TITLE,
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [PREVIEW_IMAGE],
+  },
   icons: {
     icon: [{ url: "/salsaarkan/favicon.webp", type: "image/webp" }],
     shortcut: ["/salsaarkan/favicon.webp"],
