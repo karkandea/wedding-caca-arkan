@@ -1,7 +1,9 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, Globe2, MessageSquareText } from "lucide-react";
+import Image from "next/image";
 import { memo, useCallback, useEffect, useState } from "react";
+import { assetPath } from "../lib/asset-path";
 import MusicPlayer from "./music-player";
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -11,6 +13,11 @@ const AUTO_NEXT_DELAYS = {
   gallery: 1000,
   book: 200,
 } as const;
+const STORY_CARD_LANDING_OFFSET_PX = 220;
+
+function getStoryCardTargetTop(storySection: HTMLElement, card: HTMLElement) {
+  return storySection.offsetTop + card.offsetTop + STORY_CARD_LANDING_OFFSET_PX;
+}
 
 function getAutoNextDelay() {
   if (document.hidden) return null;
@@ -86,21 +93,22 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
     }, 0);
 
     const heroSection = document.getElementById("new-hero-section");
+    const storySection = document.getElementById("our-story");
     if (heroSection) {
       const heroTop = heroSection.offsetTop;
       const heroEnd = heroTop + heroSection.offsetHeight - window.innerHeight;
       const isInsideHero = currentY >= heroTop && currentY < heroTop + heroSection.offsetHeight;
 
       if (isInsideHero && direction === 1 && window.scrollY < heroEnd - 8) {
+        const firstStoryCard = storySection?.querySelector<HTMLElement>("[data-story-card]");
         window.scrollTo({
-          top: heroEnd,
+          top: firstStoryCard && storySection ? getStoryCardTargetTop(storySection, firstStoryCard) : heroEnd,
           behavior: "smooth",
         });
         return;
       }
     }
 
-    const storySection = document.getElementById("our-story");
     if (storySection) {
       const storyTop = storySection.offsetTop;
       const storyBottom = storyTop + storySection.offsetHeight;
@@ -108,14 +116,15 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
 
       if (isInsideStory) {
         const storyCards = Array.from(storySection.querySelectorAll<HTMLElement>("[data-story-card]"));
+        const storyCardAnchorY = window.scrollY + Math.min(window.innerHeight * 0.1, 96);
         const storyCardIndex = storyCards.reduce((activeIndex, card, index) => {
-          return card.offsetTop + storyTop <= currentY ? index : activeIndex;
+          return storyTop + card.offsetTop <= storyCardAnchorY ? index : activeIndex;
         }, -1);
         const nextStoryIndex = storyCardIndex + direction;
 
         if (nextStoryIndex >= 0 && nextStoryIndex < storyCards.length) {
           window.scrollTo({
-            top: storyTop + storyCards[nextStoryIndex].offsetTop - window.innerHeight * 0.16,
+            top: getStoryCardTargetTop(storySection, storyCards[nextStoryIndex]),
             behavior: "smooth",
           });
           return;
@@ -228,23 +237,48 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
   }, [scrollSection]);
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-[900] flex w-[min(720px,calc(100%-32px))] -translate-x-1/2 items-center justify-between rounded-full border border-[#2B241D]/[0.06] bg-[#FFFCF5]/85 py-2 pl-3 pr-2 shadow-[0_6px_20px_rgba(43,36,29,0.10)] backdrop-blur-[14px] sm:bottom-6 sm:pl-[22px]">
-      <MusicPlayer variant="nav" />
-      <span
-        className="hidden whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.16em] text-[#2B241D]/55 sm:block"
-        style={{ fontFamily: "var(--font-din-alternate)" }}
-      >
-        Website by dualangka.com
-      </span>
-      <div className="flex items-center gap-2 sm:gap-5">
-        <div className="flex items-center gap-1 rounded-full bg-[#2B241D] p-1" aria-label="Section navigation">
+    <nav className="fixed bottom-4 left-1/2 z-[900] flex h-[64px] w-[min(1180px,calc(100%-28px))] -translate-x-1/2 items-center justify-between gap-4 rounded-full border border-[#2B241D]/[0.07] bg-[#FFF8F5]/90 px-4 shadow-[0_12px_36px_rgba(43,36,29,0.12)] backdrop-blur-[16px] sm:bottom-6 sm:h-[72px] sm:px-6">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4 md:flex-1 lg:flex-none">
+        <MusicPlayer variant="nav" />
+        <span
+          className="whitespace-nowrap text-[11px] font-medium tracking-[0.01em] text-[#6B5A55] max-[430px]:hidden sm:text-[12px]"
+          style={{ fontFamily: "var(--font-din-alternate)" }}
+        >
+          Buat undangan bersama
+        </span>
+        <span className="relative hidden h-8 w-[112px] shrink-0 sm:block sm:h-10 sm:w-[142px]" aria-label="DuaJiwa">
+          <Image src={assetPath("/logo duajiwa.png")} alt="DuaJiwa" fill sizes="142px" className="object-contain" />
+        </span>
+      </div>
+
+      <div className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[13px] font-semibold tracking-[0.03em] text-[#6B5A55] lg:flex xl:gap-5">
+        <span className="h-5 w-px shrink-0 bg-[#6B5A55]/15" aria-hidden="true" />
+        <a className="flex items-center gap-2 whitespace-nowrap transition hover:text-[#2B241D]" href="https://duajiwa.com" target="_blank" rel="noreferrer">
+          <Globe2 size={16} strokeWidth={2.2} />
+          duajiwa.com
+        </a>
+        <span className="h-5 w-px shrink-0 bg-[#6B5A55]/15" aria-hidden="true" />
+        <a className="flex items-center gap-2 whitespace-nowrap transition hover:text-[#2B241D]" href="https://wa.me/6282220700245" target="_blank" rel="noreferrer">
+          <MessageSquareText size={16} strokeWidth={2.2} />
+          0822 2070 0245
+        </a>
+        <span className="h-5 w-px shrink-0 bg-[#6B5A55]/15" aria-hidden="true" />
+        <a className="flex items-center gap-2 whitespace-nowrap transition hover:text-[#2B241D]" href="https://instagram.com/duajiwa.invitation" target="_blank" rel="noreferrer">
+          <Camera size={16} strokeWidth={2.2} />
+          duajiwa.invitation
+        </a>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        <span className="hidden h-7 w-px shrink-0 bg-[#2B241D]/15 lg:block" aria-hidden="true" />
+        <div className="flex items-center gap-2 sm:gap-3" aria-label="Section navigation">
           <button
             type="button"
             onClick={() => scrollSection(-1)}
-            className="flex h-8 items-center gap-1.5 rounded-full border-0 bg-transparent px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#F7F1E7] transition hover:bg-white/15 active:scale-95 sm:px-3 sm:text-[11px]"
+            className="flex h-10 items-center gap-1.5 rounded-full border border-[#1C1C1C] bg-transparent px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#1C1C1C] transition hover:bg-[#2B241D]/5 active:scale-95 sm:h-11 sm:px-5 sm:text-[12px]"
             aria-label="Section sebelumnya"
           >
-            <ChevronUp size={16} strokeWidth={2.4} />
+            <ChevronUp className="sm:hidden" size={15} strokeWidth={2.4} />
             <span>Naik</span>
           </button>
           <div className="relative">
@@ -269,13 +303,13 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
             <button
               type="button"
               onClick={() => scrollSection(1)}
-              className="relative flex h-8 items-center gap-1.5 overflow-visible rounded-full border-0 bg-[#F7F1E7] px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#2B241D] transition hover:bg-white active:scale-95 sm:px-3 sm:text-[11px]"
+              className="relative flex h-10 items-center gap-1.5 overflow-visible rounded-full border-0 bg-[#161412] px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFF8F5] transition hover:bg-[#2B241D] active:scale-95 sm:h-11 sm:px-5 sm:text-[12px]"
               aria-label="Section berikutnya"
             >
               {showScrollHint && (
                 <>
-                  <span className="pointer-events-none absolute inset-0 rounded-full border border-[#F7F1E7]/70 animate-ping" />
-                  <span className="pointer-events-none absolute -inset-0.5 rounded-full border border-[#F7F1E7]/35 animate-ping [animation-delay:450ms]" />
+                  <span className="pointer-events-none absolute inset-0 rounded-full border border-[#161412]/35 animate-ping" />
+                  <span className="pointer-events-none absolute -inset-0.5 rounded-full border border-[#161412]/20 animate-ping [animation-delay:450ms]" />
                 </>
               )}
               <span>Lanjut</span>

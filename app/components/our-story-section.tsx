@@ -499,7 +499,7 @@ export default function OurStorySection() {
               key={card.stamp}
               data-story-card
               data-idx={index}
-              className={`card ${card.side} ${index === 0 ? "card--first" : ""}`}
+              className={`card ${card.side} ${index === 0 ? "card--first" : ""} ${index === 1 ? "card--first-date" : ""} ${index === 3 ? "card--forever" : ""}`}
               style={{ "--tilt": card.tilt } as CSSProperties}
             >
               <div className="slot-img">
@@ -742,7 +742,7 @@ export default function OurStorySection() {
             position: relative;
             display: grid;
             grid-template-columns: 1fr 100px 1fr;
-            align-items: center;
+            align-items: start;
             gap: 28px;
             margin: 14vh 0;
           }
@@ -762,6 +762,7 @@ export default function OurStorySection() {
           .slot-img {
             position: relative;
             padding: 14px 8px;
+            align-self: start;
           }
 
           .paper {
@@ -946,6 +947,9 @@ export default function OurStorySection() {
 
           .slot-text {
             position: relative;
+            box-sizing: border-box;
+            align-self: start;
+            padding-top: 0;
           }
 
           .chapter {
@@ -1045,6 +1049,14 @@ export default function OurStorySection() {
             transform: translate3d(0, 0, 0);
           }
 
+          .card--first-date.is-visible .slot-text {
+            transform: translate3d(0, clamp(-520px, -42vh, -360px), 0);
+          }
+
+          .card--forever.is-visible .slot-text {
+            transform: translate3d(0, clamp(-520px, -42vh, -360px), 0);
+          }
+
           .card.is-visible .slot-text {
             transition-delay: 0.12s;
           }
@@ -1123,6 +1135,7 @@ export default function OurStorySection() {
             .cards { padding: 0 16px; }
             .card {
               grid-template-columns: 1fr 24px 1fr;
+              align-items: start;
               gap: 10px;
               margin: 11vh 0;
             }
@@ -1131,6 +1144,7 @@ export default function OurStorySection() {
             .card.right .slot-img { padding-left: 6px; }
             .card.right .slot-text { padding-right: 6px; }
             .slot-img { padding: 10px 4px; }
+            .slot-text { padding-top: 0; }
             .paper { aspect-ratio: 4 / 5; }
             .card--first .paper {
               aspect-ratio: 3 / 4;
@@ -1205,6 +1219,12 @@ export default function OurStorySection() {
             }
             .place::before,
             .card.right .place::after { width: 12px; }
+            .card--first-date.is-visible .slot-text {
+              transform: translate3d(0, clamp(-360px, -36vh, -250px), 0);
+            }
+            .card--forever.is-visible .slot-text {
+              transform: translate3d(0, clamp(-360px, -36vh, -250px), 0);
+            }
             .closer { padding: 4vh 24px 0; }
             .progress { display: none; }
           }
@@ -1213,6 +1233,7 @@ export default function OurStorySection() {
             .cards { padding: 0 12px; }
             .card {
               grid-template-columns: 1fr 16px 1fr;
+              align-items: start;
               gap: 6px;
               margin: 9vh 0;
             }
