@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ChevronDown, ChevronUp, Globe2, MessageSquareText } from "lucide-react";
+import { Camera, ChevronDown, ChevronUp, Globe2, MessageSquareText, X } from "lucide-react";
 import Image from "next/image";
 import { memo, useCallback, useEffect, useState } from "react";
 import { assetPath } from "../lib/asset-path";
@@ -59,8 +59,15 @@ function shouldDisableAutoNext() {
 const FloatingSectionNav = memo(function FloatingSectionNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
   const [scrollHintResetKey, setScrollHintResetKey] = useState(0);
+  const [isBrandMenuOpen, setIsBrandMenuOpen] = useState(false);
+  const [isScrollHintDismissed, setIsScrollHintDismissed] = useState(false);
 
   useEffect(() => {
+    if (isScrollHintDismissed) {
+      setShowScrollHint(false);
+      return;
+    }
+
     let idleTimer = 0;
 
     const scheduleHint = () => {
@@ -79,7 +86,13 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
       window.clearTimeout(idleTimer);
       window.removeEventListener("scroll", scheduleHint);
     };
-  }, [scrollHintResetKey]);
+  }, [isScrollHintDismissed, scrollHintResetKey]);
+
+  const dismissScrollHint = useCallback(() => {
+    setIsScrollHintDismissed(true);
+    setShowScrollHint(false);
+    setScrollHintResetKey((key) => key + 1);
+  }, []);
 
   const scrollSection = useCallback((direction: -1 | 1) => {
     setShowScrollHint(false);
@@ -237,19 +250,82 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
   }, [scrollSection]);
 
   return (
-    <nav className="fixed bottom-4 left-1/2 z-[900] flex h-[64px] w-[min(1180px,calc(100%-28px))] -translate-x-1/2 items-center justify-between gap-4 rounded-full border border-[#2B241D]/[0.07] bg-[#FFF8F5]/90 px-4 shadow-[0_12px_36px_rgba(43,36,29,0.12)] backdrop-blur-[16px] sm:bottom-6 sm:h-[72px] sm:px-6">
+    <nav className="fixed bottom-4 left-1/2 z-[900] flex h-[64px] w-[min(1180px,calc(100%-28px))] -translate-x-1/2 items-center justify-between gap-4 rounded-full border border-[#2B241D]/[0.07] bg-[#FFF8F5]/90 px-4 shadow-[0_12px_36px_rgba(43,36,29,0.12)] backdrop-blur-[16px] max-[380px]:gap-2 max-[380px]:px-2 sm:bottom-6 sm:h-[72px] sm:px-6">
       <div className="flex min-w-0 items-center gap-3 sm:gap-4 md:flex-1 lg:flex-none">
         <MusicPlayer variant="nav" />
         <span
-          className="whitespace-nowrap text-[11px] font-medium tracking-[0.01em] text-[#6B5A55] max-[430px]:hidden sm:text-[12px]"
+          className="hidden whitespace-nowrap text-[11px] font-medium tracking-[0.01em] text-[#6B5A55] sm:text-[12px] lg:inline"
           style={{ fontFamily: "var(--font-din-alternate)" }}
         >
           Buat undangan bersama
         </span>
-        <span className="relative hidden h-8 w-[112px] shrink-0 sm:block sm:h-10 sm:w-[142px]" aria-label="DuaJiwa">
+        <span className="relative hidden h-8 w-[112px] shrink-0 lg:block lg:h-10 lg:w-[142px]" aria-label="DuaJiwa">
           <Image src={assetPath("/logo duajiwa.png")} alt="DuaJiwa" fill sizes="142px" className="object-contain" />
         </span>
+        <button
+          type="button"
+          onClick={() => setIsBrandMenuOpen((isOpen) => !isOpen)}
+          className="flex h-10 min-w-0 items-center gap-2 rounded-full border border-[#2B241D]/10 bg-[#FFFCF5]/75 px-3 text-left shadow-[0_6px_18px_rgba(43,36,29,0.08)] transition active:scale-95 max-[380px]:gap-1.5 max-[380px]:px-2 lg:hidden"
+          aria-expanded={isBrandMenuOpen}
+          aria-controls="duajiwa-mobile-menu"
+          aria-label="Buka menu DuaJiwa"
+        >
+          <span
+            className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B5A55] max-[380px]:text-[9px]"
+            style={{ fontFamily: "var(--font-din-alternate)" }}
+          >
+            Undangan by
+          </span>
+          <span className="relative h-7 w-[78px] shrink-0 max-[380px]:w-[58px]" aria-hidden="true">
+            <Image src={assetPath("/logo duajiwa.png")} alt="" fill sizes="(max-width: 380px) 58px, 78px" className="object-contain" />
+          </span>
+          <ChevronDown
+            size={14}
+            strokeWidth={2.4}
+            className={`shrink-0 text-[#6B5A55] transition-transform duration-200 ${isBrandMenuOpen ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
       </div>
+
+      {isBrandMenuOpen && (
+        <div
+          id="duajiwa-mobile-menu"
+          className="absolute bottom-[calc(100%+12px)] left-3 flex w-[min(320px,calc(100vw-32px))] flex-col gap-1 rounded-[20px] border border-[#2B241D]/10 bg-[#FFF8F5]/95 p-2 text-[12px] font-semibold tracking-[0.02em] text-[#5A4A45] shadow-[0_18px_44px_rgba(43,36,29,0.18)] backdrop-blur-[18px] lg:hidden"
+          style={{ fontFamily: "var(--font-din-alternate)" }}
+        >
+          <a
+            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
+            href="https://duajiwa.com"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setIsBrandMenuOpen(false)}
+          >
+            <Globe2 size={16} strokeWidth={2.2} />
+            duajiwa.com
+          </a>
+          <a
+            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
+            href="https://wa.me/6282220700245"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setIsBrandMenuOpen(false)}
+          >
+            <MessageSquareText size={16} strokeWidth={2.2} />
+            0822 2070 0245
+          </a>
+          <a
+            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
+            href="https://instagram.com/duajiwa.invitation"
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setIsBrandMenuOpen(false)}
+          >
+            <Camera size={16} strokeWidth={2.2} />
+            duajiwa.invitation
+          </a>
+        </div>
+      )}
 
       <div className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[13px] font-semibold tracking-[0.03em] text-[#6B5A55] lg:flex xl:gap-5">
         <span className="h-5 w-px shrink-0 bg-[#6B5A55]/15" aria-hidden="true" />
@@ -284,16 +360,14 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
           <div className="relative">
             <button
               type="button"
-              onClick={() => {
-                setShowScrollHint(false);
-                setScrollHintResetKey((key) => key + 1);
-              }}
-              className={`absolute bottom-[calc(100%+12px)] right-0 w-[190px] rounded-[14px] border-0 bg-[#2B241D] px-3 py-2 text-center text-[11px] font-semibold leading-snug text-[#FFFCF5] shadow-[0_12px_28px_rgba(43,36,29,0.18)] transition duration-300 sm:w-[220px] sm:text-xs ${
+              onClick={dismissScrollHint}
+              className={`absolute bottom-[calc(100%+12px)] right-0 w-[202px] rounded-[14px] border-0 bg-[#2B241D] px-3 py-2 pr-8 text-left text-[11px] font-semibold leading-snug text-[#FFFCF5] shadow-[0_12px_28px_rgba(43,36,29,0.18)] transition duration-300 sm:w-[232px] sm:text-xs ${
                 showScrollHint ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
               }`}
               style={{ fontFamily: "var(--font-din-alternate)" }}
               aria-label="Tutup pengingat scroll"
             >
+              <X className="absolute right-2.5 top-2.5 text-[#FFFCF5]/65" size={13} strokeWidth={2.4} aria-hidden="true" />
               Yuk lanjut, masih ada cerita berikutnya.
               <span className="ml-1 text-[#FFFCF5]/55" aria-hidden="true">
                 Tap untuk tutup

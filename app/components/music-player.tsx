@@ -216,7 +216,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
         aria-pressed={isPlaying}
         className={
           isNav
-            ? "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#2B241D]/10 bg-[#FFFCF5]/90 shadow-[0_6px_18px_rgba(43,36,29,0.16)] transition hover:scale-105 active:scale-95"
+            ? "absolute -top-16 right-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/55 bg-[#161412]/78 shadow-[0_12px_34px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:scale-105 active:scale-95 lg:relative lg:right-auto lg:top-auto lg:h-10 lg:w-10 lg:border-[#2B241D]/10 lg:bg-[#FFFCF5]/90 lg:shadow-[0_6px_18px_rgba(43,36,29,0.16)]"
             : "fixed bottom-4 right-4 z-[2147483000] flex h-14 w-14 items-center justify-center rounded-full border border-white/55 bg-[#161412]/70 shadow-[0_12px_34px_rgba(0,0,0,0.22)] backdrop-blur-md transition hover:scale-105 active:scale-95 sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
         }
       >
@@ -224,12 +224,23 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
           ref={discRef}
           className={`relative block overflow-hidden rounded-full border ${
             isNav
-              ? "h-8 w-8 border-[#2B241D]/10 shadow-[0_2px_8px_rgba(43,36,29,0.12)]"
+              ? "h-9 w-9 border-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] lg:h-8 lg:w-8 lg:border-[#2B241D]/10 lg:shadow-[0_2px_8px_rgba(43,36,29,0.12)]"
               : "h-10 w-10 border-white/35 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)] sm:h-12 sm:w-12"
           }`}
         >
           {isNav ? (
-            <Image src={assetPath("/logo duajiwa.png")} alt="" fill sizes="40px" className="object-cover" />
+            <>
+              <Image src={assetPath("/logo duajiwa.png")} alt="" fill sizes="40px" className="hidden object-cover lg:block" />
+              <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#f7f1e7_0_9%,#1f1c1a_10%_18%,#eee8dc_19%_22%,#111_23%_42%,#2d2925_43%_47%,#0f0e0d_48%_100%)] lg:hidden" />
+              <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F7F1E7] shadow-[0_0_0_3px_rgba(255,255,255,0.12)] lg:hidden" />
+              <span
+                className="absolute inset-[7px] rounded-full border border-white/10 lg:hidden"
+                style={{
+                  background:
+                    "repeating-radial-gradient(circle at center, transparent 0 3px, rgba(255,255,255,0.09) 4px 5px)",
+                }}
+              />
+            </>
           ) : (
             <>
               <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#f7f1e7_0_9%,#1f1c1a_10%_18%,#eee8dc_19%_22%,#111_23%_42%,#2d2925_43%_47%,#0f0e0d_48%_100%)]" />
@@ -246,7 +257,7 @@ export default function MusicPlayer({ variant = "floating" }: MusicPlayerProps) 
         </span>
         <span
           className={`absolute flex items-center justify-center rounded-full bg-[#F7F1E7] font-bold leading-none text-[#161412] shadow-[0_2px_8px_rgba(0,0,0,0.22)] ${
-            isNav ? "bottom-0 right-0 h-4 w-4" : "bottom-1.5 right-1.5 h-5 w-5"
+            isNav ? "bottom-1 right-1 h-4 w-4 lg:bottom-0 lg:right-0" : "bottom-1.5 right-1.5 h-5 w-5"
           }`}
         >
           {isPlaying ? <Pause size={isNav ? 9 : 11} strokeWidth={3} /> : <Play size={isNav ? 9 : 11} strokeWidth={3} fill="currentColor" />}
