@@ -706,7 +706,7 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
           <button
             type="button"
             onClick={() => {
-              window.location.assign("https://minang.dualangka.com/");
+              window.location.assign("https://arkansals.duajiwa.com/");
             }}
             className="mt-5 rounded-full border border-[#F8EFE2]/45 bg-[#F8EFE2] px-7 py-3 text-[13px] font-medium uppercase tracking-[0.28em] text-[#2B241D] shadow-[0_18px_45px_rgba(0,0,0,0.24)] transition hover:-translate-y-0.5 hover:bg-white active:translate-y-0 max-sm:mt-4 max-sm:px-6 max-sm:py-2.5 max-sm:text-[11px]"
           >
