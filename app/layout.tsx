@@ -4,8 +4,8 @@ import "./globals.css";
 
 const SITE_TITLE = "Wedding of Salsa & Arkan";
 const SITE_DESCRIPTION = "Kami mengundang Anda untuk hadir di hari istimewa kami - 21 Juni 2026, Padang";
-const SITE_URL = "https://wedding.dualangka.com/salsaarkan/";
-const PREVIEW_IMAGE = "/salsaarkan/image.png";
+const SITE_URL = "https://wedding.dualangka.com/";
+const PREVIEW_IMAGE = "/image.png";
 
 const cyrene = localFont({
   src: "../public/assets/cyrene-regular.woff2",
@@ -48,9 +48,9 @@ export const metadata: Metadata = {
     images: [PREVIEW_IMAGE],
   },
   icons: {
-    icon: [{ url: "/salsaarkan/favicon.webp", type: "image/webp" }],
-    shortcut: ["/salsaarkan/favicon.webp"],
-    apple: [{ url: "/salsaarkan/favicon.webp", type: "image/webp" }],
+    icon: [{ url: "/favicon.webp", type: "image/webp" }],
+    shortcut: ["/favicon.webp"],
+    apple: [{ url: "/favicon.webp", type: "image/webp" }],
   },
 };
 

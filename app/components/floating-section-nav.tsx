@@ -59,7 +59,6 @@ function shouldDisableAutoNext() {
 const FloatingSectionNav = memo(function FloatingSectionNav() {
   const [showScrollHint, setShowScrollHint] = useState(false);
   const [scrollHintResetKey, setScrollHintResetKey] = useState(0);
-  const [isBrandMenuOpen, setIsBrandMenuOpen] = useState(false);
   const [isScrollHintDismissed, setIsScrollHintDismissed] = useState(false);
 
   useEffect(() => {
@@ -262,70 +261,10 @@ const FloatingSectionNav = memo(function FloatingSectionNav() {
         <span className="relative hidden h-8 w-[112px] shrink-0 lg:block lg:h-10 lg:w-[142px]" aria-label="DuaJiwa">
           <Image src={assetPath("/logo duajiwa.png")} alt="DuaJiwa" fill sizes="142px" className="object-contain" />
         </span>
-        <button
-          type="button"
-          onClick={() => setIsBrandMenuOpen((isOpen) => !isOpen)}
-          className="flex h-10 min-w-0 items-center gap-2 rounded-full border border-[#2B241D]/10 bg-[#FFFCF5]/75 px-3 text-left shadow-[0_6px_18px_rgba(43,36,29,0.08)] transition active:scale-95 max-[380px]:gap-1.5 max-[380px]:px-2 lg:hidden"
-          aria-expanded={isBrandMenuOpen}
-          aria-controls="duajiwa-mobile-menu"
-          aria-label="Buka menu DuaJiwa"
-        >
-          <span
-            className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B5A55] max-[380px]:text-[9px]"
-            style={{ fontFamily: "var(--font-din-alternate)" }}
-          >
-            Undangan by
-          </span>
-          <span className="relative h-7 w-[78px] shrink-0 max-[380px]:w-[58px]" aria-hidden="true">
-            <Image src={assetPath("/logo duajiwa.png")} alt="" fill sizes="(max-width: 380px) 58px, 78px" className="object-contain" />
-          </span>
-          <ChevronDown
-            size={14}
-            strokeWidth={2.4}
-            className={`shrink-0 text-[#6B5A55] transition-transform duration-200 ${isBrandMenuOpen ? "rotate-180" : ""}`}
-            aria-hidden="true"
-          />
-        </button>
+        <span className="relative h-8 w-[92px] shrink-0 max-[380px]:w-[68px] lg:hidden" aria-label="DuaJiwa">
+          <Image src={assetPath("/logo duajiwa.png")} alt="DuaJiwa" fill sizes="(max-width: 380px) 68px, 92px" className="object-contain" />
+        </span>
       </div>
-
-      {isBrandMenuOpen && (
-        <div
-          id="duajiwa-mobile-menu"
-          className="absolute bottom-[calc(100%+12px)] left-3 flex w-[min(320px,calc(100vw-32px))] flex-col gap-1 rounded-[20px] border border-[#2B241D]/10 bg-[#FFF8F5]/95 p-2 text-[12px] font-semibold tracking-[0.02em] text-[#5A4A45] shadow-[0_18px_44px_rgba(43,36,29,0.18)] backdrop-blur-[18px] lg:hidden"
-          style={{ fontFamily: "var(--font-din-alternate)" }}
-        >
-          <a
-            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
-            href="https://duajiwa.com"
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => setIsBrandMenuOpen(false)}
-          >
-            <Globe2 size={16} strokeWidth={2.2} />
-            duajiwa.com
-          </a>
-          <a
-            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
-            href="https://wa.me/6282220700245"
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => setIsBrandMenuOpen(false)}
-          >
-            <MessageSquareText size={16} strokeWidth={2.2} />
-            0822 2070 0245
-          </a>
-          <a
-            className="flex min-h-11 items-center gap-2 rounded-full px-3 transition active:bg-[#2B241D]/5"
-            href="https://instagram.com/duajiwa.invitation"
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => setIsBrandMenuOpen(false)}
-          >
-            <Camera size={16} strokeWidth={2.2} />
-            duajiwa.invitation
-          </a>
-        </div>
-      )}
 
       <div className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[13px] font-semibold tracking-[0.03em] text-[#6B5A55] lg:flex xl:gap-5">
         <span className="h-5 w-px shrink-0 bg-[#6B5A55]/15" aria-hidden="true" />

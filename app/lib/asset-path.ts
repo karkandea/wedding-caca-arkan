@@ -1,4 +1,4 @@
-export const BASE_PATH = "/salsaarkan";
+export const BASE_PATH = "";
 
 export function assetPath(path: string) {
   if (!path.startsWith("/")) return path;
