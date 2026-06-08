@@ -5,7 +5,7 @@ import "./globals.css";
 const SITE_TITLE = "Wedding of Salsa & Arkan";
 const SITE_DESCRIPTION = "Kami mengundang Anda untuk hadir di hari istimewa kami - 21 Juni 2026, Padang";
 const SITE_URL = "https://wedding.dualangka.com/";
-const PREVIEW_IMAGE = "/image.png";
+const PREVIEW_IMAGE = "https://wedding.dualangka.com/image.png";
 const FAVICON_IMAGE = "/logo%20duajiwa%20white.png";
 
 const cyrene = localFont({

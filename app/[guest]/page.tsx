@@ -4,7 +4,7 @@ import WeddingPage from "../components/wedding-page";
 const DEFAULT_GUEST_NAME = "Novan & Partner";
 const SITE_TITLE = "Wedding of Salsa & Arkan";
 const SITE_DESCRIPTION = "Kami mengundang Anda untuk hadir di hari istimewa kami - 21 Juni 2026, Padang";
-const PREVIEW_IMAGE = "/image.png";
+const PREVIEW_IMAGE = "https://wedding.dualangka.com/image.png";
 
 function formatGuestName(slug: string) {
   const decoded = decodeURIComponent(slug)
