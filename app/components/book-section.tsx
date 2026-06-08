@@ -683,25 +683,17 @@ export default function BookSection({ guestName = "Novan & Partner" }: BookSecti
         >
           <div className="text-[#5F1B16] drop-shadow-[0_10px_26px_rgba(248,239,226,0.28)]">
             <div
-              className="text-[clamp(22px,3.4vw,42px)] leading-[1.25] tracking-[0.18em] max-sm:text-[clamp(18px,6vw,28px)]"
-              style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 400 }}
+              className="text-[clamp(16px,2vw,25px)] leading-[1.45] tracking-[0.08em] max-sm:text-[clamp(13px,3.6vw,18px)]"
+              style={{ fontFamily: "var(--font-din-alternate), Arial, Helvetica, sans-serif", fontWeight: 600 }}
             >
-              Kepada Yth.
+              Setiap cerita membawa kami
               <br />
-              Bapak/Ibu/Saudara/i
+              ke hari bahagia ini.
+              <br />
+              Dengan penuh sukacita,
+              <br />
+              kami mengundang Anda untuk hadir.
             </div>
-            <h2
-              className="m-0 mt-7 text-[clamp(22px,3.8vw,46px)] font-semibold uppercase leading-none tracking-[0.16em] max-sm:mt-5 max-sm:text-[clamp(19px,6vw,28px)]"
-              style={{ fontFamily: "var(--font-din-alternate), sans-serif" }}
-            >
-              {guestName}
-            </h2>
-            <p
-              className="m-0 mt-8 text-[clamp(14px,2.2vw,24px)] leading-[1.35] max-sm:mt-5 max-sm:text-[clamp(12px,3.6vw,16px)]"
-              style={{ fontFamily: "var(--font-cyrene), Georgia, serif", fontWeight: 400 }}
-            >
-              *Mohon maaf apabila terdapat kesalahan dalam penulisan nama / gelar
-            </p>
           </div>
           <button
             type="button"

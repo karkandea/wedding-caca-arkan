@@ -110,7 +110,7 @@ export default function DeferredWeddingSections({ guestName }: { guestName?: str
                 textShadow: "0 18px 50px rgba(0,0,0,0.28)",
               }}
             >
-              Us
+              Gallery
             </div>
           </section>
         }

@@ -449,7 +449,7 @@ export default function Section3Video() {
               backfaceVisibility: "hidden",
             }}
           >
-            Us
+            Gallery
           </h2>
         </div>
 
